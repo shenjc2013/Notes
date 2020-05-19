@@ -1,0 +1,43 @@
+
+
+```php
+Ctrl 0-5 	//普通文本一级到6级标题
+Ctrl B 		//加粗
+Ctrl I 		//斜体
+Ctrl U 		//下划线
+Shift Alt 5 //删除线
+Ctrl T 		//创建tab键
+
+Ctrl Shift Q//引用或 >开头，可多级引用，两个回车换行就是取消引用
+    
+三个 ~ 就是进入代码块编辑
+
+设置代码行号，是在偏好设置里勾选
+    
+无序列表 -加空格
+有序列表 数字.加空格
+    在换行加Tab键 产生二级列表
+
+- 三个短线就是分隔线
+```
+
+
+
+---
+
+~~~flow
+st=>start: start
+on=>operation: content
+cn=>condition: sure?
+e=>end: end
+
+st->on->cn(yes)->e
+cn(no)->on
+~~~
+
+
+
+
+
+
+
