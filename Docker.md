@@ -2,7 +2,7 @@
 
 ##### 第一章 Docker容器入门
 
-###### 1.1 Docker简介
+###### 1.1 简介说明
 
 > (1) Docker是什么？
 
@@ -85,7 +85,7 @@ Docker Engine //新一代虚拟化技术，不需要包含单独的操作系统(
 
 ---
 
-###### 1.2 Docker安装
+###### 1.2 软件安装
 
 > #官网安装文档
 > https://docs.docker.com/engine/install/
@@ -137,9 +137,11 @@ $ docker pull hello-world
 
 <img src="H:\笔记本\Docker.assets\image-20200519175705831.png" alt="image-20200519175705831" style="float:left;" />
 
+
+
 ---
 
-###### 1.3 Docker镜像
+###### 1.3 镜像仓库
 
 配置阿里云镜像仓库
 
@@ -154,11 +156,222 @@ $ sudo tee /etc/docker/daemon.json <<-'EOF'  #利用tee命令把下面的配置�
   "registry-mirrors": ["https://j7qzahry.mirror.aliyuncs.com"]
 }
 EOF
-$ sudo systemctl daemon-reload   #重载所有修改过的配置文件，扫描新的或有变动的单元
-$ sudo systemctl restart docker  #重启docker
+//也可以vi命令编辑写入内容
+
+#重载所有修改过的配置文件，扫描新的或有变动的单元
+$ sudo systemctl daemon-reload
+
+#重启docker
+$ sudo systemctl restart docker
+
+#检查是否成功
+$ docker info
+// Registry Mirrors:
+//  https://j7qzahry.mirror.aliyuncs.com/
+// Live Restore Enabled: false
 ```
 
 ```php
+#下载redis
+$ docker pull redis   //下载最新版本
+$ docker pull redis:5.0.9  //下载指定版本
+```
+
+
+
+---
+
+###### 1.4 基本命令
+
+~~~php
+#启动Docker
+$ systemctl start docker
+
+#停止Docker
+$ systemctl stop docker
+
+#重启Docker
+$ systemctl restart docker
+
+#开机启动Docker
+$ systemctl enable docker
+
+#查看Docker概要信息
+$ docker info
+
+#查看Docker帮助文档
+$ docker --help
+
+#查看Docker版本信息
+$ docker version
+~~~
+
+
+
+---
+
+###### 1.5 Docker镜像
+
+```php
+#列表所有镜像
+$ docker images
+$ docker images -a   //显示出所有的，包括中间层
+$ docker images -q   //显示镜像ID
+$ docker images --digests  //显示镜像的摘要信息
+$ docker images --no-trunc //显示完整的镜像信息
+
+#搜索镜像
+$ docker search xxx
+和到官方仓库搜索是一样的，https://hub.docker.com， OFFICIAL列判断是否是官方包
+
+#下载镜像
+$ docker pull xxx[:tag]
+如果不加tag，默认是下载最新版本
+
+#删除镜像
+$ docker rmi xxx[:tag]
+如果不加tag，默认是删除最新版本；如果容器正在运行，docker rmi xxx是删除不了的，但-f可强制删除
+$ docker rmi -f xxx //强制删除容器
+//例如：$ docker rmi -f hello-world    #其中i 表示image镜像
+
+$ docker rmi -f 镜像1[:TAG] 镜像2[:TAG]   //删除多个镜像；空格隔开
+$ docker rmi -f $(docker images -qa)    //删除所有镜像
+```
+
+
+
+---
+
+###### 1.6 Docker容器
+
+```php
+#创建并启动容器
+$ docker run [options] image [command] [arg...]
+--name="容器新名字"
+-i 以交互模式运行容器，通常与-t同时使用
+-t 为容器重新分配一个伪输入终端，常与-i同时使用
+//案例：
+$ docker images
+/* REPOSITORY	TAG         IMAGE ID            CREATED             SIZE
+ * redis       latest      987b78fc9e38        37 hours ago        104MB
+ * redis       5.0.9       5120d23bad51        4 days ago          98.3MB
+ */
+$ docker run -it --name redis01 987b78fc9e38(即容器ID) 或者
+$ docker run -it --name redis02 redis:5.0.9
+//即运行容器有两种方法，1、容器ID；2、容器名称:tag
+
+#【总结】 docker run -it --name 别名 镜像ID  //运行一个容器，取别名，交互模式运行，分配伪终端
+
+#列出容器
+$ docker ps          		  //列出正在运行的容器
+$ docker ps -a       		  //列出所有容器
+$ docker ps -n  3       	  //列出最近创建的3个容器
+$ docker ps -f status=exited  //查看停止运行的容器
+
+#退出容器
+exit 容器停止退出
+Ctrl + P + Q 容器不停止退出
+
+#进入容器
+$ docker attach 容器ID //or 容器名[:tag]
+
+#启动容器
+$ docker start 容器ID //or 容器名[:tag]
+
+#重启容器
+$ docker restart 容器ID //or 容器名[:tag]
+
+#停止容器
+$ docker stop 容器ID //or 容器名[:tag]
+//暴力关闭，尽量少用  docker kill 容器ID or 容器名
+
+#删除容器
+$ docker rm 容器ID   //只能删除停止的容器ID
+$ docker rm -f 容器ID   //强制删除运行或停止的容器ID
+
+$ docker rm -f 镜像ID1 镜像ID2   //删除多个容器；空格隔开
+$ docker rm -f $(docker ps -qa)    //删除所有容器,-a所有容器，-q显示容器编号
+```
+
+
+
+---
+
+###### 1.7 容器与宿主机
+
+> 启动交互式容器：$ docker run -it --name 别名  镜像ID
+>
+> 守护式创建并启动容器： $ docker run -di --name 别名 镜像ID
+>
+> > --name  指定别名
+> > -i    以交互模式运行容器
+> >
+> > -t   为容器分配一个伪终端
+> >
+> > -d   后台运行容器并返回容器ID
+> > -P  随机生成一个端口映射，容器内部端口随机映射到主机的端口
+> > -p 指定端口映射，格式   宿主端口:容器端口
+
+```php
+//启动容器，并执行 /bin/bash命令
+$ docker run -it --name 别名 镜像ID  /bin/bash
+// docker run -it -p 6379:6379 --name myredis 容器ID 
+```
+
+```php
+#宿主机和容器之间文件拷贝
+$ docker copy
+
+$ docker cp 宿主机文件或目录  容器名字:容器目录    //宿主机文件copy to容器内
+$ docker cp 容器名字:容器目录  宿主机目录
+/**
+ * $ docker cp /home/chenglh/composer-setup.php a9905e1f223e:/tmp
+ * $ docker cp /home/chenglh/composer-setup.php a9905e1f223e:/tmp/aa.php 改名
+ */
+
+#查看容器日志
+$ docker logs
+日志存放具体位置：/var/lib/docker/containers/
+xxxxed557a2d7d731da02def4a5b88-json.log
+
+#查看容器进程
+$ docker top 容器ID
+
+#进入容器执行命令
+$ docker exec -it 容器名称/容器ID 执行命令
+直接操作容器，执行完回到宿主主机终端；
+我们一般用于 启动容器里的应用，比如：Tomcat、Nginx、Elasticsearch等等
+#例如：ls -l  /var/wwwroot/
+# docker exec -it 容器ID  ls -l /var/wwwroot/
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+~~~
 # 下载常用镜像
 $ docker pull php
 
@@ -166,11 +379,12 @@ $ docker run -d -p 80:80 名称或ID
     //run  把镜像放入容器中；
 	//-d   后台运行，并返回ID；
 	//-p   端口映射
-$ docker ps          //查看正在运行的容器
-$ docker ps -a       //查看所有开启过的容器
+
 $ docker start 容器ID 
 $ docker stop 容器ID
-```
+~~~
+
+
 
 ```php
 #如果出现错误信息
