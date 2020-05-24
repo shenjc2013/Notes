@@ -250,6 +250,9 @@ $ docker rmi -f xxx //强制删除镜像，#其中i 表示image镜像
 
 $ docker rmi -f 镜像1[:TAG] 镜像2[:TAG]   //删除多个镜像；空格隔开，Tag没指定默认latest
 $ docker rmi -f $(docker images -qa)    //删除所有镜像
+
+#查看容器元信息
+$ docker inspect 容器ID
 ```
 
 <img src="H:\笔记本\Docker.assets\image-20200521102129526.png" alt="image-20200521102129526" style="zoom:100%;float:left;" />
@@ -376,6 +379,12 @@ $ docker exec -it 容器名称/容器ID 执行命令
 #进入容器(不会回到宿主机)
 $ docker exec -it 容器ID /bin/bash
 //例如：docker exec -it 739161c5902b /bin/bash
+/**
+ * 如果报错误信息：Error loading config file XXX.dockerconfig.json - stat /home/XXX/.docker/config.json: permission denied
+ * docker的文件夹的权限问题，解决方法执行以下命令：
+ * $ sudo chown "$USER":"$USER" /home/"$USER"/.docker -R
+ * $ sudo chmod g+rwx "/home/$USER/.docker" -R
+ */
 ```
 
 
@@ -472,19 +481,87 @@ $ sudo docker pull registry.cn-hangzhou.aliyuncs.com/phpclh/php1234:[镜像版�
 
 ###### 1.9 容器目录挂载
 
-> 容器目录挂载
+> 【简介】容器目录挂载
 > 即可以在创建容器的时候，将宿主机的目录与容器内的目录进行映射，我们就可以实现宿主机和容器目录的双向数据同步。
 
-> 使用cp命令来实现数据传递，但这种方式比较麻烦；
+> 【作用】使用cp命令来实现数据传递，但这种方式比较麻烦；
 > 我们通过容器目录挂载，能够轻松实现代码上传，配置修改，日志同步等需求；
 
+> 【实现】
+> 语法： $ docker run -it -v /宿主机目录:/容器目录  镜像名
+>
+> 多目录挂载：$ docker run -it  -v  /宿主机目录:/容器目录    -v  /宿主机目录2:/容器目录2     镜像名
+>
+> 注意：如果你同步的是多级目录，可能会出现权限不足的提示；
+> 这是因为Linux的安全模块 sellinux把权限禁掉了，我们需要添加 --privlleged=true来解决挂载的目录没有权限问题
+
+```php
+#挂载目录只读 “ro”
+$ docker run -it -v  /宿主目录:/容器目录:ro  镜像ID
+
+#网站根目录挂载
+$ docker run -it -v /home/chenglh/www.tswoft.com/:/var/wwwroot/www.tswoft.com/ 470671670cac   //镜像ID
+$ docker exec -it 437965bada89 /bin/bash   //容器ID
+```
 
 
 
+---
 
+##### 第二章 项目部署
 
+###### 2.1 安装PHP
 
+###### 2.2 安装Nginx
 
+###### 2.3 安装MySQL5.7
+
+```php
+#到hub查找下载mysql
+$ docker pull mysql:5.7
+```
+
+```php
+#第一步，运行MySQL5.7
+$ docker run -d -p 3306:3306 -e MYSQL_ROOT_PASSWORD=123456 MySQL镜像ID
+##开放Mysql端口
+//iptables -I INPUT 4 -p tcp -m state --state NEW -m tcp --dport 3306 -j ACCEPT
+
+#第二步，进行MySQL容器
+$ docker exec -it 容器ID /bin/bash
+##确认以下目录路径
+//	/etc/mysql/conf.d     //配置目录
+//  /var/log/mysql        //日志目录
+//  /var/lib/mysql/mysql  //数据库目录
+
+#宿主机里/home目录下新建mysql目录，把上面三个路径映射到mysql目录下
+$ docker cp  容器ID:/etc/mysql/conf.d  /home/mysql/conf/
+$ docker cp  容器ID:/var/log  /home/mysql/log/
+$ docker cp  容器ID:/var/lib/mysql/  /home/mysql/mysql/
+
+//以上步骤是先拿到MySQL环境数据本地化，第三步操作是启动并同步对应文件数据
+//关闭容器或删除容器
+
+#第三步：启动MySQL容器
+$ docker run --name mysql57 -p 3306:3306 -d -v /etc/mysql/conf.d/:/home/mysql/conf/
+-v /var/log/:/home/mysql/log/ -v /var/lib/mysql/:/home/mysql/mysql/ -e MYSQL_ROOT_PASSWORD=123456  MySQL镜像ID
+
+##在容器内登录客户端
+$ docker exec -it 容器ID /bin/bash
+$ mysql -u root -p
+Password:123456
+mysql > ALTER USER 'root'@'%' IDENTIFIED WITH mysql_native_password BY '123456';
+
+#第四步：连接数据库(Navicat工具连接)
+使用客户端工具连接数据库，Host使用宿主机的IP地址
+
+#第五步：程序连接数据库
+注意：运行的项目里的数据库连接地址，要写docker里分配给mysql容器所在的虚拟IP地址，容器间通信IP
+
+##查看容器元信息
+$ docker inspect 容器ID
+//  "IPAddress": "172.17.0.2",
+```
 
 
 
