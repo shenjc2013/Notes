@@ -172,3 +172,57 @@ func main()  {
 }
 ```
 
+
+
+项目编译：go build
+
+1、在项目目录下执行go build
+
+2、在其他路径下执行go build，需要加上项目路径(从GOPATH/src后边写起)，编译后可执行文件在当前目录下
+
+3、自定义编译后的名字，" -o + 名字" 
+
+```bash
+##方式一
+#day01右键  》  终端中打开 / open in Terminal
+#右上处，选择cmd，如果没有出现cmd选项，点开默认shell找到cmd
+#其实是进入命令面板
+
+#构建
+G:\Go\src\www.testgo.com\day01\helloworld>go build
+helloworld.exe
+
+#运行
+G:\Go\src\www.testgo.com\day01\helloworld>helloworld.exe
+Hello world!
+
+##方式二
+cd E:\www
+go build www.testgo.com/day01/helloworld
+helloworld.exe
+
+##方式三
+> go build -o hello.exe
+hello.exe
+```
+
+```php
+#常用命令
+> go build     	  //构建项目
+> go run main.go  //运行项目
+> go install      //1、先编译得到exe；2、把可执行文件拷贝到"GOPATH/bin"目录下。任意地方直接执行当前可执行文件
+```
+
+> 跨平台编译
+
+`go build`生成可执行文件都是当前操作系统可执行的文件，如果想在windows下编译一个linux下可执行文件，那需要怎么做呢？
+
+只需要指定目标操作系统的平台和处理器架构即可 (cmd界面)
+
+```
+> SET CGO_ENABLED=0  // 禁用CGO
+> SET GOOS=linux     // 目标平台是linux
+> SET GOARCH=amd64   // 目标处理器架构是amd64
+> go build
+```
+
