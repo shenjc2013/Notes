@@ -1,3 +1,10 @@
+```
+Golang教程_Go语言Beego入门实战教程-2020年4月录制每周更新5讲
+https://www.bilibili.com/video/BV1Vi4y1t71d?from=search&seid=192166541219073018
+```
+
+
+
 #### 第一节 基础介绍
 
 ###### 1.1 语言介绍
@@ -95,8 +102,6 @@ set GOFLAGS=
 ```
 
 > 注意：Go1.11版本之后无需手动配置环境变量，使用go mod管理项目，也不需要把项目放到GOPATH指定目录下，可以在你磁盘的任何位置新建一个项目。Go1.13以后可以彻底不要GOPATH 了
-
-###### 
 
 ```bash
 ##开发工具Vscode
