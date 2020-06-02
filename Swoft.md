@@ -380,6 +380,9 @@ File  >>  Setting >> Plugins  搜索Annotations
 
 安装步骤：下载  >> 安装/更新 >> 重启IDE
 
+安装了注解插件可提供注解命名空间自动补全，注解属性代码提醒，注解类跳转等非常有助于提升开发效率的功能
+
+
 
 我们实现一下通过这个注解类库来实现一下基础功能。
 
@@ -405,7 +408,7 @@ function userInfo(int $id) {
 }
 ```
 
-(二)、Inject()
+(二)、Inject()注入
 
 ```php
 class User{
@@ -431,53 +434,386 @@ class User{
 >
 >  3、用户自定义事件
 
-
-
 用户自定义监听事件
 
 ```php
 # mkdir app/Listener
-# vi OrderListener.php
+# vi OrderListener.php  //如：下单加减库存
 
+<?php declare(strict_types=1);
+namespace App\Listener; //第①步，命名空间
 
+use Swoft\Event\Annotation\Mapping\Listener;
+use Swoft\Event\EventHandlerInterface;
+use Swoft\Event\EventInterface;
+use Swoft\Task\Task;
+
+/**
+ * Class OrderListener
+ * @Listener("order.*")
+ * 第③步打上 Listener注解，并命名事件
+ */
+class OrderListener implements EventHandlerInterface  // 第②步，定义类 并且 继承 EventHandlerInterface; 再 Alt + 回车键 引入handle接口方法
+{
+    /**
+     * @param EventInterface $event
+     */
+    public function handle(EventInterface $event): void
+    {
+        // TODO: Implement handle() method.
+		//第⑤步监听事件，打印参数
+        print_r($event);
+        //$event->getName()事件名字
+		//$event->getTarget()事件标识(来源) --常用"控制器.方法"来命名来追寻来源
+        //$event->getParams()获取所有参数
+
+        //$event->getParam(0) //索引数组传递
+        //$event->getParam('name') //关联数组传递
+    }
+    /** 第五步可以不实现代码，可由第六步，事件消费实现具体业务 */
+}
 ```
 
+手动触发事件
 
+```php
+<?php declare(strict_types=1);
+
+namespace App\Http\Controller;
+
+use Swoft\Http\Server\Annotation\Mapping\Controller;
+use Swoft\Http\Server\Annotation\Mapping\RequestMapping;
+
+/**
+ * @Controller()
+ */
+class IndexController {
+    /**
+     * @RequestMapping(route="/index")
+     */
+    public function index() {
+        //第④步，手动触发事件
+        \Swoft::trigger('order.setInc',null,$goods_id=1254,$number=8);//索引传不定参
+        \Swoft::triggerByArray('order.setDec',null,['name'=>'chenglh','age'=>19]);
+        //数组传参
+    }
+}
+```
+
+事件分组：
+
+OrderListener的事件处理里面可以通过$event->getName获取到具体名字，@Listener("order.*")使用 * 来监听所有 order前缀开头的事件。
+
+> 事件名称建议放置在一个专用类的常量中，方便进行管理和维护。
+
+```php
+# mkdir app/Constant
+# vi app/Constant/EventConstants.php
+
+<?php
+namespace App\Constant;
+
+/**
+ * 自定义事件名称类
+ * @package App\Constant
+ */
+class EventConstants
+{
+    /** 订单事件 */
+    const ORDER_SETINC = 'order.setInc';
+    const ORDER_SETDEC = 'order.setDec';
+    
+    /** 用户事件 */
+    ......
+}
+```
+
+```php
+# 手动触发事件
+<?php declare(strict_types=1);
+
+namespace App\Http\Controller;
+
+use App\Constant\EventConstants;
+use Swoft\Http\Server\Annotation\Mapping\Controller;
+use Swoft\Http\Server\Annotation\Mapping\RequestMapping;
+
+/**
+ * @Controller()
+ */
+class IndexController {
+    /**
+     * @RequestMapping(route="/index")
+     */
+    public function index() {
+        //手动触发事件
+        \Swoft::triggerByArray(EventConstants::ORDER_SETINC,null,['name'=>'chenglh','age'=>19]);
+        \Swoft::triggerByArray(EventConstants::ORDER_SETDEC,null,['name'=>'chenglh','age'=>20]);
+    }
+}
+```
+
+```php
+<?php declare(strict_types=1);
+namespace App\Listener;
+
+use Swoft\Event\Annotation\Mapping\Listener;
+use Swoft\Event\EventHandlerInterface;
+use Swoft\Event\EventInterface;
+
+/**
+ * Class OrderListener
+ * @Listener("order.*")
+ */
+class OrderListener implements EventHandlerInterface
+{
+    /**
+     * @param EventInterface $event
+     */
+    public function handle(EventInterface $event): void
+    {
+        // TODO: Implement handle() method.
+    }
+}
+```
+
+事件消费者
+
+```php
+<?php
+namespace App\Event;// 第一步 命名空间
+
+use App\Constant\EventConstants;
+use Swoft\Event\Annotation\Mapping\Subscriber;
+use Swoft\Event\EventInterface;
+use Swoft\Event\EventSubscriberInterface;
+use Swoft\Event\Listener\ListenerPriority;
+
+/**
+ * Class OrderSubscriber
+ * @Subscriber()  第三步  打上Subscriber注解
+ */
+//第二步  定义类，并继承 EventSubscriberInterface
+class OrderSubscriber implements EventSubscriberInterface
+{
+    //#public const EVENT_INC = 'order.setInc';
+    //#public const EVENT_DEC = 'order.setDec';
+
+    /**
+     * @return array
+     * [
+     *  'event name' => 'handler method'
+     *  'event name' => ['handler method', ListenerPriority::HIGH]
+     * ]
+     */
+    public static function getSubscribedEvents(): array
+    {
+        /*return [
+            self::EVENT_INC => 'stockSetInc',
+            self::EVENT_DEC => 'stockSetDec',
+        ];*/
+        return [
+            EventConstants::ORDER_SETINC => 'stockSetInc',
+            EventConstants::ORDER_SETDEC => 'stockSetDec',
+        ];
+    }
+
+    public function stockSetInc(EventInterface $evt): void
+    {
+        print_r($evt);
+        echo "库存自增",$evt->getParam('age'),PHP_EOL;
+    }
+
+    public function stockSetDec(EventInterface $evt): void
+    {
+        print_r($evt);
+        echo "库存自减:",$evt->getParam('age'),PHP_EOL;
+    }
+}
+//具体业务可以使用 “注入” 对应模块来实现
+```
 
 
 
 ###### 2.6 Swoft命令行
 
+```php
+#命令行模式
+# php ./bin/swoft -h
+Available Commands:
+  agent      
+  app        
+  dclient    
+  demo       
+  dinfo      
+  dtool      
+  entity     //实体类
+  http       //http Server启动、重启、关闭
+  migrate    
+  process    
+  rpc        
+  tcp        
+  test       
+  ws     
+# php ./bin/swoft  http    //http相关命令
+reload
+restart
+start
+stop 
+```
+
+```php
+#下一级命令帮忙信息
+# php ./bin/swoft app
+  bean        //Bean容器里的实例
+  components  
+  http-routes //http路由
+  init        
+  tcp-routes  
+  ws-routes
+# php ./bin/swoft app:http-routes
+```
+
 
 
 ###### 2.7 Swoft开发者工具
 
+开发者工具
+
+**Swoft CLI**是一个独立的命令行应用，提供了一些内置的功能方便开发者使用：
+
+- 生成 Swoft 应用类文件，例如：HTTP 控制器，WebSocket 模块类等
+- 监视用户Swoft 项目的文件更改并自动重新启动服务器
+- 快速创建新应用或组件
+- 将一个 Swoft 应用打包成 **Phar** 包
 
 
 
+下载 **swoftcli.phar**包
 
+> \# cd  /data/wwwroot/www.chenglh.com/
+>
+> \# wget https://github.com/swoft-cloud/swoft-cli/releases/download/{VERSION}/swoftcli.phar
 
+* 注意：｛VERSION｝ 替换成最新版本，版本号在如下链接找
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-###### 配置数据库
+  https://github.com/swoft-cloud/swoft-cli/releases
 
 ```php
-配置文件：app/bean.php
+##检查包是否可用，打印版本信息
+# php swoftcli.phar -V
+PHP: 7.4.0, Swoft: 2.0.9, Swoole: 4.5.1
+
+##显示帮助信息
+#php swoftcli.phar -h
+  client         
+  gen            
+  new            
+  phar           
+  self-update    
+  serve          
+  system         
+```
+
+**常用命令**
+
+```php
+# php swoftcli.phar gen
+  cli-command     
+  crontab         		//计划任务
+  http-controller 		//创建控制器(alias: ctrl, http-ctrl)
+  http-middleware 		//创建中间件(alias: http-mdl, httpmdl, http-middle)
+  listener        		//监听器
+  process         		//自定义进程
+  rpc-controller  
+  rpc-middleware  
+  task            		//任务投递
+  tcp-controller  
+  tcp-middleware  
+  ws-controller   
+  ws-middleware   
+  ws-module       
+```
+
+
+
+> 1、命令行创建控制器
+
+```php
+# php swoftcli.phar gen:http-ctrl users @app/Http/Controller/Manager -n App\\Http\\Controller\\Manager --prefix /users
+```
+
+
+
+> 2、生成中间件
+
+```php
+# php swoftcli.phar gen:http-mdl
+Please input class name(no suffix and ext. eg. test): Api
+Target File: app/Http/Middleware/ApiMiddleware.php
+```
+
+
+
+> 3、生成实体类
+
+```php
+# php ./bin/swoft entity:create -d user --remove_prefix=hx_
+```
+
+
+
+##### 第三章 Swoft基本使用
+
+###### 3.1 控制器
+
+Swoft适用于微服务，但是也是一个MVC框架，也能用来开发web和api接口。
+
+```php
+##创建控制器
+# php swoftcli.phar gen:http-ctrl users @app/Http/Controller/Manager -n App\\Http\\Controller\\Manager --prefix /users
+```
+
+> **控制器注解**
+
+* @Controller：声明控制器
+
+     	prefix：路由前缀
+
+* @RequestMapping：路由
+
+    	 route：路由地址(如果 "/" 开头即是重写路由)
+
+   	  method：接受的请求方式(method={RequestMethod::GET，RequestMethod::POST})
+
+* @View：模板
+
+  ​	   template：模版静态文件
+
+    	 layout：模版布局
+
+* @Middleware：单个中间件
+
+* @Middlewares：多个中间件
+
+* @Inject：注入
+        name：bean容器名称
+
+  
+  
+
+###### 3.2 中间件
+
+
+
+
+
+###### 3.3 数据库
+
+
+
+```php
+##配置文件：app/bean.php
 'db' => [
     'class'    => Database::class,
     'dsn'      => 'mysql:dbname=tswoft;host=127.0.0.1',
@@ -486,8 +822,15 @@ class User{
     'charset'  => 'utf8mb4',
 ],
 'db.pool' => [
-    'class'    => Pool::class,
+    'class'     => Pool::class,
     'database'  => bean('db'), //连接池要与上面的key对应
 ],
 ```
 
+
+
+###### 3.4 验证器
+
+
+
+###### 
