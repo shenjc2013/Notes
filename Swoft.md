@@ -799,18 +799,361 @@ Swoft适用于微服务，但是也是一个MVC框架，也能用来开发web和
 * @Inject：注入
         name：bean容器名称
 
-  
-  
+>  注意事项：
+>
+>  不要在控制器基类来写公共的变量，这样易造成数据污染，第二个人进来依然会请求到这个变量。
+>
+>  因为常驻内存并且为单例，所以不会被释放掉，容易造成内存泄漏，程序会跑着跑着就“崩溃”了
 
-###### 3.2 中间件
+```php
+##错误写法##
+/**
+ * @Controller()
+ */
+class BaseController {
+    protected $num;
+    protected $arr;
+}
+
+/**
+ * @Controller(prefix="/v1/index")
+ */
+class IndexController extends BaseController {
+    /**
+     * @RequestMapping(route="index")
+     */
+    public function index(Request $request) {
+        //$this->num++;
+        //echo $this->num."\n"; 并发进来数字会一直累加
+        $this->num++;
+        $this->arr[$this->num] = $request;
+        return $this->arr; //内存泄漏
+    }
+}
+```
+
+
+
+###### 3.2 Http对象
+
+**请求 Request 与响应 Response **
+
+请求与响应对象存在于每次 HTTP请求
+
+**Request    ：Http请求对象，Swoft\Http\Message\Request;
+Response ： Http响应对象，Swoft\Http\Message\Response;**
+
+
+
+> 获取请求对象
+>
+> 方法一：通过控制器方法注入，public function action(Request $request)
+>
+> 方法二：通过上下文环境获取，Context::get()->getRequest()
+
+
+
+**调用 Request 对象方法**
+
+- query		获取get参数
+- post          获取post参数
+- input         获取get、post参数(通用方法)
+- <u>无需关心 json、xml请求，会自动解析为php的数组，通过以上三种方式获取</u>
+- raw	       获取raw数据(postman的数据格式)   $data = $request->raw();
+- server       获取server数据
+- getUploadedFiles      获取上传文件
+
+
+
+表单提交的格式：**form-data、x-www-form-urlencoded、raw、binary类型**
+
+| 格式                  | 说明                                                         |
+| --------------------- | ------------------------------------------------------------ |
+| form-data             | 以标签为单元，用分隔符分开；如key:value格式，属性multipart/form-data可以上传文件 |
+| x-www-form-urlencoded | 将表单内的数据转换为键值对,如：name=leyangjun&age =28        |
+| raw                   | 可上传任意格式的文本，可以上传text、json、xml、html等各种文本类型 |
+| binary                | 等同于Content-Type:application/octet-stream，只可上传二进制数据 |
+
+**接受http请求对象**
+
+打印请求头信息
+
+```php
+public function get2(Request $request) {
+    $headers = $request->getHeaders();
+    foreach ($headers as $name => $values) {
+       echo $name . ": " . implode(", ", $values).PHP_EOL;
+    }
+    echo $request->header('Host');
+}
+```
+
+打印 SERVER 数据
+
+```php
+$data = $request->getServerParams();
+/** 常用的
+ * [request_method] => GET
+ * [request_uri] => /users/get2
+ * [path_info] => /users/get2
+ * [remote_addr] => 192.168.211.1
+ */
+$remote_addr = $request->server('remote_addr', '');//客户端IP地址
+```
+
+获取 GET/POST 数据
+
+```php
+<?php declare(strict_types=1);
+
+namespace App\Http\Controller\Manager;
+
+use Swoft\Http\Message\Request;
+use Swoft\Http\Message\Response;
+use Swoft\Http\Server\Annotation\Mapping\Controller;
+use Swoft\Http\Server\Annotation\Mapping\RequestMapping;
+use Swoft\Http\Server\Annotation\Mapping\RequestMethod;
+use Swoft\Context\Context;
+
+/**
+ * Class UsersController
+ * @Controller(prefix="/users")
+ */
+class UsersController {
+    /**
+     * @RequestMapping(route="get",method={RequestMethod::GET})
+     * 访问方式：http://www.chenglh.com:18306/users/get?name=chenglh&age=19
+     */
+    public function get(Request $request) {
+        //$getData = $request->get();
+        //$getName = $request->get('name', 'default');
+
+        $getData = $request->query();
+        $getName = $request->query('name', '');
+        return ['getData'=>$getData, 'getName'=>$getName];
+    }
+
+    /**
+     * @RequestMapping(route="get1",method={RequestMethod::GET})
+     * 访问方式：http://www.chenglh.com:18306/users/get1?name=chenglh&age=20
+     * 使用命名空间：Swoft\Context\Context
+     */
+    public function get1() {
+        $request = Context::get()->getRequest();
+        $getData = $request->get();
+        $getName = $request->get('name', 'default');
+        return ['getData'=>$getData, 'getName'=>$getName];
+    }
+
+    /**
+     * @RequestMapping(route="post",method={RequestMethod::POST})
+     * 访问方式：http://www.chenglh.com:18306/users/post
+     */
+    public function post(Request $request) {
+        $getData = $request->post();
+        $getName = $request->post('name', '');
+        return ['getData'=>$getData, 'getName'=>$getName];
+    }
+}
+```
+
+获取上传文件
+
+```php
+$file = $request->getUploadedFiles();
+```
+
+```php
+##辅助方法
+$request->isAjax()
+$request->isGet()
+$request->isPost()
+$request->isPut()
+......
+```
+
+
+
+**调用 Response 对象方法**
+
+> 获取响应对象
+>
+> 方法一：通过控制器方法参数注入 (Response $response)
+>
+> 方法二：通过请求上下文获取 context()->getResponse()
+
+```php
+#设置响应状态
+return $response->withStatus(404);
+
+#输出字符串
+return $response->withContent("Hello Swoft2.0");
+
+#输出数组
+return $response->withData(['name'=>'Swoft2.0']);
+
+#重定向
+return $response->redirect("http://www.swoft.org");
+
+#设置响应头信息
+$response->withHeader('Access-Control-Allow-Origin', 'http://mysite')
+```
+
+
+
+
+###### 3.3 中间件
+
+在请求到达控制器之前对参数进行过滤、权限校验、数据初始等操作；在数据返回给用户之前，可以进行数据更改、日志记录等操作。
+
+<img src="H:\笔记本\Swoft.assets\image-20200603161456230.png" alt="image-20200603161456230" style="float:left;" />
+
+
+
+> 命令行生成中间件
+
+```php
+# php swoftcli.phar gen:http-mdl
+Please input class name(no suffix and ext. eg. test): Api
+Target File: app/Http/Middleware/ApiMiddleware.php
+```
+
+
+
+> 设置全局中间件，在 app/bean.php 
+
+```php
+'httpDispatcher'    => [
+     // Add global http middleware
+     'middlewares'      => [
+         //\App\Http\Middleware\FavIconMiddleware::class,
+         \App\Http\Middleware\ApiMiddleware::class, //全局中间件
+         ......
+```
+
+**注意：设置全局中间件，不需要在控制器中单独引入。**
+
+
+
+> 中间件注解使用
+
+* @Middleware：单个中间件(如果写多个@Middleware会覆盖上面的，只有一个生效)
+* @Middlewares：使用多个中间件
+
+
+
+@Middleware 对应的注解类：Swoft\Http\Server\Annotation\Mapping\Middleware
+
+@Middlewares 对应的注解类：Swoft\Http\Server\Annotation\Mapping\Middlewares
+
+
+
+创建用户认证中间件，先移出bean.php中的全局中间件：ApiMiddleware
+
+```php
+# php swoftcli.phar gen:http-mdl
+Please input class name(no suffix and ext. eg. test): Auth
+Target File: app/Http/Middleware/AuthMiddleware.php
+```
+
+
+
+中间件使用
+
+```php
+##单个中间件：
+@Middleware(ApiMiddleware::class)
+
+##多个中间件：
+@Middlewares({
+	@Middleware(ApiMiddleware::class),
+	@Middleware(AuthMiddleware::class)
+})
+
+##控制器代码
+/**
+ * @RequestMapping(route="get2",method={RequestMethod::POST})
+ * @Middlewares({
+ *     @Middleware(ApiMiddleware::class),
+ *     @Middleware(AuthMiddleware::class)
+ * })
+ */
+ public function get2(Request $request) {
+    echo "控制器controller",PHP_EOL;
+    return "test";
+ }
+```
+
+
+
+中间件流程信息
+
+> 全局中间件before request handle
+> Auth中间件before request handle
+> 控制器controller
+> Auth中间件after request handle
+> 全局中间件before request handle
+
+
+
+###### 3.4 集成jwt
+
+> 什么是jwt
+
+传统的session、cookie模式需要服务端保存session文件，如果多机器部署，那么session共享就会成为一个问题，我们可以使用redis来实现分布式的session共享。
+
+`jwt`全称 Json Web Token现在比较流行的一种身份验证方式，服务器不需要保存任何文件，所有的信息都存在一个字符串中，请求接口的时候在header携带上这个token，接口去解析这个token获取到响应的数据。
+
+
+
+> JWT由三个部分组成
+
+1. JWT头
+2. 有效载荷
+3. 签名
+
+
+
+第一步：安装JWT组件
+
+```php
+# composer require firebase/php-jwt
+```
+
+第二步：新建 jwt 配置文件
+
+~~~php
+# vi ./config/jwt.php
+<?php
+return [
+    //*****github上面*****
+    'privateKey' => 'xxxxxxxxx',
+    'publicKey'  => 'xxxxxxxxx',
+];
+~~~
+
+
+
+> 手动生成openssl 生成证书
+
+```php
+##检查是否安装openssl
+# openssl version -a
+
+
+```
+
+
+
+https://www.ahwgs.cn/openssl-key.html
 
 
 
 
 
-###### 3.3 数据库
 
 
+###### 
 
 ```php
 ##配置文件：app/bean.php
@@ -829,8 +1172,17 @@ Swoft适用于微服务，但是也是一个MVC框架，也能用来开发web和
 
 
 
-###### 3.4 验证器
+###### 3.5 验证器
 
 
 
-###### 
+###### 3.6 异常类
+
+
+
+###### 3.7 Redis操作
+
+
+
+###### 3.8 消息队列
+
