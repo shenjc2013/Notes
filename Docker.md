@@ -6,33 +6,33 @@
 
 > (1) Docker是什么？
 
+​       Docker是一个开源的应用容器引擎，基于Go语言，并遵从Apache2.0协议开源；容器是完全使用沙箱机制，相互之间不会有任何接口，且性能开销极低；Docker从17.03版本之后分为CE(社区版)和EE(企业版)
+
 ```php
-#官方官网
+##官方官网
 https://www.docker.com
 
-#文档链接
+##文档链接
 https://docs.docker.com
 
-#仓库地址
+##镜像仓库
 https://hub.docker.com
-
-Docker是一个开源的应用容器引擎，基于Go语言，并遵从Apache2.0协议开源；
-容器是完全使用沙箱机制，相互之间不会有任何接口，且性能开销极低；
-Docker从17.03版本之后分为CE(社区版)和EE(企业版)
 ```
+
+
 
 > (2) Docker架构原理
 
-```bash
-#Docker三要素：镜像、容器、仓库
+**Docker三要素：镜像、容器、仓库**
 
-1、镜像
+```php
+#1、镜像
 Docker镜像(Image)就是一个"只读"的模板，它可以是一个可运行软件(nginx、tomcat、mysql等)，也可以是一个系统(centos)。一个镜像可以用创建多个Docker容器(如：一个类可以创建多个对象)
 
-2、容器
+#2、容器
 Docker利用容器(Container)独立运行的一个或一组应用，容器可以启动、开始、停止、删除等；每个容器都是相互隔离的、保证安全的平台
 
-3、仓库
+#3、仓库
 仓库(Repository)是集中存放镜像文件的场所，类似GitHub存放项目代码一样
 Docker Hub仓库地址(https://hub.docker.com)
 ```
@@ -41,10 +41,12 @@ Docker Hub仓库地址(https://hub.docker.com)
 //Docker是 C/S 结构
 //Docker deamon守护进程,接收命令创建一个个镜像容器(如：nginx、mysql、php、redis等)
 //容器相当于New一个镜像对象
-//第三个图是一个远程镜像仓库(DockerHub)
+//第三个图是拉取远程镜像仓库(DockerHub)
 ~~~
 
 <img src="H:\笔记本\Docker.assets\image-20200519114638987.png" alt="image-20200519114638987" style="zoom:120%;float:left;" />
+
+
 
 > (3) Docker有什么用？
 
@@ -53,6 +55,8 @@ Docker Hub仓库地址(https://hub.docker.com)
 2、大大简化运维工作量
 3、微服务利器
 ~~~
+
+
 
 > Docker容器与虚拟机区别？
 
@@ -87,11 +91,11 @@ Docker Engine //新一代虚拟化技术，不需要包含单独的操作系统(
 
 ###### 1.2 软件安装
 
-> #官网安装文档
+> #docker安装文档
 > https://docs.docker.com/engine/install/
 
 ```php
-# Docker安装步骤
+##Docker安装步骤##
 
 //根据官网的步骤一步步安装
 https://docs.docker.com/engine/install/ubuntu/
@@ -318,18 +322,19 @@ $ docker rm -f $(docker ps -qa)    //删除所有容器,-a所有容器，-q显�
 > (1)、启动交互式容器：$ docker run -it --name 别名  镜像ID
 >
 > (2)、守护式创建并启动容器： $ docker run -di --name 别名 镜像ID
+
+> 参数说明：
 >
-> > --name  指定别名
-> > -i    以交互模式运行容器
-> >
-> > -t   为容器分配一个伪终端
-> >
-> > -d   后台运行容器并返回容器ID
-> > -P  随机生成一个端口映射，容器内部端口随机映射到主机的端口
-> > -p 指定端口映射，格式   宿主端口:容器端口
+> --name  指定别名
+> -i    		以交互模式运行容器
+> -t   		 为容器分配一个伪终端
+> -d   		后台运行容器并返回容器ID
+> -P  		 随机生成一个端口映射，容器内部端口随机映射到主机的端口
+> -p 		  指定端口映射，格式   宿主端口:容器端口
 
 
-Docker容器宿主机端口映射
+
+**Docker容器宿主机端口映射**
 
 ```php
 //启动容器，并执行 /bin/bash命令

@@ -1086,13 +1086,37 @@ Target File: app/Http/Middleware/AuthMiddleware.php
 
 
 
-中间件流程信息
+中间件流程打印结果
 
 > 全局中间件before request handle
 > Auth中间件before request handle
 > 控制器controller
 > Auth中间件after request handle
 > 全局中间件before request handle
+
+
+
+中间件解决跨域设置
+
+~~~php
+public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
+    {
+        if ('OPTIONS' === $request->getMethod()) {
+            $response = Context::mustGet()->getResponse();
+            return $this->configResponse($response);
+        }
+        $response = $handler->handle($request);
+        return $this->configResponse($response);
+    }
+
+    private function configResponse(ResponseInterface $response)
+    {
+        return $response
+            ->withHeader('Access-Control-Allow-Origin', 'http://mysite')
+            ->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization')
+            ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+    }
+~~~
 
 
 
@@ -1114,40 +1138,358 @@ Target File: app/Http/Middleware/AuthMiddleware.php
 
 
 
-第一步：安装JWT组件
+参考文章
+
+```
+https://blog.csdn.net/cjs5202001/article/details/80228937
+```
+
+
+
+> 第一步：安装JWT组件
+
+在composer官网上搜索查找  firebase/php-jwt，可以去到 github 仓库
 
 ```php
 # composer require firebase/php-jwt
 ```
 
-第二步：新建 jwt 配置文件
+
+
+> 第二步：新建 jwt 配置文件
 
 ~~~php
 # vi ./config/jwt.php
 <?php
+
 return [
-    //*****github上面*****
-    'privateKey' => 'xxxxxxxxx',
-    'publicKey'  => 'xxxxxxxxx',
+    //*****自己生成openssl*****
+    'privateKey' => '-----BEGIN RSA PRIVATE KEY-----
+MIICXQIBAAKBgQDa+rOwz+O7MjpLcsa6bMN58FG3I7LnhYQ5HvqPDUiB+j+cNQFf
+m+wVMZUi20EiRhKsMjM/8gx+0wAsGK6bcoOfbEiXjp413PyCMMnaprt9I4gNmeAQ
+cB1hSfEfbcDCbVG2IMOMGnvRx36naydDWdLXHse6yJK9a0RRxpS3aNCRyQIDAQAB
+AoGBAJGQZ9SYTS0KFYBD+uDAHi032Eoim/GVarDB7BMd5F4qqRBAl/ojXwszm4zB
+LQoIhK8c676NO0svHgUyHxfMRrt/KzFL9vzN7AWMpGh3x4U10HTfT4uu9oyRdJvh
+3yr4iWhDoQk7V0VMVjBFQjoCgzZVA1cKmqLKXPQyI0t6thQBAkEA9lo9P16dYaBe
+FWAro8PAgQvuSCFUVMY+mHGSvr358a9ie+cbh9fCd4Gge+6+JHcgQaKTcFaCTxIK
+mccdFgTFSQJBAOOOCbEmwgoYgJiE3dyvEKPWnmyvcdtntZmpu7zv9lxbuvXhpZ2h
+5kNZ/fn0LXunpIFKAmadzd1B0Uda6vOn6IECQEUqUMfZ6JXgUInv1lDEROf2UZAu
+y16BylFCkdC7xdD1TNE8sZ4SFac33bbt8LSMPaIv4vVHVI6eohtKq//ilwECQQCL
+D1gY7GiUJtkfW8MBg/KVTSjPnn/j5wLxfup90d8qHdypOlYteKzw5+PvhirtcEt1
+vzasYy9VUU2FX6hJcokBAkAaIW9MaZnud3fQ+tsOGW6bUZeyJTDWXkCi9gpPHG+n
+Whqlzml7k03kt5zzSsPwRuba4iiAewyieIHPW17DjJPa
+-----END RSA PRIVATE KEY-----',
+    'publicKey'  => '-----BEGIN PUBLIC KEY-----
+MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDa+rOwz+O7MjpLcsa6bMN58FG3
+I7LnhYQ5HvqPDUiB+j+cNQFfm+wVMZUi20EiRhKsMjM/8gx+0wAsGK6bcoOfbEiX
+jp413PyCMMnaprt9I4gNmeAQcB1hSfEfbcDCbVG2IMOMGnvRx36naydDWdLXHse6
+yJK9a0RRxpS3aNCRyQIDAQAB
+-----END PUBLIC KEY-----',
+    'type' => 'RS256'
 ];
 ~~~
 
 
 
-> 手动生成openssl 生成证书
+> 第三步：创建认证控制器，签发Token
 
 ```php
-##检查是否安装openssl
-# openssl version -a
+# php swoftcli.phar gen:http-ctrl account @app/Http/Controller/Manager -n App\\Http\\Controller\\Manager --prefix /account
 
+##验证登录，生成token
+# vi ./app/Http/Controller/Manager/AccountCtroller.php
 
+<?php declare(strict_types=1);
+namespace App\Http\Controller\Manager;
+
+use Firebase\JWT\JWT;
+use Swoft\Http\Message\ContentType;
+use Swoft\Http\Server\Annotation\Mapping\Controller;
+use Swoft\Http\Server\Annotation\Mapping\RequestMapping;
+use Swoft\Http\Server\Annotation\Mapping\RequestMethod;
+use Swoft\Http\Message\Request;
+use Swoft\Http\Message\Response;
+
+/**
+ * Class AccountController
+ * @Controller(prefix="/account")
+ */
+class AccountController
+{
+    /**
+     * 用户登录
+     * @RequestMapping(route="login",method={RequestMethod::POST})
+     */
+    public function login(Request $request, Response $response) : Response {
+        $payload = array(
+            "iss" => "http://www.example.com",//签发者可选
+            "aud" => "http://www.example.com",//接收方可选
+            "iat" => time(),//签发时间
+            //"nbf" => time(),//某个时间点后才能访问 如time() + 10 ，10秒后才生效
+            //"exp" => time() + 7200,//过期时间，设置2个小时
+            "user" => [
+                "user_id" => 10001,
+                "user_name" => 'chenglh',
+                "age" => 18,
+            ],
+        );
+
+       $token = JWT::encode($payload, \config('jwt.privateKey'), \config('jwt.type'));
+        $result = [
+            'code' => 200,
+            'message' => '请求成功',
+            'data' => [
+                'token'=>$token
+            ]
+        ];
+
+        return $response->withContentType(ContentType::JSON)->withData($result);
+    }
+}
 ```
 
 
 
-https://www.ahwgs.cn/openssl-key.html
+> 第四步：写入header头信息
+
+通过方法登录接口：http://www.chenglh.com:18306/account/login
+获取 token值
+
+~~~json
+{
+    "code": 200,
+    "message": "请求成功",
+    "data": {
+        "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJodHRwOlwvXC93d3cuZXhhbXBsZS5jb20iLCJhdWQiOiJodHRwOlwvXC93d3cuZXhhbXBsZS5jb20iLCJpYXQiOjE1OTEyNTU1NjMsInVzZXIiOnsidXNlcl9pZCI6MTAwMDEsInVzZXJfbmFtZSI6ImNoZW5nbGgiLCJhZ2UiOjE4fX0.GlbspQ6RibWP4Mdt8Dd_-lS3BeW72utIYh-7ZhJTEpsZiZlZXRUKIMz2mcgck4viHTXLxRFlhHy4MQ1kBTzl3cUEKdnPldX2T9_8zd-2I3IJ3aOvK_6qiGzfPhgCTEQMJyKcWXNawdF_OWaxq7yHHS_bf9xtZ12PB9HjCuzkuJE"
+    }
+}
+~~~
+
+将 token值写入头信息，如下图所示：
+
+![image-20200604152945508](H:\笔记本\Swoft.assets\image-20200604152945508.png)
 
 
+
+> 第五步：Token解密
+
+1、获取 token ，    $token = $request->getHeaderLine('token');
+2、解密数据，        $auth = JWT::decode($token, \config('jwt.publicKey'), [\config('jwt.type')]);
+3、把用户信息设置到httpRequest对象中，$request->user = $auth->user;
+
+```php
+# vi ./app/Http/Middleware/AuthMiddleware.php
+
+<?php declare(strict_types=1);
+namespace App\Http\Middleware;
+
+use Firebase\JWT\JWT;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\RequestHandlerInterface;
+use Swoft\Bean\Annotation\Mapping\Bean;
+use Swoft\Context\Context;
+use Swoft\Exception\SwoftException;
+use Swoft\Http\Message\ContentType;
+use Swoft\Http\Message\Request;
+use Swoft\Http\Server\Contract\MiddlewareInterface;
+use function context;
+
+/**
+ * Class AuthMiddleware - Custom middleware
+ * @Bean()
+ * @package App\Http\Middleware
+ */
+class AuthMiddleware implements MiddlewareInterface
+{
+   /**
+     * Process an incoming server request.
+     * @param ServerRequestInterface|Request  $request
+     * @param RequestHandlerInterface $handler
+     * @return ResponseInterface
+     * @throws SwoftException
+     * @inheritdoc
+     */
+    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
+    {
+        // before request handle
+        $token = $request->getHeaderLine('token');
+        try {
+            $auth = JWT::decode($token, \config('jwt.publicKey'), [\config('jwt.type')]);
+            $request->user = $auth->user; //把用户信息注入到全局变量中
+        } catch (\Exception $e) {
+            $result = ['code'=>101,'msg'=>'授权失败','data'=>null];
+            return \context()->getResponse()->withContentType(ContentType::JSON)->withData($result);
+			/**
+             * /** @var $response \Swoft\Http\Message\Response */
+			 * $response = Context::get()->getResponse();
+			 * $response->withContentType(ContentType::JSON)->withData($result);
+			 */
+        }
+
+        return $handler->handle($request);
+        // after request handle
+    }
+}
+```
+
+
+
+###### 3.5 生成证书
+
+> 手动生成openssl 证书
+
+```php
+##检查是否安装openssl
+# openssl version -a
+```
+
+需要安装openssl(系统一般内置了)
+
+**生成公钥**
+
+~~~php
+# openssl genrsa -out rsa_private_key.pem 1024
+~~~
+
+**生成私钥**
+
+~~~php
+# openssl rsa -in rsa_private_key.pem -pubout -out rsa_public_key.pem
+~~~
+
+**公私钥会生成保存到到当前目录下。**
+
+
+
+###### 3.6 异常处理
+
+> Swoft 的异常处理定义在 app/Exception 目录
+>
+> 如果没有主动拦截异常，系统类自动接管异常类 app/Exception/Handler/HttpExceptionHandler.php
+> 例如：验证器中的异常会被系统自动接管
+
+
+
+**自定义异常类**
+
+第一步：自定义类接管 PHP 系统异常类，不需要任务操作
+
+~~~php
+# vi app/Exception/ApiException.php
+
+<?php declare(strict_types=1);
+namespace App\Exception;
+
+use Exception;
+
+/**
+ * Class ApiException
+ *
+ * @since 2.0
+ */
+class ApiException extends \Exception
+{
+}
+~~~
+
+第二步：自定义处理异常
+
+
+
+
+**主动抛出异常**
+
+```php
+throw new ApiException('接口处理异常');
+```
+
+
+
+###### 3.7 验证器
+
+**系统验证器**
+
+> 1、创建验证器
+
+**打上注解并命名验证器 @Validator(name="login")**
+
+~~~php
+# vi app/Http/Validator/Manager/LoginValidator.php
+
+<?php declare(strict_types=1);
+namespace App\Http\Validator\Manager;
+
+use Swoft\Validator\Annotation\Mapping\IsString;
+use Swoft\Validator\Annotation\Mapping\Length;
+use Swoft\Validator\Annotation\Mapping\Pattern;
+use Swoft\Validator\Annotation\Mapping\Required;
+use Swoft\Validator\Annotation\Mapping\Validator;
+
+/**
+ * Class LoginValidator
+ * @Validator(name="login")
+ */
+class LoginValidator
+{
+    /**
+     * @IsString(message="请正确填写手机号")
+     * @Length(min=11,max=11,message="手机号码长度是11位数字")
+     * @Pattern(regex="/^13[0-9]{1}[0-9]{8}$|^14[57]{1}[0-9]{8}$|^15[^4]{1}[0-9]{8}$|^17[0-9]{1}[0-9]{8}$|^18[0-9]{9}$|^199[0-9]{8}$|^198[0-9]{8}$|^166[0-9]{8}$/",message="手机号码不正确")
+     * @Required()
+     * @var string
+     */
+    protected $mobile = '';
+
+    /**
+     * @IsString(message="短信验证码必须是数字")
+     * @Length(min=4,max=6,message="短信码长度是4-6位")
+     * @Required()
+     */
+    protected $msgcode = '';
+}
+
+~~~
+
+
+
+> 2、使用验证器
+
+**控制器中的方法上打上注解 @Validate(validator="login")**
+
+```php
+<?php declare(strict_types=1);
+namespace App\Http\Controller\Manager;
+
+use Firebase\JWT\JWT;
+use Swoft\Http\Message\Request;
+use Swoft\Http\Message\Response;
+use Swoft\Http\Message\ContentType;
+use Swoft\Validator\Annotation\Mapping\Validate;
+use Swoft\Http\Server\Annotation\Mapping\Controller;
+use Swoft\Http\Server\Annotation\Mapping\RequestMapping;
+use Swoft\Http\Server\Annotation\Mapping\RequestMethod;
+
+/**
+ * Class AccountController
+ * @Controller(prefix="/account")
+ */
+class AccountController
+{
+    /**
+     * 用户登录
+     * @RequestMapping(route="login",method={RequestMethod::POST})
+     * @Validate(validator="login")
+     */
+    public function login(Request $request, Response $response) : Response {
+		//TODO
+    }
+}
+```
+
+
+
+**自定义验证器**
 
 
 
@@ -1172,17 +1514,13 @@ https://www.ahwgs.cn/openssl-key.html
 
 
 
-###### 3.5 验证器
+
+
+###### 3.7 MySQL
+
+###### 3.8 Redis
 
 
 
-###### 3.6 异常类
-
-
-
-###### 3.7 Redis操作
-
-
-
-###### 3.8 消息队列
+###### 3.9 消息队列
 
