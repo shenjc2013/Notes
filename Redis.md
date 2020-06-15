@@ -7,7 +7,7 @@ https://redis.io
 https://github.com/antirez/redis
 ```
 
-------
+
 
 ###### 1.2 NoSQL介绍
 
@@ -21,6 +21,8 @@ NoSQL分类
 文档型数据库，常见：MongoDB
 图形(Graph)数据库，常见：Neo4J
 ```
+
+
 
 ###### 1.3 适用场景
 
@@ -83,7 +85,7 @@ Redis与其他Nosql产品对比
 
 ##### 第二章：Redis基本操作
 
-###### 1.1 软件安装
+###### 2.1 软件安装
 
 ```php
 /** 更新系统环境 */
@@ -110,7 +112,7 @@ Docker下安装
 # docker exec -it redis-6379 redis-cli -a 123456  //进入客户端
 ```
 
-###### 1.2 启动命令
+###### 2.2 启动命令
 
 ```php
 # cd /usr/local/redis/bin/
@@ -132,7 +134,7 @@ redis-server    //启动服务器
 # ps -ef | grep 6379
 ```
 
-###### 1.3 客户端连接
+###### 2.3 客户端连接
 
 ```php
 # /usr/local/redis/bin/redis-cli -v    //查看版本号
@@ -140,16 +142,23 @@ redis-server    //启动服务器
 # ./redis-cli -h IP地址 -p 端口 -a 密码  //默认IP本机，端口6379，无密码
 ```
 
-###### 1.4 远程工具连接
+
+
+###### 2.4 远程工具连接
 
 ```php
-客户端工具访问（下载工具：RedisDesktopManager）
-需要修改配置文件redis.conf，将 bind 127.0.0.1 注释去掉
+1、客户端工具访问（下载工具：RedisDesktopManager）
+
+2、需要修改配置文件redis.conf，将 bind 127.0.0.1 注释去掉
+
+3、开放端口
 # iptables -I INPUT 4 -p tcp -m state --state NEW -m tcp --dport 6379 -j ACCEPT
 # iptables-save > /etc/iptables.up.rules 
 ```
 
-###### 1.5 关闭Redis
+
+
+###### 2.5 关闭Redis
 
 ```php
 1、断电或非正常关闭，容易丢失数据，还没到达触发数据持久化机制
@@ -169,13 +178,15 @@ redis > shutdown
 
 ##### 第三章：Redis配置详解
 
-###### 1.1 配置路径
+###### 3.1 配置路径
 
 ```php
 # cp /home/chenglh/redis-5.0.5/redis.conf  /usr/local/redis/
 ```
 
-###### 1.2 配置解读
+
+
+###### 3.2 配置解读
 
 ```php
 配置文件中大小写不敏感。
@@ -274,7 +285,7 @@ Redis作为优秀的中间件缓存，时常会存储大量的数据，即使采
 #noeviction            【默认】如果设置为该属性，则不会进行删除操作，如果内存溢出则报错返回
 ```
 
-###### 1.3 自定义配置参数
+###### 3.3 自定义配置参数
 
 ```php
 # vim /usr/local/redis/redis.conf
@@ -300,7 +311,7 @@ requirepass  123456
 
 ##### 第四章：Redis命令
 
-###### 1.1 Redis常用命令
+###### 4.1 Redis常用命令
 
 ```php
 用命令管理Redis的键
@@ -327,7 +338,9 @@ flushdb             //清空当前数据库
 flushall            //清空所有数据库
 ```
 
-###### 1.2 Redis应用场景
+
+
+###### 4.2 Redis应用场景
 
 ```
 1. 限时优惠活动
@@ -336,25 +349,29 @@ flushall            //清空所有数据库
 4. 限制网站访客频率（例如：1分钟最多访问10次）
 ```
 
-###### 1.3 Key的命名建议
+
+
+###### 4.3 Key的命名建议
 
 ```
-0. 单个key最大存入数据为512M 大小
-1. key不要太长，尽量不要超过1024字节，这不仅消耗内存，而且会降低查找的效率；
-2. key也不要太短，太短的话，key的可读性会降低；
-3. 在一些项目中，key最好使用统一的命名模式，例如 user:123:passwd
-4. Key的名称需要注意区分大小写
+0、单个key最大存入数据为512M 大小
+1、key不要太长，尽量不要超过1024字节，这不仅消耗内存，而且会降低查找的效率；
+2、key也不要太短，太短的话，key的可读性会降低；
+3、在一些项目中，key最好使用统一的命名模式，例如 user:123:passwd
+4、Key的名称需要注意区分大小写
 ```
+
+
 
 ##### 第五章：Redis数据类型
 
-###### 1.1 String字符串
+###### 5.1 String字符串
 
-​      String类型是二进制安全的，即在传输数据时，信息安全，也就是不被篡改、破译等，如果被攻击，能够即时检测出来，String具有如下特点：
+String类型是二进制安全的，即在传输数据时，信息安全，也就是不被篡改、破译等，如果被攻击，能够即时检测出来，String具有如下特点：
 
-1. 编码、解码发生在客户端完成，执行效率高
-
-2. 不需要频繁的编解码，不会出现乱码
+> 1. 编码、解码发生在客户端完成，执行效率高
+>
+> 2. 不需要频繁的编解码，不会出现乱码
 
 ```php
 #赋值
@@ -385,7 +402,7 @@ APPEND KEY VALUE
 
 
 
-###### 1.2 Hash类型
+###### 5.2 Hash类型
 
 ```php
 Hash介绍：
@@ -438,7 +455,7 @@ HEXISTS KEY field               //判断KEY字段是否存在
 
 
 
-###### 1.3 List类型
+###### 5.3 List类型
 
 ```php
 List介绍：
@@ -494,7 +511,7 @@ BRPOPLPUSH source destination timeout //监听列表移除并插入，如果列�
 
 
 
-###### 1.4  Set类型
+###### 5.4  Set类型
 
 ```
 简介：
@@ -538,7 +555,7 @@ SUNIONSTORE destincation key1 [key2]  //求并集并存储起来
 
 
 
-###### 1.5 Zset类型
+###### 5.5 Zset类型
 
 ```php
 简介
@@ -617,9 +634,11 @@ ZREMRANGEBYSCORE KEY min max   //移除KEY下指定分数范围内的成员
 来倒序获取工作任务。让重要的事情优先执行。
 ```
 
-###### 1.6 特殊类型
 
-geospatial地址位置
+
+###### 5.6 特殊类型(地理/基数/位图)
+
+**geospatial地址位置**
 
 ```bash
 朋友的定位，附近的人，打车距离计算?
@@ -661,10 +680,11 @@ GEORADIUS KEY longitude latitude radius [unit] [WITHCOORD] [WITHDIST] [WITHHASH]
 1) "16002"
 2) "10906"
 127.0.0.1:6379> GEORADIUS china:city 113.2 23.1 5 km withdist
-1) 1) "16002"
+1) 1) "16002"  //用户id
    2) "1.8373" //距离km
 2) 1) "10906"
    2) "4.7304"
+
 GEORADIUSBYMEMBER KEY member radius m|km|ft|mi [WITHCOORD] [WITHDIST] [WITHHASH] [COUNT count]  //找出位于指定元素周围的其他元素
 127.0.0.1:6379> GEORADIUSBYMEMBER china:city 12001 1 km
 1) "12001"
@@ -679,6 +699,7 @@ GEORADIUSBYMEMBER KEY member radius m|km|ft|mi [WITHCOORD] [WITHDIST] [WITHHASH]
 4) "12001"
 5) "10021"
 6) "10099"
+
 #如果要清除位置退出附近功能
 127.0.0.1:6379> ZREM china:city 10099    #清除成员
 (integer) 1
@@ -690,7 +711,7 @@ GEORADIUSBYMEMBER KEY member radius m|km|ft|mi [WITHCOORD] [WITHDIST] [WITHHASH]
 5) "10021"
 ```
 
-Hyperloglog基数统计
+**Hyperloglog基数统计**
 
 ```bash
 什么是基数？即不重复的元素
@@ -699,7 +720,7 @@ B{1, 3, 7, 8}
 基数 = 5
 ```
 
-Redis Hyperloglog基数统计的算法！
+**Redis Hyperloglog基数统计的算法！**
 
 优点：占用的内存是固定，2^64不同的元素的技术，只需要12KB内存空间
 
@@ -731,7 +752,7 @@ OK
 (integer) 10
 ```
 
-Bitmap位图
+**Bitmap位图**
 
 ```php
 位存储
@@ -773,21 +794,23 @@ BITCOUNT KEY [start end]    //统计KEY
 (integer) 4
 ```
 
+
+
 ##### 第六章：Redis其他功能
 
-###### 1.1 Redis事务
+###### 6.1 Redis事务
 
 ```
 Redis事务本质：一组命令的集合！一个事务中的所有命令都会被序列化，在事务执行过程中，会按照顺序执行！
 一次性、顺序性、排他性！执行一些命令
 ------ 队列  set set  set ... 执行-----
 Redis单条命令是具有原子性的，但是事务不保证原子性，事务没有隔离的概念
-所有命令在事务中，并没有直接被执行，只有发起 EXEC命令才执行
+所有命令在事务中，并没有直接被执行，只有发起"EXEC"命令才执行
 
 事务执行的三个阶段
    1、开始事务(multi)
    2、命令入队(.....)
-   3、事务执行(exec) 或 取消事务 DISCARD
+   3、事务执行(exec) 或 取消事务(DISCARD)
 ```
 
 ```php
@@ -820,10 +843,8 @@ QUEUED
 127.0.0.1:6379> exec
 ```
 
-```
-悲观锁：很悲观，认为什么时候都会出问题，无论做什么都会加锁！消耗系统性能
-乐观锁：很乐观，认为什么时候都不会出问题，所有不会上锁！更新数据的时候去判断一下，在此期间是否有人修改过这个数据。
-```
+> 悲观锁：很悲观，认为什么时候都会出问题，无论做什么都会加锁！消耗系统性能
+> 乐观锁：很乐观，认为什么时候都不会出问题，所有不会上锁！更新数据的时候去判断一下，在此期间是否有人修改过这个数据。
 
 ```php
 #Redis监控! watch
@@ -852,13 +873,13 @@ QUEUED
 ##监视一个或多个KEY，如果事务执行提交之前这些KEY被其他会话窗口命令所改动(增、删、改)，那么当前事务将被打断。
 ```
 
-###### 1.2  Redis持久化
+###### 6.2  Redis持久化
 
-1.2.1 持久化之RDB操作
+**6.2.1 持久化之RDB操作**
 
-```
-什么是RDB? Redis DataBase，Redis是内存数据库，需要把数据保存到磁盘。
-```
+> 什么是RDB? Redis DataBase，Redis是内存数据库，需要把数据保存到磁盘。
+
+
 
 ![image-20200510213216616](H:\笔记本\Redis.assets\image-20200510213216616.png)
 
@@ -884,19 +905,17 @@ dbfilename dump.rdb
 dir ./
 ```
 
-```
-触发机制
-```
+> 触发机制
+>
+> 1、配置文件中save的规则满足情况下，会自动触发rdb规则
+>
+> 2、执行 flushall命令，也会触发rdb规则
+>
+> 3、shutdown退出redis，也会产生rdb文件
 
-1、配置文件中save的规则满足情况下，会自动触发rdb规则
 
-2、执行 flushall命令，也会触发rdb规则
 
-3、shutdown退出redis，也会产生rdb文件
-
-```
-如何恢复rdb文件
-```
+**如何恢复rdb文件**
 
 1、只需将rdb文件放入到redis.conf配置的文件目录下
 
@@ -918,11 +937,11 @@ dir ./
 2、fork进程的时候，会占用一定的内存空间
 ```
 
-1.2.1 持久化之AOF操作
 
-```
-是什么? Append  Only File
-```
+
+**6.2.1 持久化之AOF操作**
+
+> 是什么? Append  Only File
 
 ```
 以日志的形式记录每个写操作，将Redis执行过的所有指令记录下来(读操作不记录)，只许追加文件但不可以改写文件，redis启动之初会读取文件重新构建数据。
@@ -969,7 +988,7 @@ aof默认是无限追加写入文件的
 2、AOF运行效率也要比rdb慢
 ```
 
-###### 1.3 Redis发布订阅
+###### 6.3 Redis发布订阅
 
 Redis发布订阅是一种消息通信模式：发送者(pub)发送消息，订阅者(sub)接收消息。微信、微博、关注系统！
 
