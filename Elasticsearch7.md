@@ -2,11 +2,11 @@
 
 ###### 1.1 什么是Elasticsearch？
 
-```
-Elasticsearch，简称es，是一个开源的分布式全文检索引擎，近乎实时的存储、检索数据；
+> Elasticsearch，简称es，是一个开源的分布式全文检索引擎，近乎实时的存储、检索数据；
+>
+> Elasticsearch是一个基于Lucene的搜索服务器。它提供了一个分布式多用户能力的全文搜索引擎，基于RESTful web接口。
 
-Elasticsearch是一个基于Lucene的搜索服务器。它提供了一个分布式多用户能力的全文搜索引擎，基于RESTful web接口。
-```
+
 
 ###### 1.2 Elasticsearch使用案例
 
@@ -18,5 +18,7 @@ Elasticsearch是一个基于Lucene的搜索服务器。它提供了一个分布�
 5、新浪使得ES分片处理32亿条实时日志
 6、阿里使用ES构建挖掘日志采集和分析体系
 ```
+
+
 
 ##### 第二章 Elasticsearch安装
