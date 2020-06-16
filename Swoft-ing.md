@@ -121,13 +121,28 @@ $ php swoftcli.phar gen:http-ctrl public @app/Http/Controller/Manager -n App\\Ht
 修改模板配置  src/config.js
 
 ~~~js
-,interceptor: true //是否开启未登入拦截(修改为开启状态)
+,name: '四叶草科技'
+,tableName: 'xiyuechaoAdmin' //本地存储表名
+,MOD_NAME: 'admin' //模块事件名
+,debug: true //是否开启调试模式。如开启，接口异常时会抛出异常 URL 等信息
+,interceptor: true//是否开启未登入拦截
 
 /** 自定义参数start */
 ,website_url:'www.chenglh.com' //官方链接
-,manager_url:'http://www.chenglh.com:18306/v1/' //后台管理链接
-,proxy_url:'http://www.chenglh.com:18306/v2/' //代理管理链接
+,website_api_url:'http://www.chenglh.com:18306/v1/'//总后台管理链接
 /** 自定义参数end */
+
+
+//自定义响应字段
+,response: {
+	statusName: 'code' //数据状态的字段名称
+	,statusCode: {
+		ok: 200 //数据状态一切正常的状态码
+		,logout: 201 //登录状态失效的状态码
+	},
+	msgName: 'msg' //状态信息的字段名称
+	,dataName: 'data' //数据详情的字段名称
+}
 ~~~
 
 调用配置参数
@@ -136,11 +151,27 @@ $ php swoftcli.phar gen:http-ctrl public @app/Http/Controller/Manager -n App\\Ht
 <script type="text/html" template>
 {{ layui.setter.website_url }}
 {{ layui.setter.manager_url }}
-{{ layui.setter.proxy_url }}
 </script>
 ~~~
 
-composer安装验证码
+登录请求接口
+
+~~~js
+//请求登入接口
+admin.req({
+	url: setter.website_api_url + 'login' //实际使用请改成服务端真实接口
+	,data: obj.field
+	,type: 'POST'   //使用POST方式提交
+	,done: function(res) {
+
+		//请求成功后，写入 access_token
+		layui.data(setter.tableName, {
+			key: setter.request.tokenName,
+			value: res.data.access_token
+		});
+~~~
+
+composer安装验证码（跨域，有点难解决sessionID同步问题，暂时没使用了）
 
 ~~~php
 # composer require easyswoole/verifycode=3.x
@@ -204,15 +235,66 @@ Target File: app/Http/Middleware/ApiMiddleware.php
 
 修改中间件，使其支持跨域调用
 
+```
+
+```
 
 
 
+在config/app.php定义变量
 
+~~~php
+<?php
+$envVal = env('WAREHOUSE_CODE');
 
+return [
+    // app.warehouseCode
+    // 'warehouseCode' => ['a', 'b'],
+    'warehouseCode' => $envVal ? explode(',', $envVal) : [],
 
+	'website' => 'http://www.tladmin.com',
+];
+~~~
 
+自定义变量调用方式
 
+~~~php
+config('app.website')
+~~~
 
+创建实体：
+
+```
+# php ./bin/swoft entity:create -d manager,manager_menu,manager_role --remove_prefix=hx_
+```
+
+配置 redis
+
+```
+ 'redis'  => [
+        'class'    => RedisDb::class,
+        'host'     => '127.0.0.1',
+        'port'     => 6379,
+        'database' => 0,
+        'option'   => [
+            'prefix' => 'hx:',
+			'serializer' => 0 //不需要序列化
+        ]
+    ],
+'redis.pool' => [
+    'class'       => Swoft\Redis\Pool::class,
+    'redisDb'     => bean('redis'),
+    'minActive'   => 10,
+    'maxActive'   => 20,
+    'maxWait'     => 0,
+    'maxWaitTime' => 0,
+    'maxIdleTime' => 60,
+],
+```
+
+~~~
+# composer require firebase/php-jwt
+~~~
 
 
 
