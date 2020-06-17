@@ -1036,19 +1036,19 @@ Target File: app/Http/Middleware/ApiMiddleware.php
 
 
 > 中间件注解使用
+>
+> - @Middleware：单个中间件(如果写多个@Middleware会覆盖上面的，只有一个生效)
+> - @Middlewares：使用多个中间件
 
-* @Middleware：单个中间件(如果写多个@Middleware会覆盖上面的，只有一个生效)
-* @Middlewares：使用多个中间件
 
 
-
-@Middleware 对应的注解类：Swoft\Http\Server\Annotation\Mapping\Middleware
+@Middleware   对应的注解类：Swoft\Http\Server\Annotation\Mapping\Middleware
 
 @Middlewares 对应的注解类：Swoft\Http\Server\Annotation\Mapping\Middlewares
 
 
 
-创建用户认证中间件，先移出bean.php中的全局中间件：ApiMiddleware
+创建用户认证中间件，先移出bean.php中的自定义的全局中间件：ApiMiddleware
 
 ```php
 # php swoftcli.phar gen:http-mdl
@@ -1092,7 +1092,7 @@ Target File: app/Http/Middleware/AuthMiddleware.php
 > Auth中间件before request handle
 > 控制器controller
 > Auth中间件after request handle
-> 全局中间件before request handle
+> 全局中间件after  request handle
 
 
 
@@ -1272,10 +1272,10 @@ class AccountController
 
 
 > 第五步：Token解密
-
-1、获取 token ，    $token = $request->getHeaderLine('token');
-2、解密数据，        $auth = JWT::decode($token, \config('jwt.publicKey'), [\config('jwt.type')]);
-3、把用户信息设置到httpRequest对象中，$request->user = $auth->user;
+>
+> 1、获取 token ， $token = $request->getHeaderLine('token');
+> 2、解密数据，$auth = JWT::decode($token, \config('jwt.publicKey'), [\config('jwt.type')]);
+> 3、把用户信息设置到httpRequest对象中，$request->user = $auth->user;
 
 ```php
 # vi ./app/Http/Middleware/AuthMiddleware.php
@@ -1373,7 +1373,7 @@ class AuthMiddleware implements MiddlewareInterface
 
 **自定义异常类**
 
-第一步：自定义类接管 PHP 系统异常类，不需要任务操作
+第一步：自定义类接管 PHP 系统异常类，不需要任何操作
 
 ~~~php
 # vi app/Exception/ApiException.php
@@ -1397,8 +1397,7 @@ class ApiException extends \Exception
 
 
 
-
-**主动抛出异常**
+第三步：**主动抛出异常**
 
 ```php
 throw new ApiException('接口处理异常');
@@ -1408,7 +1407,7 @@ throw new ApiException('接口处理异常');
 
 ###### 3.7 验证器
 
-**系统验证器**
+**3.7.1 系统验证器**
 
 > 1、创建验证器
 
@@ -1517,6 +1516,8 @@ class AccountController
 
 
 ###### 3.7 MySQL
+
+
 
 ###### 3.8 Redis
 
