@@ -164,9 +164,9 @@ Swoft的核心内容就是Bean容器，每一个Bean就是一个类的对象实�
 
 > 为什么使用Bean容器？
 
-​       传统的PHP框架没有常驻内存，因此每次请求进来都需要把所有用到的类实例化一次，每次实例化对象都需要申请内存，当请求处理完成之后又需要释放，这样不断申请和释放是非常浪费资源的。
-
-​       而使用Swoft之后只有在HttpServer启动的时候就把这些类实例化预先放在内存里，并不需要每次请求都实例化对象，减少创建对象的时间。
+>  传统的PHP框架没有常驻内存，因此每次请求进来都需要把所有用到的类实例化一次，每次实例化对象都需要申请内存，当请求处理完成之后又需要释放，这样不断申请和释放是非常浪费资源的。
+>
+>  而使用Swoft之后只有在HttpServer启动的时候就把这些类实例化预先放在内存里，并不需要每次请求都实例化对象，从而减少创建对象的时间。
 
 Swoft的Bean容器池(Mysql类、Route类、Cache类等)，消费者直接去容器里取出来使用，如下图所示：
 
@@ -181,7 +181,7 @@ Swoft底层是一个BeanFactory管理着Container。
 
 
 
-自定义容器，创建目录 app/Bean
+**自定义容器，创建目录 app/Bean**
 
 ```php
 # mkdir /app/Bean
@@ -229,21 +229,21 @@ class Chenglh {
 
 
 
-(一)、通过@Bean注解声明
+**(一)、通过@Bean注解声明**
 
-1、name：Bean容器的名字，如果不写默认为带命名空间的类名，如 App/Bean/Chenglh::class
+> 1、name：Bean容器的名字，如果不写默认为带命名空间的类名，如 App/Bean/Chenglh::class
+>
+> 2、scope：注入Bean的类型是否每次都创建还是使用单例。
+>
+> - 单例创建    ：Swoft\Bean\Annotation\Scope::SINGLETON
+> - 每次都创建：Swoft\Bean\Annotation\Scope::PROTOTYPE
 
-2、scope：注入Bean的类型是否每次都创建还是使用单例。
-
-- 单例：Swoft\Bean\Annotation\Scope::SINGLETON
-- 每次都创建：Swoft\Bean\Annotation\Scope::PROTOTYPE
 
 
+**(二)、通过方法获取**
 
-(二)、通过方法获取
-
-- \Swoft::getBean("name")
-- BeanFactory::getBean("name")
+> - $name1 = \Swoft::getBean("name")
+> - $name2 = BeanFactory::getBean("name")
 
 ```php
 #创建IndexController控制器
@@ -280,9 +280,11 @@ class IndexController {
 }
 ```
 
-(三)、通过注入
 
-- @Inject
+
+**(三)、通过注入**
+
+> @Inject()   注入
 
 ```php
 <?php declare(strict_types=1);
@@ -319,7 +321,7 @@ class IndexController {
 
 
 
-(四)、验证是否是单例模式
+**(四)、验证是否是单例模式**
 
 ```php
 <?php declare(strict_types=1);
@@ -355,8 +357,8 @@ class IndexController {
 ###### 2.3 Swoft注解使用
 
 >  什么是注解？
-
-​       注解其实通过反射把注释当作代码的一部分。PHP可以通过`ReflectionClass`获取一个类的信息，从而通过类里的信息实现一些操作。例如：IOC反转控制就是通过反射实现的，还有依赖注入等。
+>
+>  注解其实通过反射把注释当作代码的一部分。PHP可以通过`ReflectionClass`获取一个类的信息，从而通过类里的信息实现一些操作。例如：IOC反转控制就是通过反射实现的，还有依赖注入等。
 
 ```
 #PHP ReflectionClass类文档
