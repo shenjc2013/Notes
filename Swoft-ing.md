@@ -334,7 +334,7 @@ Controller->Service->Data->Dao
 
 * Logic：逻辑层
 * Service：业务处理
-* Data数据缓存层
+* Data：数据缓存层
 * Dao：数据操作层
 * Entity：实体
 
