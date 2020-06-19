@@ -158,11 +158,14 @@ Directory of: /data/wwwroot/www.chenglh.com
 
 Swoft的配置分为两类，环境配置和应用配置
 
-**环境配置**
+> env 一般配置一些和环境相关的一些参数，比如运行模式、资源地址
+> config 一般用于配置应用级别的配置以及业务级别的配置
 
-环境配置用于不常改动的跟环境相关的配置参数，例如：运行模式，资源地址等等。
 
-在项目的根目录下有文件 .env.example 如果要使用则把文件修改成 .env，即可以使用
+
+**2.2.1 环境配置**
+
+在项目的根目录下有文件 .env.example 如果要使用则把文件名修改成 .env，即可以使用
 
 **.env** 参数定义
 
@@ -180,6 +183,109 @@ TEST_NAME = 测试名称
 env(string $key = null, $default = null)
 //通过env() 助手函数，第一个参数是 key，第二个参数是 默认值
 ~~~
+
+env还有另一个功能，就是可以把操作系统的环境变量加载到内存里面。
+
+获取环境变量，以下两个命令运行的结果是一样的
+
+```
+命令行终端
+# echo $PATH
+```
+
+~~~php
+Swoft获取
+public function test() {
+    echo env('PATH');
+}
+~~~
+
+
+
+**2.2.2 应用配置**
+
+> 应用配置主要用于业务级别的配置
+
+在 app/bean.php 添加如下配置，不添加默认就是应用根目录下的 config目录路径
+
+~~~php
+return [
+    'config'   => [
+        'path' => __DIR__ . '/../config',
+    ],
+    ......
+];
+~~~
+
+> 可配置项：
+>
+> * path 自定配置文件路径
+> * base 主文件名称，默认 base (其他文件的数据都会按文件名为key合并到主文件数据中)
+> * type 配置文件类型，默认 php 同时也支持 yaml 格式
+> * parser 配置解析器，默认已经配置 php/yaml 解析器
+> * env 配置当前环境比如 dev/test/pre/pro
+
+应用配置是负责应用里面的配置管理，负责第三方sdk的配置参数信息和 开发者自定义的配置；
+
+应用配置的数据也是由一个bean管理的，如果我们想要配置第三方sdk或新增自定义配置，只需在 config目录下添加对应文件，返回一个数组就可以了，如 jwt.php
+
+~~~php
+# vi config/jwt.php          ---JWT配置
+<?php
+return [
+    'privateKey' => 'xxxxxxxxxx',
+    'publicKey'  => 'oooooooooo',
+    'type'       => 'RS256',
+];
+
+# vi config/aypay.php         ---支付配置
+<?php
+return [
+    'api_url' => 'http://www.xxxx.com/api/do',
+    'notify_url' => 'http://www.ooo.com/notify/do'
+];
+~~~
+
+这里的配置是全局的，在应用里边可直接使用。
+
+**配置使用，有如下三种方法**
+
+> 一、全局助手函数  config()
+
+~~~php
+config(string $key = null, $default = null);
+
+$key 配置参数key，$default，当key不存在，返回default的值；
+如：config/jwt.php 获取方法：config('jwt.privateKey', '');
+config('aypay.notify_url');
+~~~
+
+
+
+> 二、对象获取
+
+~~~php
+/** @var Config $config */
+$config = \Swoft::getBean('config');
+$notify_url = $config->get('aypay.notify_url');
+~~~
+
+
+
+> 三、注解注入
+
+~~~php
+use Swoft\Config\Annotation\Mapping\Config;
+/**
+ * @Config("aypay.notify_url")
+ * @var mixed
+ */
+private $notify_url;  //已经获取到对应值了，使用 $this->notify_url
+~~~
+
+
+
+**不同环境不同配置**
 
 
 
@@ -1032,9 +1138,7 @@ $request->isPut()
 **调用 Response 对象方法**
 
 > 获取响应对象
->
 > 方法一：通过控制器方法参数注入function action (Response $response)
->
 > 方法二：通过请求上下文获取 context()->getResponse()
 
 ```php
@@ -1091,7 +1195,6 @@ Target File: app/Http/Middleware/ApiMiddleware.php
 
 
 > 中间件注解使用
->
 > - @Middleware：单个中间件(如果写多个@Middleware会覆盖上面的，只有一个生效)
 > - @Middlewares：使用多个中间件
 
