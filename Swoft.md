@@ -97,8 +97,6 @@ Directory of: /data/wwwroot/www.chenglh.com
 
 
 
----
-
 ##### 第二章 Swoft核心
 
 ###### 2.1 目录介绍
@@ -175,13 +173,14 @@ Swoft的Bean容器池(Mysql类、Route类、Cache类等)，消费者直接去容
 <img src="H:\笔记本\Swoft.assets\image-20200601102148814.png" alt="image-20200601102148814" style="zoom:90%;float:left" />
 
 
-Swoft底层是一个BeanFactory管理着Container。
 
-> 具体路径 vendor/swoft/Bean/src/Container/get()方法
+>Swoft底层是一个BeanFactory管理着Container。
+>
+>具体路径 vendor/swoft/Bean/src/Container/get()方法
 
 
 
-自定义容器，创建目录 app/Bean
+**自定义容器，创建目录: /app/Bean**
 
 ```php
 # mkdir /app/Bean
@@ -229,21 +228,21 @@ class Chenglh {
 
 
 
-(一)、通过@Bean注解声明
+**(一)、通过@Bean注解声明**
 
-1、name：Bean容器的名字，如果不写默认为带命名空间的类名，如 App/Bean/Chenglh::class
+>1、name：Bean容器的名字，如果不写默认为带命名空间的类名，如 App/Bean/Chenglh::class
+>
+>2、scope：注入Bean的类型是否每次都创建还是使用单例。
+>
+>- 单例方式    ：Swoft\Bean\Annotation\Scope::SINGLETON
+>- 每次都创建：Swoft\Bean\Annotation\Scope::PROTOTYPE
 
-2、scope：注入Bean的类型是否每次都创建还是使用单例。
-
-- 单例：Swoft\Bean\Annotation\Scope::SINGLETON
-- 每次都创建：Swoft\Bean\Annotation\Scope::PROTOTYPE
 
 
+**(二)、通过方法获取**
 
-(二)、通过方法获取
-
-- \Swoft::getBean("name")
-- BeanFactory::getBean("name")
+> - $name1 = \Swoft::getBean("name")
+> - $name2 = BeanFactory::getBean("name")
 
 ```php
 #创建IndexController控制器
@@ -282,7 +281,7 @@ class IndexController {
 
 (三)、通过注入
 
-- @Inject
+- @Inject方式
 
 ```php
 <?php declare(strict_types=1);
