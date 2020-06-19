@@ -97,6 +97,8 @@ Directory of: /data/wwwroot/www.chenglh.com
 
 
 
+---
+
 ##### 第二章 Swoft核心
 
 ###### 2.1 目录介绍
@@ -162,9 +164,9 @@ Swoft的核心内容就是Bean容器，每一个Bean就是一个类的对象实�
 
 > 为什么使用Bean容器？
 
-​       传统的PHP框架没有常驻内存，因此每次请求进来都需要把所有用到的类实例化一次，每次实例化对象都需要申请内存，当请求处理完成之后又需要释放，这样不断申请和释放是非常浪费资源的。
-
-​       而使用Swoft之后只有在HttpServer启动的时候就把这些类实例化预先放在内存里，并不需要每次请求都实例化对象，减少创建对象的时间。
+>  传统的PHP框架没有常驻内存，因此每次请求进来都需要把所有用到的类实例化一次，每次实例化对象都需要申请内存，当请求处理完成之后又需要释放，这样不断申请和释放是非常浪费资源的。
+>
+>  而使用Swoft之后只有在HttpServer启动的时候就把这些类实例化预先放在内存里，并不需要每次请求都实例化对象，从而减少创建对象的时间。
 
 Swoft的Bean容器池(Mysql类、Route类、Cache类等)，消费者直接去容器里取出来使用，如下图所示：
 
@@ -173,14 +175,13 @@ Swoft的Bean容器池(Mysql类、Route类、Cache类等)，消费者直接去容
 <img src="H:\笔记本\Swoft.assets\image-20200601102148814.png" alt="image-20200601102148814" style="zoom:90%;float:left" />
 
 
+Swoft底层是一个BeanFactory管理着Container。
 
->Swoft底层是一个BeanFactory管理着Container。
->
->具体路径 vendor/swoft/Bean/src/Container/get()方法
-
+> 具体路径 vendor/swoft/Bean/src/Container/get()方法
 
 
-**自定义容器，创建目录: /app/Bean**
+
+**自定义容器，创建目录 app/Bean**
 
 ```php
 # mkdir /app/Bean
@@ -230,12 +231,12 @@ class Chenglh {
 
 **(一)、通过@Bean注解声明**
 
->1、name：Bean容器的名字，如果不写默认为带命名空间的类名，如 App/Bean/Chenglh::class
+> 1、name：Bean容器的名字，如果不写默认为带命名空间的类名，如 App/Bean/Chenglh::class
 >
->2、scope：注入Bean的类型是否每次都创建还是使用单例。
+> 2、scope：注入Bean的类型是否每次都创建还是使用单例。
 >
->- 单例方式    ：Swoft\Bean\Annotation\Scope::SINGLETON
->- 每次都创建：Swoft\Bean\Annotation\Scope::PROTOTYPE
+> - 单例创建    ：Swoft\Bean\Annotation\Scope::SINGLETON
+> - 每次都创建：Swoft\Bean\Annotation\Scope::PROTOTYPE
 
 
 
@@ -279,9 +280,11 @@ class IndexController {
 }
 ```
 
-(三)、通过注入
 
-- @Inject方式
+
+**(三)、通过注入**
+
+> @Inject()   注入
 
 ```php
 <?php declare(strict_types=1);
@@ -318,7 +321,7 @@ class IndexController {
 
 
 
-(四)、验证是否是单例模式
+**(四)、验证是否是单例模式**
 
 ```php
 <?php declare(strict_types=1);
@@ -354,8 +357,8 @@ class IndexController {
 ###### 2.3 Swoft注解使用
 
 >  什么是注解？
-
-​       注解其实通过反射把注释当作代码的一部分。PHP可以通过`ReflectionClass`获取一个类的信息，从而通过类里的信息实现一些操作。例如：IOC反转控制就是通过反射实现的，还有依赖注入等。
+>
+>  注解其实通过反射把注释当作代码的一部分。PHP可以通过`ReflectionClass`获取一个类的信息，从而通过类里的信息实现一些操作。例如：IOC反转控制就是通过反射实现的，还有依赖注入等。
 
 ```
 #PHP ReflectionClass类文档
@@ -837,10 +840,9 @@ class IndexController extends BaseController {
 
 **请求 Request 与响应 Response **
 
-请求与响应对象存在于每次 HTTP请求
-
-**Request    ：Http请求对象，Swoft\Http\Message\Request;
-Response ： Http响应对象，Swoft\Http\Message\Response;**
+> 请求与响应对象存在于每次 HTTP请求
+> Request    ：Http请求对象，Swoft\Http\Message\Request;
+> Response ： Http响应对象，Swoft\Http\Message\Response;
 
 
 
@@ -849,8 +851,6 @@ Response ： Http响应对象，Swoft\Http\Message\Response;**
 > 方法一：通过控制器方法注入，public function action(Request $request)
 >
 > 方法二：通过上下文环境获取，Context::get()->getRequest()
-
-
 
 **调用 Request 对象方法**
 
@@ -873,7 +873,7 @@ Response ： Http响应对象，Swoft\Http\Message\Response;**
 | raw                   | 可上传任意格式的文本，可以上传text、json、xml、html等各种文本类型 |
 | binary                | 等同于Content-Type:application/octet-stream，只可上传二进制数据 |
 
-**接受http请求对象**
+**接收HTTP请求对象**
 
 打印请求头信息
 
@@ -977,7 +977,7 @@ $request->isPut()
 
 > 获取响应对象
 >
-> 方法一：通过控制器方法参数注入 (Response $response)
+> 方法一：通过控制器方法参数注入function action (Response $response)
 >
 > 方法二：通过请求上下文获取 context()->getResponse()
 
@@ -1030,7 +1030,7 @@ Target File: app/Http/Middleware/ApiMiddleware.php
          ......
 ```
 
-**注意：设置全局中间件，不需要在控制器中单独引入。**
+**注意：设置了全局中间件，不需要在控制器中单独引入。**
 
 
 
@@ -1039,11 +1039,11 @@ Target File: app/Http/Middleware/ApiMiddleware.php
 > - @Middleware：单个中间件(如果写多个@Middleware会覆盖上面的，只有一个生效)
 > - @Middlewares：使用多个中间件
 
+**引入对应的注解**
 
+@Middleware   ：Swoft\Http\Server\Annotation\Mapping\Middleware
 
-@Middleware   对应的注解类：Swoft\Http\Server\Annotation\Mapping\Middleware
-
-@Middlewares 对应的注解类：Swoft\Http\Server\Annotation\Mapping\Middlewares
+@Middlewares ：Swoft\Http\Server\Annotation\Mapping\Middlewares
 
 
 
@@ -1057,7 +1057,7 @@ Target File: app/Http/Middleware/AuthMiddleware.php
 
 
 
-中间件使用
+**中间件使用**
 
 ```php
 ##单个中间件：
@@ -1137,7 +1137,7 @@ public function process(ServerRequestInterface $request, RequestHandlerInterface
 
 
 
-参考文章
+jwt使用参考文章
 
 ```
 https://blog.csdn.net/cjs5202001/article/details/80228937
@@ -1493,10 +1493,13 @@ class AccountController
 
 
 
-###### 
+###### 3.8 MySQL
+
+ **数据库单机配置： app/bean.php **
 
 ```php
-##配置文件：app/bean.php
+# vi app/bean.php
+......
 'db' => [
     'class'    => Database::class,
     'dsn'      => 'mysql:dbname=tswoft;host=127.0.0.1',
@@ -1512,15 +1515,128 @@ class AccountController
 
 
 
-
-
-###### 3.7 MySQL
-
-
-
-###### 3.8 Redis
+Swoft支持原生操作、查询器操作、AR(Active Record)，AR是目前流行对象-关系映射，也就是我们常说的ORM，一个AR对应一个数据表，类里面的属性对应表里面的字段，一个AR实例对应表里面一行记录。
+查询器操作通过一个QueryBuilder实现，这个操作简单，类似TP的数据库链式操作。
 
 
 
-###### 3.9 消息队列
+> 一、原生操作
+
+ **查询**
+
+~~~php
+
+
+~~~
+
+
+
+ **增加**
+
+~~~php
+
+
+~~~
+
+
+
+ **更改**
+
+~~~php
+
+
+~~~
+
+
+
+ **删除**
+
+~~~php
+
+
+~~~
+
+
+
+> 二、查询构造器
+
+**查询**
+
+~~~php
+
+
+~~~
+
+
+
+ **增加**
+
+~~~php
+
+
+~~~
+
+
+
+ **更改**
+
+~~~php
+
+
+~~~
+
+
+
+ **删除**
+
+~~~php
+
+
+~~~
+
+
+
+> 三、实体操作
+
+ **查询**
+
+~~~php
+
+
+~~~
+
+
+
+ **增加**
+
+~~~php
+
+
+~~~
+
+
+
+ **更改**
+
+~~~php
+
+
+~~~
+
+
+
+ **删除**
+
+~~~php
+
+
+~~~
+
+
+
+###### 3.9 Redis
+
+
+
+###### 4.0 消息队列
 
