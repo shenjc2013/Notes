@@ -101,7 +101,7 @@ Directory of: /data/wwwroot/www.chenglh.com
 
 ##### 第二章 Swoft核心
 
-###### 2.1 目录介绍
+###### 2.1 Swoft目录
 
 ```
 ├── app/
@@ -154,19 +154,52 @@ Directory of: /data/wwwroot/www.chenglh.com
 
 
 
-###### 2.2 Swoft Bean容器
+###### 2.2 Swoft配置
 
-IoC 即控制反转(Inversion of Control)
+Swoft的配置分为两类，环境配置和应用配置
 
-DI   即依赖注入(Dependency Injection)
+**环境配置**
 
-Swoft的核心内容就是Bean容器，每一个Bean就是一个类的对象实例，容器是一个巨大工厂存放和管理Bean。在HttpServer启动的时候会去扫描带有@Bean注解的类。
+环境配置用于不常改动的跟环境相关的配置参数，例如：运行模式，资源地址等等。
 
-> 为什么使用Bean容器？
+在项目的根目录下有文件 .env.example 如果要使用则把文件修改成 .env，即可以使用
 
->  传统的PHP框架没有常驻内存，因此每次请求进来都需要把所有用到的类实例化一次，每次实例化对象都需要申请内存，当请求处理完成之后又需要释放，这样不断申请和释放是非常浪费资源的。
->
->  而使用Swoft之后只有在HttpServer启动的时候就把这些类实例化预先放在内存里，并不需要每次请求都实例化对象，从而减少创建对象的时间。
+**.env** 参数定义
+
+~~~php
+# basic
+APP_DEBUG=0
+SWOFT_DEBUG=0
+
+TEST_NAME = 测试名称
+~~~
+
+**.env ** 文件的使用
+
+~~~php
+env(string $key = null, $default = null)
+//通过env() 助手函数，第一个参数是 key，第二个参数是 默认值
+~~~
+
+
+
+
+
+###### 2.3 Swoft Bean容器
+
+> IoC 即控制反转(Inversion of Control)
+> DI   即依赖注入(Dependency Injection)
+
+Swoft的核心内容就是Bean容器，每一个Bean就是一个类的对象实例，容器是一个巨大工厂存放和管理的Bean。在HttpServer启动的时候会去扫描带有@Bean的注解类。
+
+
+
+**为什么使用Bean容器？**
+
+> 传统的PHP框架没有常驻内存，因此每次请求进来都需要把所有用到的类实例化一次，每次实例化对象都需要申请内存，当请求处理完成之后又需要释放，这样不断申请和释放是非常浪费资源的。
+> 而使用Swoft之后只有在HttpServer启动的时候就把这些类实例化预先放在内存里，并不需要每次请求都实例化对象，从而减少创建对象的时间。
+
+
 
 Swoft的Bean容器池(Mysql类、Route类、Cache类等)，消费者直接去容器里取出来使用，如下图所示：
 
@@ -174,8 +207,7 @@ Swoft的Bean容器池(Mysql类、Route类、Cache类等)，消费者直接去容
 
 <img src="H:\笔记本\Swoft.assets\image-20200601102148814.png" alt="image-20200601102148814" style="zoom:90%;float:left" />
 
-
-Swoft底层是一个BeanFactory管理着Container。
+**Swoft底层是一个BeanFactory管理着Container**
 
 > 具体路径 vendor/swoft/Bean/src/Container/get()方法
 
@@ -244,6 +276,8 @@ class Chenglh {
 
 > - $name1 = \Swoft::getBean("name")
 > - $name2 = BeanFactory::getBean("name")
+
+代码展示
 
 ```php
 #创建IndexController控制器
@@ -354,7 +388,7 @@ class IndexController {
 
 
 
-###### 2.3 Swoft注解使用
+###### 2.4 Swoft注解使用
 
 >  什么是注解？
 >
@@ -392,7 +426,7 @@ File  >>  Setting >> Plugins  搜索Annotations
 
 
 
-###### 2.4 Swoft注入
+###### 2.5 Swoft注入
 
 使用注入可以让我们直接注入Bean里面的实例，也可以在方法注入http请求参数
 
@@ -428,7 +462,7 @@ class User{
 
 
 
-###### 2.5 Swoft事件
+###### 2.6 Swoft事件
 
 >  1、Swoole中的事件(已封装好，慎重使用，防止事件被覆盖，程序崩溃)
 >
@@ -637,7 +671,7 @@ class OrderSubscriber implements EventSubscriberInterface
 
 
 
-###### 2.6 Swoft命令行
+###### 2.7 Swoft命令行
 
 ```php
 #命令行模式
@@ -678,9 +712,9 @@ stop
 
 
 
-###### 2.7 Swoft开发者工具
+###### 2.8 Swoft开发者工具
 
-开发者工具
+**开发者工具**
 
 **Swoft CLI**是一个独立的命令行应用，提供了一些内置的功能方便开发者使用：
 
@@ -693,16 +727,18 @@ stop
 
 下载 **swoftcli.phar**包
 
-> \# cd  /data/wwwroot/www.chenglh.com/
->
-> \# wget https://github.com/swoft-cloud/swoft-cli/releases/download/{VERSION}/swoftcli.phar
+~~~php
+# cd  /data/wwwroot/www.chenglh.com/
 
-* 注意：｛VERSION｝ 替换成最新版本，版本号在如下链接找
+# wget https://github.com/swoft-cloud/swoft-cli/releases/download/{VERSION}/swoftcli.phar
+~~~
 
-  https://github.com/swoft-cloud/swoft-cli/releases
+注意：｛VERSION｝ 替换成最新版本，版本号在如下链接找
+
+https://github.com/swoft-cloud/swoft-cli/releases
 
 ```php
-##检查包是否可用，打印版本信息
+##检查开发者工具包是否可用，打印版本信息
 # php swoftcli.phar -V
 PHP: 7.4.0, Swoft: 2.0.9, Swoole: 4.5.1
 
@@ -737,7 +773,7 @@ PHP: 7.4.0, Swoft: 2.0.9, Swoole: 4.5.1
   ws-module       
 ```
 
-
+**具体操作**
 
 > 1、命令行创建控制器
 
@@ -762,6 +798,26 @@ Target File: app/Http/Middleware/ApiMiddleware.php
 ```php
 # php ./bin/swoft entity:create -d user --remove_prefix=hx_
 ```
+
+
+
+**发开者工具** Swoft Devtool
+
+> Swoft内置了一个开发者工具帮助我们快速的查看服务状态和调试
+
+安装工具
+
+~~~
+composer require swoft/devtool
+~~~
+
+配置文件
+
+1、在bean.php
+
+
+
+
 
 
 
@@ -857,7 +913,7 @@ class IndexController extends BaseController {
 - query		获取get参数
 - post          获取post参数
 - input         获取get、post参数(通用方法)
-- <u>无需关心 json、xml请求，会自动解析为php的数组，通过以上三种方式获取</u>
+- <u>无需关心   json、xml请求，会自动解析为php的数组，通过以上三种方式获取</u>
 - raw	       获取raw数据(postman的数据格式)   $data = $request->raw();
 - server       获取server数据
 - getUploadedFiles      获取上传文件
@@ -1372,7 +1428,7 @@ class AuthMiddleware implements MiddlewareInterface
 
 **自定义异常类**
 
-第一步：自定义类接管 PHP 系统异常类，不需要任何操作
+第一步：**自定义类接管 PHP 系统异常类，不需要任何操作**
 
 ~~~php
 # vi app/Exception/ApiException.php
@@ -1392,7 +1448,7 @@ class ApiException extends \Exception
 }
 ~~~
 
-第二步：自定义处理异常
+第二步：**自定义处理异常**
 
 
 
@@ -1410,7 +1466,7 @@ throw new ApiException('接口处理异常');
 
 > 1、创建验证器
 
-**打上注解并命名验证器 @Validator(name="login")**
+**类注解，命名验证器 @Validator(name="login")**
 
 ~~~php
 # vi app/Http/Validator/Manager/LoginValidator.php
@@ -1433,7 +1489,7 @@ class LoginValidator
     /**
      * @IsString(message="请正确填写手机号")
      * @Length(min=11,max=11,message="手机号码长度是11位数字")
-     * @Pattern(regex="/^13[0-9]{1}[0-9]{8}$|^14[57]{1}[0-9]{8}$|^15[^4]{1}[0-9]{8}$|^17[0-9]{1}[0-9]{8}$|^18[0-9]{9}$|^199[0-9]{8}$|^198[0-9]{8}$|^166[0-9]{8}$/",message="手机号码不正确")
+     * @Pattern(regex="/^1([358][0-9]|4[579]|6[25679]|7[0-8]|9[89])[0-9]{8}$/",message="手机号码不正确")
      * @Required()
      * @var string
      */
@@ -1453,7 +1509,7 @@ class LoginValidator
 
 > 2、使用验证器
 
-**控制器中的方法上打上注解 @Validate(validator="login")**
+**控制器的方法上打验证器注解 @Validate(validator="login")**
 
 ```php
 <?php declare(strict_types=1);
@@ -1495,7 +1551,7 @@ class AccountController
 
 ###### 3.8 MySQL
 
- **数据库单机配置： app/bean.php **
+ **单机-数据库配置： app/bean.php **
 
 ```php
 # vi app/bean.php
@@ -1512,6 +1568,12 @@ class AccountController
     'database'  => bean('db'), //连接池要与上面的key对应
 ],
 ```
+
+**单机-两套环境，生产线和开发**
+
+
+
+
 
 
 
@@ -1631,6 +1693,12 @@ Swoft支持原生操作、查询器操作、AR(Active Record)，AR是目前流�
 
 
 ~~~
+
+
+
+**主从配置环境**
+
+
 
 
 
