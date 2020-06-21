@@ -287,7 +287,45 @@ private $notify_url;  //已经获取到对应值了，使用 $this->notify_url
 
 **不同环境不同配置**
 
+如果想要在不同环境配置不同的配置参数，例如，在开发环境一套配置，生产环境一套配置，我们可以通过文件夹的方式来区分。
 
+**config/dev/db.php**
+
+~~~php
+return [
+    'dsn'      => 'mysql:dbname=swoft;host=127.0.0.1',
+    'username' => 'root',
+    'password' => '123456',
+];
+~~~
+
+**config/pro/db.php**
+
+~~~php
+return [
+    'dsn'      => 'mysql:dbname=swoft;host=127.0.0.1',
+    'username' => '3Npqu#xxawrite',
+    'password' => '3Npqu#Mqpdxfdw',
+];
+~~~
+
+> 修改 app/bean.php
+
+~~~php
+'config' => [
+    'path' => __DIR__ . '/../config',
+    'env'  => 'dev', //env('APP_ENVIR', 'dev')自定义环境参数
+],
+
+'db' => [
+    'class'    => Database::class,
+    'dsn'      => config('db.dsn'),//配置中读取DSN
+    'username' => config('db.username'),//配置中读取用户名
+    'password' => config('db.password'),//配置中读取密码
+    'charset'  => 'utf8mb4',
+    'prefix'   => 'hx_'
+],
+~~~
 
 
 
@@ -1672,26 +1710,35 @@ class AccountController
 ],
 ```
 
-**单机-两套环境，生产线和开发**
-
-
-
-
-
 
 
 Swoft支持原生操作、查询器操作、AR(Active Record)，AR是目前流行对象-关系映射，也就是我们常说的ORM，一个AR对应一个数据表，类里面的属性对应表里面的字段，一个AR实例对应表里面一行记录。
 查询器操作通过一个QueryBuilder实现，这个操作简单，类似TP的数据库链式操作。
 
-
+**如果配置了读写数据库，增、删、改操作会走写数据库；查询走读数据库**
 
 > 一、原生操作
 
  **查询**
 
 ~~~php
+## 单条记录(一维数组) ##
+#索引绑定
+$user = DB::selectOne('SELECT * FROM `hx_user` WHERE `user_id` = ?', [1]);
+#命名绑定
+$user = DB::selectOne('SELECT * FROM `hx_user` WHERE `user_id` = :user_id', ['user_id'=>12301]);
 
+## 多条记录(多维数组) ##
+#索引绑定
+$users = DB::select('SELECT * FROM `hx_user` WHERE `user_id` = ?', [1]);
+#命名绑定
+$users = DB::select('SELECT * FROM `hx_user` WHERE `user_id` = :user_id', ['user_id' => 1]);
 
+## 遍历所有数据(游标) ##
+$users = DB::cursor('SELECT * FROM `hx_user`');
+foreach($users as $user){
+	echo $user['user_nickname'],PHP_EOL;
+}
 ~~~
 
 
@@ -1699,8 +1746,9 @@ Swoft支持原生操作、查询器操作、AR(Active Record)，AR是目前流�
  **增加**
 
 ~~~php
-
-
+#插入记录，只能判断是否成功，没有返回ID
+$Sql = 'INSERT INTO hx_user(`user_nickname`,`user_headimg`,`user_mobile`,`user_login_ip`,`user_regtime`) VALUES (?,?,?,?,?)';
+$boolean = DB::insert($Sql,['chenglh','/Picture/001.jpg','1367000396','127.0.0.1',now()]);
 ~~~
 
 
@@ -1708,8 +1756,10 @@ Swoft支持原生操作、查询器操作、AR(Active Record)，AR是目前流�
  **更改**
 
 ~~~php
+#还回受影响的行数，如果没有要更新记录条数，返回0
+$linesNum = = DB::update('UPDATE `hx_user` SET `user_nickname` = ? WHERE `user_id` = ?', ['Swoft', 12301]);
 
-
+$linesNum = DB::update('UPDATE `hx_user` SET `user_nickname` = :name WHERE `user_id` = :id', ['name'=>'chenglhcc', 'id'=>12301]);
 ~~~
 
 
@@ -1717,24 +1767,89 @@ Swoft支持原生操作、查询器操作、AR(Active Record)，AR是目前流�
  **删除**
 
 ~~~php
-
-
+#返回受影响的记录条数
+$linesNum = DB::delete('DELETE FROM `hx_users` where user_id=12301 limit 1');
 ~~~
 
 
 
 > 二、查询构造器
 
+**打印sql语句**
+
+```php
+echo DB::table('user')->where('user_id', '>=', 100)->toSql();
+//select * from `hx_user` where `user_id` >= ?
+```
+
+
+
 **查询**
 
 ~~~php
+#单行(一维数组)
+$user = DB::table('user')->where('user_id', 12301)->first();
+echo $user['user_nickname'];
+
+#单列(一行记录)
+$name = DB::table('user')->where('user_id', 12301)->value('user_nickname');
+
+#单列多行(多行记录)
+$name = DB::table('user')->pluck('user_nickname');//->toArray()强制转数组
+foreach ($name as $nickname) { //直接遍历 或 链式操作转数组
+	echo $nickname;
+}
+
+#单列多行，使用指定列作为key
+$name = DB::table('user')->pluck('user_nickname', 'user_id');//->toArray()
+foreach ($name as $user_id => $nickname) { //直接遍历 或 链式操作强制转数组
+	echo $user_id,'--', $nickname, PHP_EOL;
+}
+
+#多行记录
+$users = DB::table('user')->where('user_id','>=',12303)->get();//->toArray();
+foreach ($users as $user) { //直接遍历 或 链式操作强制转数组
+    echo $user['user_nickname'];
+}
+
+#多行记录，指定字段
+$users = DB::table('user')->where('user_id','>=',12303)->get(['user_id','user_nickname','user_mobile'])->toArray();
+print_r($users);
+
+#分块(处理大量数据时)  //以下例子，每次处理两条
+return DB::table('user')->orderBy('user_id')->chunk(2, function (Swoft\Stdlib\Collection $users) {
+	foreach ($users as $user) {
+		echo $user['user_nickname'],PHP_EOL;
+	}
+    //return false; 闭包中返回false，中断继续获取分块结果，只返回一个数据块
+});
+~~~
+
+
+
+**原生语句**(注意不允许SQL注入)
+
+~~~php
+#selectRaw
 
 
 ~~~
 
 
 
- **增加**
+
+
+**聚合函数**
+
+~~~php
+$userNum = DB::table('users')->count();
+$price = DB::table('orders')->max('price');
+$price = DB::table('orders')->where('status', 1)->avg('price');
+~~~
+
+ 
+
+**增加**
 
 ~~~php
 
@@ -1801,7 +1916,7 @@ Swoft支持原生操作、查询器操作、AR(Active Record)，AR是目前流�
 
 **主从配置环境**
 
-
+**读写分离**
 
 
 
