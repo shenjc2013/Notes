@@ -1688,9 +1688,57 @@ class AccountController
 
 
 
+###### 3.8 实体模型
+
+**实体模型**
+
+Swoft的模型就是实体 Entity ，一个实体的结构对应一张数据表的结构。每一个实体的实例就是对应数据库的一条记录，因此不能使用 @Inject 注入。
+
+**生成实体**
+
+~~~php
+# php ./bin/swoft entity:create --remove_prefix=hx_ --table=user,token(表名) -y
+~~~
+
+~~~php
+参数说明
+--remove__prefix    去除表前缀
+--table				指定表
+--exclude           指定数据库
+-y					自动确认
+--pool              选择数据库连接池
+--td                生成实体模块
+......
+~~~
+
+**实体注解**
+
+~~~php
+/**
+ * @Entity(table="user",pool="db.pool") 打上注解，
+ * table指定表，若 app/bean.php 没有指定 prefix 这里需要指定表前缀;指定这里不需要表前缀
+ * pool默认连接池db.pool,可不写
+ */
+class User extends Model{
+    /**
+     * @Column 注解类成员属性对应数据库的字段。
+     * 参数：name 表字段名 
+     * prop 段别名，只有在调用 toArray() 才会把别名用到数组里面隐藏数据库真实字段
+     * hidden 是否隐藏，设置为true的话，通过 toArray() 获取不了该字段，但是可以通过 get 获取，或者调用 addVisible 方法取消
+     * 特殊：@Id 主键id，加在对应数据库表的主键字段属性上，一个实体注解类只能有一个 @id
+     */
+    /**
+     * @Id()
+     * @Column(name="user_id", prop="userId")
+     * @var int
+     */
+    private $userId;
+}
+~~~
 
 
-###### 3.8 MySQL
+
+###### 3.9 MySQL
 
  **单机-数据库配置： app/bean.php **
 
@@ -1878,6 +1926,22 @@ $price = DB::table('orders')->where('status', 1)->avg('price');
 
 > 三、实体操作
 
+**生成实体**
+
+~~~php
+# php ./bin/swoft entity:create --remove_prefix=hx_ --table=user,token(表名) -y
+~~~
+
+**实体实例化**
+
+~~~php
+$member = new Member();
+$member = Member::new();
+$member = Member::newInstance();//常用是上面两个
+~~~
+
+
+
  **查询**
 
 ~~~php
@@ -1920,9 +1984,9 @@ $price = DB::table('orders')->where('status', 1)->avg('price');
 
 
 
-###### 3.9 Redis
+###### 4.0 Redis
 
 
 
-###### 4.0 消息队列
+###### 4.1 消息队列
 
