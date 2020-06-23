@@ -1945,6 +1945,17 @@ $member = Member::newInstance();//常用是上面两个
  **查询**
 
 ~~~php
+#单条记录
+$user1 = User::where('user_id',13)->first()->getArrayableAttributes();
+$user2 = User::where('user_id',13)->first()->toArray();
+print_r($user1);//返回数据库字段
+print_r($user2);//返回模型值
+
+#指定字段
+$user1 = User::find(13,['user_id','user_name','mobile'])->getArrayableAttributes();
+$user2 = User::find(13,['user_id','user_name','mobile'])->toArray();
+print_r($user1);
+print_r($user2);
 
 
 ~~~
@@ -1954,8 +1965,21 @@ $member = Member::newInstance();//常用是上面两个
  **增加**
 
 ~~~php
+//单条记录
+$data = [
+    'user_nickname' => 'chenglh'.time(),
+	......
+];
+//$user = User::new();
+//$user->fill($data)->save();//fill灌入数据，数组填充模型
+//$userId = $user->getUserId();
 
+//User::insert($data);//返回布尔值
+//$id = User::insertGetId($data);//返回新增ID值
 
+//批量插入记录
+// $batch = [[], [], []];
+// $result = User::insert($batch);
 ~~~
 
 
@@ -1963,8 +1987,23 @@ $member = Member::newInstance();//常用是上面两个
  **更改**
 
 ~~~php
+//$result = User::find(13)->update(['user_name'=>'chenglihui5']);//单条记录
+//$result = User::where('user_mobile','13678913300')->update(['user_name'=>'vv']);
+/** 多条记录 */
 
+/** modify只能修改一条记录 ；第一个参数是条件 ， 第二个参数是修改内容 */
+$result = User::modify(['user_name'=>'vv'],['user_name'=>'flp10000']);
+$result = User::modifyById(14, ['user_name' => date('Ymd')]);
+var_dump($result);
 
+//条件存在，即更新操作，否则创建
+$updateData = [......];
+$result = User::updateOrCreate(['user_mobile'=>'13678910022'], $updateData);
+//updateOrInsert也是同样操作
+/** 区别
+ * updateOrCreate 方法使用的是 Eloquent ORM 操作的数据库（支持自动添加创建和更新时间）
+ * updateOrInsert 方法使用的是查询构造器（不可以自动添加创建和更新时间）
+ */
 ~~~
 
 
