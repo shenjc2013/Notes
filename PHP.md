@@ -74,5 +74,15 @@ http://ip-api.com/json/{IP地址}?lang=zh-CN　　# 查询某个ip的信息
 
 
 
+###### 1.2 Phpstorm
 
+> phpstorm软件，代码右键 deployment 灰色，不可点击
 
+~~~php
+#参考文章
+# https://blog.csdn.net/u013249853/article/details/89525486
+~~~
+
+解决办法：
+
+<img src="H:\笔记本\PHP.assets\image-20200702104351733.png" alt="image-20200702104351733" style="zoom:90%;float:left;" />
