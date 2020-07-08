@@ -86,3 +86,13 @@ http://ip-api.com/json/{IP地址}?lang=zh-CN　　# 查询某个ip的信息
 解决办法：
 
 <img src="H:\笔记本\PHP.assets\image-20200702104351733.png" alt="image-20200702104351733" style="zoom:90%;float:left;" />
+
+
+
+###### 1.3 Composer镜像源
+
+~~~php
+配置阿里云composer镜像
+https://developer.aliyun.com/composer
+~~~
+
