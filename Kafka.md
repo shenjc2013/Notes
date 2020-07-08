@@ -97,7 +97,7 @@ Kafka是分布式的发布一-订阅消息系统。它最初由LinkedIn(领英)�
 
 
 
-
+https://www.bilibili.com/video/BV1wv411z75h?p=5
 
 
 
