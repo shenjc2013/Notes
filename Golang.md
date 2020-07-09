@@ -1,6 +1,12 @@
-```
-【老男孩教育】GO语言 基础+就业班 #新版
+```php
+##【老男孩教育】GO语言 基础+就业班 #新版
 https://www.bilibili.com/video/BV1QJ411V73q/?p=3
+
+##2020老男孩系列之掌握Go语言
+https://www.bilibili.com/video/BV14C4y147y8?p=8
+
+##【老男孩教育】GO语言 基础+就业班 #新版
+https://www.bilibili.com/video/BV1QJ411V73q/?spm_id_from=333.788.videocard.0
 ```
 
 ##### Day01 Golang入门
@@ -53,7 +59,14 @@ Go成为内部推荐语言
 ![image-20200525222605019](H:\笔记本\Golang.assets\image-20200525222605019.png)
 
 ```go
+package main //main就是说能打包成一个可执行的exe文件
+
+//导入语句(包)
 import "fmt"
+
+//函数外只能放置标识符(变量\常量\函数\类型)的声明
+
+//程序的入口
 func main() {
     fmt.Println("人生苦短，Let's Go!")
 }
@@ -293,23 +306,75 @@ Functions:  make  len  cap  new  append  copy  close  delete
 
 
 **变量**
-Go语言中的变量需要声明后才能使用，同一作用域内不支持重复声明，并且Go语言中的变量声明后必须使用
+Go语言中的变量必须`先声明后才能使用`，同一作用域内不支持重复声明，并且Go语言中的变量声明后必须使用
 
 > 标准声明
 
 ```go
-var 变量名  变量类型
+// var 变量名  变量类型
+var age int
+var name string
+var isok bool
 ```
 
 > 批量声明
 
-~~~
+~~~go
 var (
+    //Go语言中推荐使用驼峰式命名
     studentName  string
     studentAge   int
     studentState bool
 )
 ~~~
+
+
+
+~~~go
+package main
+var (
+	name string
+    age  int
+    isok bool
+)
+
+func main() {
+    name = 'chengl'
+    age  = 16
+    isok = false
+}
+~~~
+
+以上代码如果有错位或乱放位置，在控制台中 > go fmt main.go 可以格式化重排代码。
+
+~~~go
+package main
+
+import "fmt"
+
+var (
+	name string
+	age  int
+	isok bool
+)
+
+func main() {
+	name = "chenglh"
+	age = 16
+	isok = false
+
+	fmt.Printf("name:%s, age:%d", name, age) //打印信息
+	fmt.Print(isok) //打印结果
+    fmt.Println() //快捷打印一个空行
+    fmt.print("\n")
+}
+
+##控制台：
+> go build
+> day01.exe
+~~~
+
+
 
 > 变量的初始化
 
@@ -326,51 +391,58 @@ Go语言在声明变量的时候，会自动对变量对应的内存区域进行
 切片、函数、指针变量的默认为nil
 ~~~
 
-变量初始化标准格式
 
-~~~
-var 变量名 类型 = 表达式
-~~~
 
-举例子
+> 变量初始化标准格式
 
 ~~~go
-var name string = "clhui"
+//声明变量的同时赋值
+//var 变量名 类型 = 表达式
+
+//举例子
+//单个变量声明
+var name string = "chenglh"
 var age int = 18
 
-//一次初始化多个变量
-var name, age = "clhui", 18
+//多个变量声明
+var name, age = "chenglh", 18
 ~~~
 
-类型推导
+
+
+> 类型推导
 
 有时候将变量的类型省略，编译器会根据等号右边的值来推导变量的类型完成初始化
 
 ~~~go
-var name = "clhui"
+//根据值来判断变量是什么类型
+var name = "chenglh"
 var age = 18
 ~~~
 
-短变量声明
+> 短变量声明(函数内部)
+
 只在函数内部使用，通过 `:=` 方式声明并初始化变量
 
 ~~~go
 package main
-
 import ("fmt")
 
 //全局变量m
 var m = 100
 
 func main() {
+    //简短变量声明
     s3 := "haha" //使用了类型推导
     n  := 10
-    m  := 200   //此处声明局部变量m，短变量声明是可以的，但是var声明就会报错
+    m  := 200
     fmt.Println(m, n)
 }
 ~~~
 
-匿名变量
+
+
+> 匿名变量
 
 在使用多重赋值时，如果想要忽略某个值，可以使用`匿名变量（anonymous variable）`。 匿名变量用一个下划线`_`表示，例如：
 
@@ -388,17 +460,16 @@ func main() {
 
 匿名变量不占用命名空间，不会分配内存，所以匿名变量之间不存在重复声明。 (在`Lua`等编程语言里，匿名变量也被叫做哑元变量。)
 
-注意事项：
+> 注意事项：
 
 1. 函数外的每个语句都必须以关键字开始（var、const、func等）
 2. `:=`不能使用在函数外。
 3. `_`多用于占位，表示忽略值。
-4. 同一个作用域中，不能重复声明同名的变量
+4. <u>同一个作用域中，不能`重复声明`同名的变量</u>
 
 ~~~go
 //例子
 package main
-
 import "fmt"
 
 //声明变量
@@ -451,30 +522,30 @@ func main() {
 相对于变量，常量是恒定不变的值，多用于定义程序运行期间不会改变的那些值，常用于全局。 常量的声明`const`，常量在定义的时候必须赋值。
 
 ~~~go
-const pi = 3.1415
-const e = 2.7182
-~~~
+package main
 
-多个常量也可以一起声明
+//常量，一经定义后，程序运行期间不能改变
 
-~~~go
+//单个常量声明
+//const pi = 3.141529
+//const e = 2.7182
+
+//批量常量声明
 const (
-    pi = 3.1415
+    pi = 3.141529
     e = 2.7182
 )
-~~~
 
-const同时声明多个常量时，如果省略了值则表示和上面一行的值相同。 例如
-
-~~~go
+//const同时声明多个常量时，如果省略了值则表示和上面一行的值相同。
 const (
     n1 = 100
     n2
     n3
+    // 相当于常量`n1`、`n2`、`n3`的值都是100
 )
 ~~~
 
-上面示例中，常量`n1`、`n2`、`n3`的值都是100
+
 
 **iota**
 
@@ -482,9 +553,8 @@ const (
 
 `iota`在`const关键字出现时将被重置为0`。const中每新增一行常量声明将使`iota`计数一次(iota可理解为const语句块中的行索引)。 使用iota能简化定义，在定义枚举时很有用。
 
-举个例子
-
 ~~~go
+//举个例子
 const (
 	n1 = iota //0
 	n2        //1，默认是 n2 = iota
@@ -493,34 +563,36 @@ const (
 )
 ~~~
 
+
+
 > 几个常见iota例子
 
-例1：使用`_`跳过某些值
-
-~~~
-const (
-	n1 = iota //0
-	n2        //1
-	_
-	n4        //3
-)
-~~~
-
-例2：`iota`声明中间插队
-
-~~~
-const (
-	n1 = iota //0
-	n2 = 100  //100
-	n3 = iota //2
-	n4        //3
-)
-const n5 = iota //0
-~~~
-
-例3：定义数量级
-
 ~~~go
+//例1：使用`_`跳过某些值
+const (
+	n1 = iota //n1 = 0
+	n2        //n2 = iota => n2 = 1
+	_		  //_  = iota => iota = 2
+	n4        //n4 = iota => n4 = 3
+)
+
+//例2：`iota`声明中间插队
+const (
+	n1 = iota //n1 = 0
+	n2 = 100  //n2 = 100   iota计算器为1
+	n3 = iota //n3 = iota => n3 = 2
+	n4        //n4 = iota => n4 = 3
+)
+const n5 = iota //n5 = 0
+
+//例3：多个`iota`定义在一行
+const (
+	a, b = iota + 1, iota + 2 //a = 0 + 1   ; b = 0 + 2    结果：1 2
+	c, d                      //c = iota + 1; d = iota + 2 结果：2,3
+	e, f                      //e = iota + 1; f = iota + 2 结果：3,4
+)
+
+//例4：定义数量级
 const (
 	_  = iota
 	KB = 1 << (10 * iota)
@@ -533,23 +605,15 @@ const (
 )
 ~~~
 
-例4：多个`iota`定义在一行
-
-~~~
-const (
-	a, b = iota + 1, iota + 2 //a = 0 + 1   ; b = 0 + 2    结果：1 2
-	c, d                      //c = iota + 1; d = iota + 2 结果：2,3
-	e, f                      //e = iota + 1; f = iota + 2 结果：3,4
-)
-~~~
-
 
 
 ###### 1.5 数据类型
 
-基本数据类型：整型、浮点型、布尔型、字符串外，数组、切片、结构体、函数、map、通道（channel）等。
+基本数据类型：**整型、浮点型、布尔型、字符串外，数组、切片、结构体、函数、map、通道（channel）等**
 
-> 整型分两大类，按长度分为：int8、int16、int32、int64；无符号整型：uint8、uint16、uint32、uint64
+
+
+> 整型分两大类，带符号整型：int8、int16、int32、int64；无符号整型：uint8、uint16、uint32、uint64
 
 |  类型  | 描述                                                         |
 | :----: | ------------------------------------------------------------ |
@@ -574,3 +638,112 @@ const (
 
 Go1.13版本之后引入了数字字面量语法，这样便于开发者以二进制、八进制或十六进制浮点数的格式定义数字。
 
+
+
+**八进制**
+
+Go语言中无法直接定义二进制数，关于八进制和十六进制的示例如下：
+
+~~~go
+func main()  {
+	//十进制
+	var a = 10
+	fmt.Printf("%d \n", a) // 10
+	fmt.Printf("%b \n", a) // 1010
+
+    //八进制 以0开头(文件权限)
+	var b = 077
+	fmt.Printf("%o \n", b) // 77
+
+    //十六进制 以0x开头(内存地址)
+	var c = 0xff
+	fmt.Printf("%x \n", c) // ff
+	fmt.Printf("%X \n", c) // FF
+    
+    var d = int8(9)
+	fmt.Printf("%T\n", d)
+}
+~~~
+
+
+
+**浮点型**
+
+~~~go
+package main
+import "fmt"
+
+func main()  {
+	//小数默认类型，float64
+	f1 := 1.234568
+	fmt.Printf("%T\n", f1)
+
+	//显式声明类型
+	f2 := float32(1.23552)
+	fmt.Printf("%T\n", f2)
+    
+    //float32类型的值不能直接赋值给 float64 ,如错误用法：f1 = f2
+}
+~~~
+
+
+
+**布尔值**
+
+Go语言中 bool类型进行声明布尔型数据，只有 true和false两个值
+
+注意：
+
+1、布尔值变量默认值为 false
+
+2、Go语言中不允许将整型强制转换为布尔型
+
+3、布尔型无法参与数据运算，也无法与其他类型进行转换
+
+```go
+package main
+
+import "fmt"
+
+func main()  {
+	var a1 = true
+	var a2 bool
+
+	fmt.Printf("a1类型：%T, val=%v", a1, a1)
+	fmt.Println()
+	fmt.Printf("a2类型：%T, val=%v", a2, a2)
+}
+
+/**输出结果
+ * a1类型：bool, val=true
+ * a2类型：bool, val=false
+ */
+```
+
+
+
+**类型总结**
+
+~~~go
+package main
+import "fmt"
+
+func main()  {
+	num := 100
+	fmt.Printf("%T\n", num) //类型
+	fmt.Printf("%v\n", num) //万能输出值
+	fmt.Printf("%b\n", num) //二进制
+	fmt.Printf("%o\n", num) //八进制
+	fmt.Printf("%d\n", num) //十进制
+	fmt.Printf("%x\n", num) //十六进制
+
+	name := "chenglh"
+	fmt.Printf("%s\n", name)
+	fmt.Printf("%v\n", name)
+	fmt.Printf("%#v\n", name) //会自动加上双引号
+}
+~~~
+
+
+
+https://www.bilibili.com/video/BV14C4y147y8?p=14
