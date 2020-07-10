@@ -7,6 +7,7 @@ https://www.bilibili.com/video/BV14C4y147y8?p=8
 
 ##【老男孩教育】GO语言 基础+就业班 #新版
 https://www.bilibili.com/video/BV1QJ411V73q/?spm_id_from=333.788.videocard.0
+https://www.bilibili.com/video/BV1QJ411V73q/?spm_id_from=333.788.videocard.1
 ```
 
 ##### Day01 Golang入门
@@ -742,6 +743,79 @@ func main()  {
 	fmt.Printf("%v\n", name)
 	fmt.Printf("%#v\n", name) //会自动加上双引号
 }
+~~~
+
+
+
+**字符串**
+
+字符串：双引号
+
+字符：单引号   //只能是一个字符/英文/汉字/符号
+
+~~~go
+s := "hello world"
+a := '程'   //如果再写多一个字符就标红报错
+fmt.Println(s)
+fmt.Println(a)  //对应是的24352 ASCI码
+~~~
+
+**字符串转义**
+
+| 转义符 | 含义                             |
+| ------ | -------------------------------- |
+| \r     | 回车符(返回行首)                 |
+| \n     | 换行符(跳到下一行的同一行列位置) |
+| \t     | 制表符                           |
+| \\'    | 单引号                           |
+| \\"    | 双引号                           |
+| \\\    | 反斜杠                           |
+
+~~~go
+//s := "I'm ok"
+//fmt.Print(s)
+
+//多行原样输出字符串
+s2 := `
+东风恶
+人情薄
+雨送黄昏花易落
+`
+fmt.Print(s2)
+
+s3 := `G:\Go\src\www.testgo.com\day03\fmt`  //原样
+s4 := "G:\\Go\\src\\www.testgo.com\\day03\\fmt" //需要转义
+~~~
+
+
+
+**字符串操作**
+
+~~~go
+//字符串长度
+s1 := "chenglh"
+fmt.Print(len(s1))
+
+//字符串拼接
+s2 := "cheng"
+s3 := " li hui"
+ss := s2 + s3
+fmt.Println(ss)  //第一种：使用 + 连接
+fmt.Printf("%s%s\n", s2, s3) //第二种，格式化输入
+ss1 := fmt.Sprintf("%s%s", s2, s3)//第三种，Sprintf格式化后返回值给变量
+fmt.Println(ss1)
+
+//字符串分割
+//email := "abc@a.com"
+//emailS := strings.Split(email, "@")
+//fmt.Println(emailS) //[abc a.com]
+
+s1 := "G:\\aaa\\bb\\ccc"
+ss := strings.Split(s1, "\\")
+fmt.Println(ss)
+
+
+
 ~~~
 
 

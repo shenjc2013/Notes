@@ -100,7 +100,7 @@ https://www.bilibili.com/video/BV1gW411H7Az?from=search&seid=1168170235822834860
 
 Kafka是分布式的发布一-订阅消息系统。它最初由LinkedIn(领英)公司发布， 使用Scala语言编写，与2010年12月份开源，成为Apache的顶级项目。Kafka是一 个高吞吐量的、 持久性的、分布式发布订阅消息系统。它主要用于处理活跃live的数据(登录、浏览、点击分享、喜欢等用户行为产生的数据)。
 
-<img src="H:\笔记本\Kafka.assets\image-20200710102313013.png" alt="image-20200710102313013" style="zoom:80%;" />
+![image-20200710110058680](H:\笔记本\Kafka.assets\image-20200710110058680.png)
 
 ~~~php
 #kafka官网
