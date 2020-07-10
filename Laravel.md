@@ -6,3 +6,11 @@ https://www.bilibili.com/video/BV1eg4y1q7r7?p=42
 https://www.bilibili.com/video/BV1kJ411i7RY?p=1
 ~~~
 
+
+
+~~~php
+#下载安装
+composer create-project --prefer-dist laravel/laravel blog
+
+~~~
+

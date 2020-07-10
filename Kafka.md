@@ -81,11 +81,16 @@ https://www.bilibili.com/video/BV1gW411H7Az?from=search&seid=1168170235822834860
 常见消息系统
 
 ~~~
-1、RabbitMQ Erlang编写,支持多协议AMQP, XMPP, SMTP, STOMP。支持负载均衡、数据持久化。同时支持Peer-to-Peer和发布/订阅模式。
-2、Redis基于Key-Value对的NoSQL数据库,同时支持MQ功能，可做轻量级队列服务使用。就入队操作而言，Redis对短消息(小于10kb)的性能比RabbitMQ好，长消息性能比RabbitMQ差。
-3、ZeroMQ轻量级，不需要单独的消息服务器或中间件，应用程序本身扮演该角色，Peer-to-Peer。 它实质上是一个库，需要开发人员自己组合多种技术,使用复杂度高。
+1、RabbitMQ Erlang编写,支持多协议AMQP, XMPP, SMTP, STOMP。支持负载均衡、数据持久化。同时支持Peer-to-Peer和发布/订阅模式
+
+2、Redis基于Key-Value对的NoSQL数据库,同时支持MQ功能，可做轻量级队列服务使用。就入队操作而言，Redis对短消息(小于10kb)的性能比RabbitMQ好，长消息性能比RabbitMQ差
+
+3、ZeroMQ轻量级，不需要单独的消息服务器或中间件，应用程序本身扮演该角色，Peer-to-Peer。 它实质上是一个库，需要开发人员自己组合多种技术,使用复杂度高
+
 4、ActiveMQ JMS实现，Peer-to-Peer, 支持持久化、XA(分布式)事务
+
 5、Kafka/Jafka高性能跨语言的分布式发布/订阅消息系统，数据持久化，全分布式，同时支持在线和离线处理
+
 6、MetaQ/RocketMQ纯ava实现，发布/订阅消息系统，支持本地事务和XA分布式事务
 ~~~
 
@@ -95,11 +100,31 @@ https://www.bilibili.com/video/BV1gW411H7Az?from=search&seid=1168170235822834860
 
 Kafka是分布式的发布一-订阅消息系统。它最初由LinkedIn(领英)公司发布， 使用Scala语言编写，与2010年12月份开源，成为Apache的顶级项目。Kafka是一 个高吞吐量的、 持久性的、分布式发布订阅消息系统。它主要用于处理活跃live的数据(登录、浏览、点击分享、喜欢等用户行为产生的数据)。
 
+<img src="H:\笔记本\Kafka.assets\image-20200710102313013.png" alt="image-20200710102313013" style="zoom:80%;" />
+
+~~~php
+#kafka官网
+http://kafka.apachecn.org
+~~~
+
+> 三大特点
+
+- 高吞吐量  可以满足每秒百万级别消息的生产和消费----生产消费
+- 持久性      有一套完善的消息存储机制，确保数据的高效安全的持久化----中间件
+- 分布式      基于分布式的扩展和容错机制；Kafka的数据都会复制到几台服务器上，当某一台故障失效时，生产者和消费者转而使用其他的机器----故障转移
+
+
+
+###### 2.1 设计目标
+
+- **高吞吐率** 在廉价的商用机器上单机可支持每秒100万条消息的读写
+- **消息持久化** 所有消息均被持久化到磁盘，无消息丢失，支持消息重放
+- **完全分布式** Producer, Broker, Consumer均支持水平扩展(动态扩容/横向扩展)
+- 同时适应在线流处理和离线批处理
+
 
 
 https://www.bilibili.com/video/BV1wv411z75h?p=5
-
-
 
 
 
