@@ -103,6 +103,12 @@ set GOFLAGS=
 
 ##4、开发环境
 
+
+##编译
+> go build
+> xxx.exe
+
+> go build main.go
 ```
 
 ```go
@@ -749,6 +755,8 @@ func main()  {
 
 **字符串**
 
+Go语言里的字符串的内部实现使用 UTF-8 编码
+
 字符串：双引号
 
 字符：单引号   //只能是一个字符/英文/汉字/符号
@@ -814,10 +822,224 @@ s1 := "G:\\aaa\\bb\\ccc"
 ss := strings.Split(s1, "\\")
 fmt.Println(ss)
 
+//包含关系
+name := "cheng lihui"
+fmt.Println(strings.Contains(name, "cheng"))
+fmt.Println(strings.Contains(name, "test"))
 
+//前缀后缀
+name := "chenglihui"
+fmt.Println(strings.HasPrefix(name, "cheng"))
+fmt.Println(strings.HasSuffix(name, "ui"))
 
+//字串出现的位置
+name := "chenglihui"
+fmt.Println(strings.Index(name, "a"))  //找不到 -1
+fmt.Println(strings.Index(name, "c"))  //0 索引位置从0开始
+fmt.Println(strings.LastIndex(name, "i"))//最后一次出现i的位置
+
+//join操作，切片连接起来
+strings.(a[] string, sep string)
 ~~~
 
 
 
+**byte和rune类型**
+
+组成每个字符串的元素叫做“字符”，可以通过遍历或者单个获取字符串元素获得字符。字符用单引号包裹起来，如：
+
+~~~go
+var a := '中'
+var b := 'x'
+~~~
+
+Go语言的字符有以下两种：
+
+1、uint8类型，或者叫byte型，代表了ASCII码的一个字符；
+
+2、rune类型，代表一个UTF-8字符。
+
+~~~go
+
+//byte和rune类型
+//Go语言中为了处理非ASCII码类型的字符，定义了新的rune类型
+//英文字符是 byte
+//其他语言字符是 rune类型
+
+s := "Hello意难平"
+// len()求的是byte字节的数量
+n := len(s)
+fmt.Println(n) //值：14
+
+//for i := 0; i < len(s); i++  {
+//	fmt.Printf("%c\n", s[i])  // %c：字符，但是这里中文会变成“乱码”
+//}
+
+for _, c := range s { //从字符串中拿出具体的字符
+    fmt.Printf("%c\n", c)
+}
+~~~
+
+
+
+**修改字符串**
+
+要修改字符串，需要先将其转换成 []rune 或 []byte，完成后再转换为 string。无论哪种转换，都会重新分配内存，并复制字节数组。
+
+~~~go
+func changeString() {
+    s1 := "big"
+    byteS1 := []byte(s1)
+    byteS1[0] = 'p'
+    fmt.Println(string(byteS1))
+    
+    s2 := "白萝卜"
+    runeS2 := []rune(s2) //强制转换成切片
+    runeS2[0] = '红' //改成 字符，如用双引号会变成红线不能编译
+    fmt.Println(string(runeS2))
+}
+~~~
+
+~~~go
+s1 := "程"  //string
+s2 := '程'  //rune(int32)
+fmt.Printf("s1:%T s2:%T", s1, s2)
+
+> go run main.go
+s1:string    s2:int32
+~~~
+
+
+
+if判断
+
+~~~go
+if 表达式1 {}
+   ...
+} else if 表达式2 {
+   ...
+} else {
+   ...
+}
+
+//例子1
+age := 19
+if age > 18 {
+    fmt.Println("成年了")
+} else {
+    fmt.Println("去写作业")
+}
+
+//例子2
+if age := 19; age > 18 {
+    fmt.Println("成年了")
+} else {
+    fmt.Println("去写作业")
+}
+//fmt.Println(age) 作用域不到这里，飘红不让编译通过
+~~~
+
+
+
+for循环
+
+~~~go
+//第一种：基本格式
+for i := 0; i < 10; i++ {
+    fmt.Println(i)
+}
+
+//变种1
+i := 0
+for ; i < 10; i++ {
+   fmt.Println(i) 
+}
+
+//变种2
+i := 0
+for ; i < 10; {
+   fmt.Println(i)
+   i++
+}
+
+无限循环
+for {
+    循环语句
+}
+for循环可以通过 break、goto、return、panic 语句强制退出循环
+~~~
+
+
+
+**for range(键值循环)**
+
+Go语言中可以使用 for range 遍历数组、切片、字符串、map及通道 channel。
+
+1、数组、切片、字符串返回索引和值
+
+2、map返回键和值
+
+3、通道(channel)只返回通道内的值
+
+~~~go
+s := "cheng天明"
+for i,v := range s {
+    fmt.Printf("%d %c\n", i, v)
+    //汉字占了三个位置，索引会跳跃的
+}
+
+>go run main.go
+0 c
+1 h
+2 e
+3 n
+4 g
+5 天  //跳跃
+8 明
+~~~
+
+
+
+练习
+
+~~~go
+//九九乘法表
+for i := 1; i < 10; i++ {
+	for j := 1; j <= i; j++ {
+		fmt.Printf("%d * %d = %d\t", i, j, i * j)
+	}
+	fmt.Println()
+}
+~~~
+
+~~~
+//单行注释
+
+/**多行注释
+多行注释
+*/
+
+变量声明
+1、var name1 string
+2、var name2 = "chenglh"
+3、函数内部声明 ： name3 := "test"
+
+匿名变量(哑元变量)
+
+常量
+const PI = 3.14159
+const UserNotExistErr = 10000
+
+iota：实现枚举
+三个要点：
+1、
+~~~
+
+
+
+
+
+
+
 https://www.bilibili.com/video/BV14C4y147y8?p=14
+
