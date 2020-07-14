@@ -1006,13 +1006,13 @@ for i,v := range s {
 //九九乘法表
 for i := 1; i < 10; i++ {
 	for j := 1; j <= i; j++ {
-		fmt.Printf("%d * %d = %d\t", i, j, i * j)
+		fmt.Printf("%d * %d = %d\t", j, i, i * j)
 	}
 	fmt.Println()
 }
 ~~~
 
-~~~
+~~~go
 //单行注释
 
 /**多行注释
@@ -1025,15 +1025,376 @@ for i := 1; i < 10; i++ {
 3、函数内部声明 ： name3 := "test"
 
 匿名变量(哑元变量)
+s := "hello"
+for i,v := range s { // key , value
+   fmt.Printf("%d , %c \n", i, v)
+}
+for i := range s { // key 只有一个变量是默认是 索引
+   fmt.Printf("%d\n", i)
+}
+for _,v := range s { // 不需要key , 只要value
+   fmt.Printf("%c \n", v)
+}
 
-常量
+continue 继续下一次循环
+for i := 0; i <10; i++ {
+    if (i == 5) {
+        continue
+    }
+}
+
+基本数据类型
+//整型
+无符号：uint8,uint16,uint32,uint64
+带符号：int8,int16,int32,int64
+
+uint和int：具体是32位还是64位要看操作系统
+uintptr：表示指针
+
+Go语言中没办法直接定义二进制数
+var n1 = 0777
+var n2 = 0xff
+
+//浮点型
+float32和float64
+Go语言中浮点数默认是float64
+
+//布尔值
+true和false
+不能和其他的类型做转换
+
+//字符串
+常用方法
+字符串不能修改
+
+//byte和rune类型
+都属于类型别名
+
+//字符串、字符、字节
+字符串：双引号
+字符：单引号，单个字母、单个符号、单个文字
+字节：1byte=8bit
+utf-8中，一个常用汉字 一般占用3个字节
+
+//常量
 const PI = 3.14159
 const UserNotExistErr = 10000
 
 iota：实现枚举
 三个要点：
-1、
+1、iota在const关键字出现时将被重置为0
+2、const中每新增一行常量声明，iota累加1
 ~~~
+
+
+
+**switch**
+
+~~~go
+//switch
+var n1 = 10
+switch n1 {
+    case 1:
+    	fmt.Println("this is 1")
+    case 2:
+    	fmt.Println("this is 2")
+    default:
+    	fmt.Println("this is nothing")
+}
+
+//变种
+switch n := 3; n { //先赋值然后判断
+    case 1:
+    	fmt.Println("这是1")
+    case 2:
+    	fmt.Println("这是2")
+    default:
+    	fmt.Println("不确定")
+}
+
+//判断
+age := 18
+switch {
+    case age < 18:
+    	fmt.Println("未成年")
+    case age > 18 && age < 60: 
+        fmt.Println("好好工作")
+    default:
+    	fmt.Println("好好生活")
+}
+~~~
+
+
+
+**数组**
+
+~~~go
+package main
+
+import "fmt"
+
+func main()  {
+	//数组
+	//存放元素的容器
+	//必须指定存放的元素的类型和容量(即长度)
+	var a1 [3]bool //[false false false]
+	var a2 [4]bool //[false false false false]
+
+	fmt.Printf("a1：%T，a2：%T\n", a1, a2)
+
+	//数组的初始化
+	//默认元素都是零值(布尔值false，整形和浮点型都是0，字符串是"")
+	fmt.Println(a1, a2)
+
+	//初始化方式1
+	a3 := [3]bool{true, false, true}
+	fmt.Println(a3)
+
+	//初始化方式2
+	//根据初始值自动推断数组的长度
+	a6 := [...]int{0,1,2,3,4,5}
+	fmt.Println(a6)
+
+	//初始化方式3
+	//a5 := [5]int{1,2} 后面默认值0
+	//根据索引指定来声明
+	a5 := [5]int{0:1,4:3}
+	fmt.Println(a5)
+}
+~~~
+
+
+
+**数据遍历**
+
+~~~go
+//一维数组遍历
+city := [...]string{"北京","上海","深圳"}
+//1、根据索引遍历
+for i := 0; i < len(city); i++  {
+	fmt.Println(city[i])
+}
+
+//2、for range遍历
+for i,v := range city{
+	fmt.Println(i,v)
+}
+
+//多维数组
+//[[1,2] [3,4] [5,6]]
+var all = [3][2]int{
+    [2]int{1,2},
+    [2]int{3,4},
+    [2]int{5,6},
+}
+
+fmt.Println(all)
+for _,v := range all{
+    for _,vv := range v{
+        fmt.Println(vv)
+    }
+}
+~~~
+
+
+
+**切片**
+
+数组的局限性，因为数组的长度是固定的并且数组长度属于类型的一部分。
+
+~~~go
+func arraySum(x [3]int) int{
+    sum := 0;
+    for _,v := range x{
+        sum += v
+    }
+    return sum
+}
+
+这个求各函数只能接受 [3]int类型，其他的都不支持
+
+a := [3]int{1,2,3}
+只要定义了a数组，就不能再继续往数组a中添加新元素了
+~~~
+
+> 切片
+
+切片(slice)是一个拥有相同类型元素的`可变长度的序列`。它是基于数组类型做的一层封装。它非常灵活，支持自动扩容。
+
+切片是一个"引用类型"，它的内部结构包含 地址、长度和容量。切片一般用于快速地操作一块数据集合。
+
+~~~go
+package main
+
+import "fmt"
+
+//切片slice
+func main()  {
+	//切片定义
+	var s1 []int    //定义一个存放int类型元素的切片
+	var s2 []string //定义一个存放string类型元素的切片
+	fmt.Println(s1, s2)
+    fmt.Println(s1==nil)  //true
+	fmt.Println(s2==nil)  //true
+    //fmt.Println(s1==s2) 飘红报错，切片是引用类型，不支持直接比较，只能和nil比较
+
+	//初始化
+	s1 = []int{1,2,3}
+	s2 = []string{"广东","广州","天河"}
+	fmt.Println(s1, s2)
+}
+~~~
+
+
+
+**切片的长度和容量**
+
+切片拥有自己的长度和容量，可以通过内置的len()函数求长度，使用内置的cap()函数求切片的容量。
+
+~~~go
+package main
+
+import "fmt"
+//切片slice
+
+func main()  {
+	//切片定义
+	var s1 []int    //定义一个存放int类型元素的切片
+	var s2 []string //定义一个存放string类型元素的切片
+	//fmt.Println(s1, s2)
+	//fmt.Println(s1==nil)
+	//fmt.Println(s2==nil)
+
+	//初始化
+	s1 = []int{1,2,3}
+	s2 = []string{"广东","广州","天河"}
+	fmt.Println(s1, s2)
+    //计算-长度和容量
+	fmt.Printf("s1:len:%d s1:cap:%d\n", len(s1), cap(s1))
+	fmt.Printf("s2:len:%d s2:cap:%d\n", len(s2), cap(s2))
+    
+    //2、由数组得到切片
+	s1 := [...]int{1,3,5,7,9,11}
+	s2 := s1[0:4] //基于一个数组切割，左包含右不包含，(左闭右开) [1 3 5]
+	fmt.Println(s2)
+
+	s3 := s1[1:6]  // [3 5 7 9 11]
+	fmt.Println(s3)
+    
+    s4 := s1[:4]  // [0:4]
+	s5 := s1[3:]  // [3:最后即len(s1)]
+	s6 := s1[:]  //  [0:最后即len(s1)]
+	fmt.Println(s4, s5, s6)
+}
+
+>go run main.go
+[1 2 3] [广东 广州 天河]
+s1:len:3 s1:cap:3
+s2:len:3 s2:cap:3
+~~~
+
+
+
+> 切片的本质
+
+切片就是一个框，框住了一块连续的内存。属于引用类型
+
+切片的本质就是对底层数组的封装，它包含了三个信息：底层数组的指针、切片的长度（len）和切片的容量（cap）。
+
+举个例子，现在有一个数组a := [8]int{0, 1, 2, 3, 4, 5, 6, 7}，切片s1 := a[:5]，相应示意图如下
+
+<img src="H:\笔记本\Golang.assets\image-20200714155741790.png" alt="image-20200714155741790" style="float:left;" />
+
+
+
+切片s2 := a[3:6]，相应示意图如下：
+
+<img src="H:\笔记本\Golang.assets\image-20200714155917610.png" alt="image-20200714155917610" style="float:left;" />
+
+> 判断切片是否为空
+
+要检查切片是否为空，请始终使用len(s) == 0来判断，而不应该使用s == nil来判断
+
+~~~go
+s1 := [...]int{1,3,5,7,9,11}
+
+//切片是引用类型，都指向了底层的一个数组，如果底层数组修改了，其他切片数据读取也是跟着改变的
+s4 := s1[:4]  // [0:4]
+s1[2] = 1200
+fmt.Println(s4) // [1 3 1200 7]
+~~~
+
+
+
+**make()函数创造切片**
+
+~~~go
+make([]T, size, cap)
+
+//T:切片的元素类型
+//size:切片中元素的数量
+//cap:切片的容量
+
+func main() {
+	a := make([]int, 2, 10)
+	fmt.Println(a)      //[0 0]
+	fmt.Println(len(a)) //2
+	fmt.Println(cap(a)) //10
+}
+
+//上面代码中a的内部存储空间已经分配了10个，但实际上只用了2个。 容量并不会影响当前元素的个数，所以len(a)返回2，cap(a)则返回该切片的容量。
+~~~
+
+
+
+> 切片不能直接比较
+
+切片之间是不能比较的，我们不能使用==操作符来判断两个切片是否含有全部相等元素。 切片唯一合法的比较操作是和nil比较。 
+
+一个nil值的切片并没有底层数组，一个nil值的切片的长度和容量都是0。但是我们不能说一个长度和容量都是0的切片一定是nil
+
+~~~go
+var s1 []int         //len(s1)=0;cap(s1)=0;s1==nil
+s2 := []int{}        //len(s2)=0;cap(s2)=0;s2!=nil  有初始化，已开辟内存空间
+s3 := make([]int, 0) //len(s3)=0;cap(s3)=0;s3!=nil
+~~~
+
+**切片的赋值**
+
+~~~go
+//切片的赋值拷贝
+s3 := []int{1, 3, 5}
+s4 := s3  //s3 、s4指向同一个底层数组
+fmt.Println(s3, s4) // [1 3 5]  [1 3 5]
+s3[0] = 1200
+fmt.Println(s3, s4) // [1200 3 5] [1200 3 5]
+~~~
+
+**切片遍历**
+
+~~~go
+func main() {
+	s := []int{1, 3, 5}
+
+    //方法1：索引数组遍历
+	for i := 0; i < len(s); i++ {
+		fmt.Println(i, s[i])
+	}
+
+    //方法2：for range循环
+	for index, value := range s {
+		fmt.Println(index, value)
+	}
+}
+~~~
+
+
+
+
+
+
+
+
 
 
 
@@ -1043,3 +1404,8 @@ iota：实现枚举
 
 https://www.bilibili.com/video/BV14C4y147y8?p=14
 
+
+
+
+
+https://www.liwenzhou.com/posts/Go/06_slice/
