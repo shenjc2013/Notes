@@ -1388,6 +1388,23 @@ func main() {
 }
 ~~~
 
+**append**
+
+~~~go
+package main
+
+func main() {
+    s := []string{"北京", "上海", "深圳"}
+    //s[3] = "广州"  //索引溢界，错误写法，会导致编译错误
+    fmt.Printf("s=%v \t len(s)=%d \t cap(s)=%d\n", s, len(s), cap(s))
+    
+    //调用append函数必须用原来的切片变量来接收返回值
+    //名字不变，但是内存地址已变化
+    s = append(s, "广州")//append追加元素，原来的底层数组放不下的时候，Go底层就会把底层数组换一个位置
+    fmt.Printf("s=%v \t len(s)=%d \t cap(s)=%d\n", s, len(s), cap(s))
+}
+~~~
+
 
 
 
