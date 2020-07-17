@@ -8,6 +8,12 @@ https://www.bilibili.com/video/BV14C4y147y8?p=8
 ##【老男孩教育】GO语言 基础+就业班 #新版
 https://www.bilibili.com/video/BV1QJ411V73q/?spm_id_from=333.788.videocard.0
 https://www.bilibili.com/video/BV1QJ411V73q/?spm_id_from=333.788.videocard.1
+
+##【最新Go Web开发教程】基于gin框架和gorm的web开发实战 (七米出品)
+https://www.bilibili.com/video/BV1gJ411p7xC?from=search&seid=2641930791964842149
+
+##2018年的
+https://www.bilibili.com/video/BV1A741117tD/?spm_id_from=333.788.videocard.19
 ```
 
 ##### Day01 Golang入门
@@ -1130,7 +1136,6 @@ switch {
 
 ~~~go
 package main
-
 import "fmt"
 
 func main()  {
@@ -1145,27 +1150,47 @@ func main()  {
 	//数组的初始化
 	//默认元素都是零值(布尔值false，整形和浮点型都是0，字符串是"")
 	fmt.Println(a1, a2)
+}
+~~~
 
-	//初始化方式1
-	a3 := [3]bool{true, false, true}
-	fmt.Println(a3)
+~~~go
+//初始化方式1
+a3 := [3]bool{true, false, true}
+fmt.Println(a3)
+~~~
 
-	//初始化方式2
-	//根据初始值自动推断数组的长度
-	a6 := [...]int{0,1,2,3,4,5}
-	fmt.Println(a6)
+~~~go
+//初始化方式2
+//根据初始值自动推断数组的长度
+a6 := [...]int{0,1,2,3,4,5}
+fmt.Println(a6)
+~~~
 
-	//初始化方式3
-	//a5 := [5]int{1,2} 后面默认值0
-	//根据索引指定来声明
-	a5 := [5]int{0:1,4:3}
-	fmt.Println(a5)
+~~~GO
+//初始化方式3
+//a5 := [5]int{1,2} 后面默认值0
+//根据索引指定来声明
+a5 := [5]int{0:1,4:3}
+fmt.Println(a5)
+~~~
+
+
+
+~~~go
+var ages = [...]int{1:100, 99:200}  //第一个元素100；第99个元素：200，其他的默认为0
+
+var a1 = [...][2]int{ //只有外层才可以...，二维的不可以
+    [2]int{1,2},
+    [2]int{3,4},
+    [2]int{5,6},
 }
 ~~~
 
 
 
-**数据遍历**
+
+
+**数组遍历**
 
 ~~~go
 //一维数组遍历
@@ -1388,7 +1413,7 @@ func main() {
 }
 ~~~
 
-**append**
+**切片添加元素**
 
 ~~~go
 package main
@@ -1403,23 +1428,672 @@ func main() {
     s = append(s, "广州")//append追加元素，原来的底层数组放不下的时候，Go底层就会把底层数组换一个位置
     fmt.Printf("s=%v \t len(s)=%d \t cap(s)=%d\n", s, len(s), cap(s))
 }
+
+> go run main.go
+city=[北京 上海 深圳]    len(city)=3     cap(city)=3
+city=[北京 上海 深圳 广州]       len(city)=4     cap(city)=6
+~~~
+
+**注意：**通过var声明的零值切片可以在`append()`函数直接使用，无需初始化。
+
+~~~go
+//---------------数值---------------
+var s []int
+s = append(s, 1, 2, 3)
+
+var s = make([]int, 0, 0)
+s = append(s, 11, 22, 33)
+fmt.Println(s)
+
+//---------------字符串---------------
+var city []string
+city = append(city, "北京","上海","深圳")
+fmt.Println(city)
+
+var s = make([]string, 0, 0)
+s = append(s, "111", "222", "333")
+fmt.Println(s)
+~~~
+
+每个切片会指向一个底层数组，这个数组的容量够用就添加新增元素。当底层数组不能容纳新增的元素时，切片就会自动按照一定的策略进行“扩容”，此时该切片指向的底层数组就会更换。“扩容”操作往往发生在append()函数调用时，所以我们通常都需要用原变量接收append函数的返回值。
+
+举例子：
+
+~~~go
+func main() {
+	//append()添加元素和切片扩容
+	var numSlice []int
+	for i := 0; i < 10; i++ {
+		numSlice = append(numSlice, i)
+		fmt.Printf("%v  len:%d  cap:%d  ptr:%p\n", numSlice, len(numSlice), cap(numSlice), numSlice)
+	}
+}
+
+>go run main.go
+[0]  					len:1  cap:1  ptr:0xc00000a0d8
+[0 1]  					len:2  cap:2  ptr:0xc00000a130 //扩容后地址改变
+[0 1 2]  				len:3  cap:4  ptr:0xc00000c3c0
+[0 1 2 3]  				len:4  cap:4  ptr:0xc00000c3c0
+[0 1 2 3 4]  			len:5  cap:8  ptr:0xc00000e200 //扩容后地址改变
+[0 1 2 3 4 5]  			len:6  cap:8  ptr:0xc00000e200
+[0 1 2 3 4 5 6]  		len:7  cap:8  ptr:0xc00000e200
+[0 1 2 3 4 5 6 7]  		len:8  cap:8  ptr:0xc00000e200 //扩容后地址改变
+[0 1 2 3 4 5 6 7 8]  	len:9  cap:16 ptr:0xc000076080
+[0 1 2 3 4 5 6 7 8 9]	len:10 cap:16 ptr:0xc000076080
+
+//从上面的结果可以看出：
+//1、append()函数将元素追加到切片的最后并返回该切片
+//2、切片numSlice的容量按照1，2，4，8，16这样的规则自动进行扩容，每次扩容后都是扩容前的2倍
+~~~
+
+**切片追加元素或切片**
+
+~~~go
+//append()函数还支持一次性追加多个元素。 例如：
+
+var citySlice []string
+// 追加一个元素
+citySlice = append(citySlice, "北京")
+// 追加多个元素
+citySlice = append(citySlice, "上海", "广州", "深圳")
+// 追加切片
+a := []string{"成都", "重庆"}
+citySlice = append(citySlice, a...) //追加切片，...表示拆开(为字符串)
+fmt.Println(citySlice) //[北京 上海 广州 深圳 成都 重庆]
 ~~~
 
 
 
+**切片的扩容策略**
+
+可以通过查看`$GOROOT/src/runtime/slice.go`源码，其中扩容相关代码如下：
+
+~~~go
+newcap := old.cap
+doublecap := newcap + newcap
+if cap > doublecap {
+    newcap = cap
+} else {
+    if old.len < 1024 {
+        newcap = doublecap
+    } else {
+        // Check 0 < newcap to detect overflow
+        // and prevent an infinite loop.
+        for 0 < newcap && newcap < cap {
+            newcap += newcap / 4
+        }
+        // Set newcap to the requested cap when
+        // the newcap calculation overflowed.
+        if newcap <= 0 {
+            newcap = cap
+        }
+    }
+}
+
+//从上面的代码可以看出以下内容：
+
+/**
+首先判断，如果新申请容量（cap）大于2倍的旧容量（old.cap），最终容量（newcap）就是新申请的容量（cap）。
+否则判断，如果旧切片的长度小于1024，则最终容量(newcap)就是旧容量(old.cap)的两倍，即（newcap=doublecap），
+否则判断，如果旧切片长度大于等于1024，则最终容量（newcap）从旧容量（old.cap）开始循环增加原来的1/4，即（newcap=old.cap,for {newcap += newcap/4}）直到最终容量（newcap）大于等于新申请的容量(cap)，即（newcap >= cap）
+如果最终容量（cap）计算值溢出，则最终容量（cap）就是新申请容量（cap）。
+
+需要注意的是，切片扩容还会根据切片中元素的类型不同而做不同的处理，比如int和string类型的处理方式就不一样。
+*/
+~~~
+
+**copy拷贝**
+
+~~~go
+package main
+
+import "fmt"
+
+func main()  {
+	s1 := []string{"张","李","程"}
+	s2 := s1
+	var s3 = make([]string, 3, 3)
+	copy(s3, s1) //拷贝，copy(目的,数据源) ,是两个不同的内存地址了，拷贝完成后就互不影响了
+	fmt.Println(s1, s2, s3) // [张 李 程] [张 李 程] [张 李 程]
+	s2[2] = "范"
+	fmt.Println(s1, s2, s3) // [张 李 范] [张 李 范] [张 李 程]
+}
+
+//如果长度不够，会自动截断
+//如果容量不够，会编译错误
+~~~
+
+**从切片中删除元素**
+
+~~~go
+package main
+import "fmt"
+
+func main()  {
+	a1 := [...]int{1, 3, 5, 7 ,9, 11, 13, 17}
+	s1 := a1[:]
+
+	//删除索引为1的那个3值
+	s1 = append(s1[:1], s1[2:]...)
+	fmt.Println(s1) //[1 5 7 9 11 13 17]
+
+	fmt.Println(a1) //数据5 7 9 11 13 17 往前移动到"索引为1"的位置上，即得到结果[1 5 7 9 11 13 17 17]
+}
+~~~
+
+
+
+~~~go
+//面试题
+package main
+import "fmt"
+
+func main()  {
+	var a = make([]int, 5, 10)
+    //定义了一个切片，长度是5，容量是10
+    //fmt.Println(a)   --> [0 0 0 0 0]
+	for i := 0; i < 10; i++ {
+		a = append(a, i) //再追加元素 0-9
+	}
+	fmt.Println(a)
+    //[0 0 0 0 0 0 1 2 3 4 5 6 7 8 9]
+    //容量是扩容了，打印出的容量结果就不确定了
+    
+    //数组排序
+    var a = [...]int{1,9,3,0,2,7,4}
+	sort.Ints(a[:])
+
+	fmt.Println(a)
+}
+~~~
+
+**指针**
+
+Go语言中的值类型（int、float、bool、string、array、struct）都有对应的指针类型，如：*int、*int64、*string等。
+
+取变量指针的语法如下：
+
+~~~
+ptr := &v    // v的类型为T
+~~~
+
+其中：
+v   ：代表被取地址的变量，类型为T
+ptr：用于接收地址的变量，ptr的类型就为\*T，称做T的指针类型(int、string等)。\*代表指针。
+
+
+
+例如：变量b存储的是变量a的地址，变量b本身就有一个指针地址
+
+<img src="H:\笔记本\Golang.assets\image-20200715165332528.png" alt="image-20200715165332528" style="float: left; zoom: 90%;" />
+
+~~~go
+func main()  {
+	// 1. & 取地址
+	// 2. * 根据地址取值
+
+	n := 18
+	age := &n			// 取变量n的地址，将指针保存到age中
+	s := "chenglh"
+        name := &s			// 取变量s的地址，将指针保存到name中
+        fmt.Println(age)			 //age变量的值是内存地址
+        fmt.Printf("%T\n", age)    // *int  返回int类型的指针
+	fmt.Println(name)		 //内存地址
+	fmt.Printf("%T\n", name) // *string  返回是字符串类型的指针
+
+	//根据地址取值
+	fmt.Printf("%v\n", *age)
+	fmt.Printf("%v\n", *name)
+}
+~~~
+
+
+
+**总结：** 取地址操作符`&`和取值操作符`*`是一对互补操作符，`&`取出地址，`*`根据地址取出地址指向的值。
+
+~~~go
+//错误写法
+
+func main() {
+	var a *int	// nil pointer，没有开劈内存空间
+	*a = 100	//空指针，找不到地址去赋值，编译没问题，
+    //但是运行时会报错：runtime error: invalid memory address or nil pointer dereference
+	fmt.Println(*a)
+
+	var b map[string]int
+	b["沙河娜扎"] = 100
+	fmt.Println(b)
+}
+~~~
+
+
+
+Go语言中new和make是内建的两个函数，主要用来分配内存
+
+> new是一个内置的函数，它的函数签名如下：
+
+~~~go
+func new(Type) *Type
+
+/**
+其中
+Type表示类型，new函数只接受一个参数，这个参数是一个类型
+*Type表示类型指针，new函数返回一个指向该类型内存地址的指针
+*/
+
+//new函数不太常用，使用new函数得到的是一个类型的指针，并且该指针对应的值为该类型的零值
+func main() {
+	a := new(int)
+	b := new(bool)
+	fmt.Printf("%T\n", a) // *int
+	fmt.Printf("%T\n", b) // *bool
+	fmt.Println(*a)       // 0
+	fmt.Println(*b)       // false
+    
+    *a = 100
+	*b = true
+	fmt.Printf("%v\n", *a)
+	fmt.Printf("%v\n", *b)
+}
+~~~
+
+
+
+~~~go
+//上面错误写法的解决办法
+func main() {
+	var a *int
+    fmt.Println(a)  //<nil>
+	a = new(int)
+	*a = 10
+	fmt.Println(*a)
+}
+~~~
+
+> make，也是用于内存分配的，它只用于slice、map以及chan的内存创建，而且它返回的类型就是这三个类型本身，因为这三种类型就是引用类型，所以就没有必要返回他们的指针了。
+
+**make函数的函数签名**
+
+```go
+func make(t Type, size ...IntegerType) Type
+```
+
+`var b map[string]int`只是声明变量b是一个map类型的变量，需要使用make函数进行初始化操作之后，才能对其进行键值对赋值：
+
+~~~go
+func main() {
+	var b map[string]int
+	b = make(map[string]int, 10)
+
+	b["沙河娜扎"] = 100
+	fmt.Println(b)
+}
+~~~
+
+> new与make的区别
+
+1. 二者都是用来做内存分配的。
+2. make只用于slice、map以及channel的初始化，返回的还是这三个引用类型本身；
+3. 而new用于类型的内存分配，并且内存对应的值为类型零值，返回的是指向类型的指针。
+
+**map类型**
+
+Go语言中提供的映射关系容器为map，其内部使用散列表（hash）实现。
+
+map是一种无序的基于key-value的数据结构，Go语言中的map是引用类型，必须初始化才能使用。
+
+> map定义
+
+```go
+map[KeyType]ValueType
+
+//其中
+//KeyType:表示键的类型
+//ValueType:表示键对应的值的类型
+
+//举例：以下编译是没有问题，但是运行时会出问题
+var m1 map[string]int
+fmt.Println(m1 == nil) //还没有初始化，没有在内存中开辟空间
+m1["age1"] = 18
+m1["age2"] = 30
+//以上赋值是不成功的
+
+//正确例子
+m1 := make(map[string]int, 10) //第二个参数可以不写，自动扩容；但是最好估算好容量，避免在程序运行期间再动态扩容，增加开销
+m1["age1"] = 18
+m1["age2"] = 30
+```
+
+map类型的变量默认初始值为nil，需要使用make()函数来分配内存。
+
+语法为：
+
+```go
+make(map[KeyType]ValueType, [cap])
+//其中cap表示map的容量，该参数虽然不是必须的，但是我们应该在初始化map的时候就为其指定一个合适的容量
+```
+
+map基本使用：都是键值对出现
+
+~~~go
+func main()  {
+	scoreMap := make(map[string]float32, 10)
+	scoreMap["张三"] = 90.40
+	scoreMap["李明"] = 95.00
+	scoreMap["赵宁"] = 89.95
+	fmt.Printf("scoreMap Type：%T\n", scoreMap)
+	fmt.Println(scoreMap)
+	fmt.Println(scoreMap["赵宁"])
+}
+~~~
+
+输出结果：
+
+~~~go
+scoreMap Type：map[string]float32
+map[张三:90.4 李明:95 赵宁:89.95]
+89.95
+~~~
+
+map也支持在声明的时候填充元素：
+
+~~~go
+func main()  {
+    userInfo := map[string]string{
+        "username" : "chenglh",
+        "password" : "123456",
+    }
+    fmt.Println(userInfo)
+}
+~~~
+
+**判断map中某个键是否存在**
+
+~~~go
+val,ok := map[key]
+~~~
+
+~~~go
+func main() {
+    userInfo := map[string]string{
+		"username" : "chenglh",
+		"password" : "123456",
+		"age" : "18",
+	}
+	fmt.Println(userInfo)
+    
+    fmt.Println(userInfo["telephone"]) //如果不存在这个key拿到的对应值类型的零值，这里是""
+
+	//判断map中某个键是否存在
+	val,ok := userInfo["age"]
+	if ok {
+		fmt.Println("年龄是：" + val)
+	} else {
+		fmt.Println("没有当前字段")
+	}
+}
+~~~
+
+**map的遍历**
+
+Go语言中使用for range遍历map。
+
+~~~go
+func main() {
+	//map遍历
+	scoreMap := make(map[string]int, 10)
+	scoreMap["zhangsan"] = 88
+	scoreMap["lisi"] = 79
+	scoreMap["wangwu"] = 90
+	for index,value := range scoreMap{
+		fmt.Printf("姓名：%v 成绩：%v\n",index,value)
+	}
+}
+~~~
+
+**注意：** 遍历map时的元素顺序与添加键值对的顺序无关。
+
+
+
+**delete()函数删除键值对**
+
+~~~go
+delete(map, key)
+~~~
+
+~~~go
+func main() {
+    scoreMap := make(map[string]int)
+	scoreMap["zhangsan"] = 88
+	scoreMap["lisi"] = 79
+	scoreMap["wangwu"] = 90
+	delete(scoreMap, "lisi")
+	delete(scoreMap, "wangliu") //删除不存在的key，什么也不干的
+	fmt.Println(scoreMap)
+}
+
+//查看文档：
+>go doc builtin.delete
+ If m is nil or there is no such element, delete is a no-op.
+
+//https://studygolang.com/pkgdoc
+~~~
+
+
+
+**按照指定顺序遍历map**
+
+~~~go
+package main
+import (
+	"fmt"
+	"math/rand"
+	"sort"
+	"time"
+)
+
+func main()  {
+	//初始化随机数种子
+	rand.Seed(time.Now().UnixNano()) //时间，加纳秒
+
+	//创建map
+	var scoreMap  = make(map[string]int, 20)
+
+	//遍历填充值
+	for i := 0; i < 20; i++ {
+		key := fmt.Sprintf("stu%04d", i) //生成stu开头的学号字符串
+		value := rand.Intn(100) //生成0-99的随机整数
+		scoreMap[key] = value
+	}
+	fmt.Println(scoreMap)
+
+	//取出map中的所有key存入切片keys
+	var keys  = make([]string, 0, 20)
+	for key := range scoreMap {
+		keys = append(keys, key)
+	}
+	fmt.Println(keys)
+
+	//对切片进行排序
+	sort.Strings(keys)
+	fmt.Println(keys)
+
+	//按照排序后的key遍历map
+	for _, key := range keys {
+		fmt.Printf("%v：%v\n", key, scoreMap[key])
+	}
+}
+~~~
+
+**元素为map类型的切片**
+
+
+
+**值为切片类型的map**
+
+~~~go
+https://www.liwenzhou.com/posts/Go/08_map/
+~~~
+
+
+
+**函数**
+
+~~~go
+func 函数名(参数)(返回值) {
+    函数体
+}
+~~~
+
+~~~go
+//有返回值
+func intSum(x int, y int) int {
+	return x + y
+}
+
+//没有返回值
+func sayHello() {
+	fmt.Println("Hello 沙河")
+}
+~~~
+
+> 类型简写
+
+~~~go
+//函数的参数中如果相邻变量的类型相同，则可以省略类型，例如：
+func intSum(x, y int) int {
+	return x + y
+}
+~~~
+
+> 可变参数
+
+~~~go
+func intSum2(x ...int) int {
+	fmt.Println(x) //x是一个切片
+	sum := 0
+	for _, v := range x {
+		sum = sum + v
+	}
+	return sum
+}
+
+//函数的调用
+ret1 := intSum2()
+ret2 := intSum2(10)
+ret3 := intSum2(10, 20)
+ret4 := intSum2(10, 20, 30)
+fmt.Println(ret1, ret2, ret3, ret4) //0 10 30 60
+~~~
+
+> 固定参数搭配可变参数使用时，可变参数要放在固定参数的后面，示例代码如下：
+
+~~~go
+func intSum3(x int, y ...int) int {
+	fmt.Println(x, y)
+	sum := x
+	for _, v := range y {
+		sum = sum + v
+	}
+	return sum
+}
+
+//函数的调用
+ret5 := intSum3(100)
+ret6 := intSum3(100, 10)
+ret7 := intSum3(100, 10, 20)
+ret8 := intSum3(100, 10, 20, 30)
+fmt.Println(ret5, ret6, ret7, ret8) //100 110 130 160
+~~~
+
+**返回值**
+
+> 多返回值，Go语言中函数支持多返回值，函数如果有多个返回值时必须用`()`将所有返回值包裹起来。
+
+~~~go
+func calc(x, y int) (int, int) {
+	sum := x + y
+	sub := x - y
+	return sum, sub
+}
+~~~
+
+> 返回值命名，函数定义时可以给返回值命名，并在函数体中直接使用这些变量，最后通过`return`关键字返回。
+
+~~~go
+func calc(x, y int) (sum, sub int) { //使用命名方式返回，return 可以不写
+	sum = x + y
+	sub = x - y
+	return
+}
+~~~
+
+>返回值补充，当我们的一个函数返回值类型为slice时，nil可以看做是一个有效的slice，没必要显示返回一个长度为0的切片。
+
+~~~go
+func someFunc(x string) []int {
+	if x == "" {
+		return nil // 没必要返回[]int{}
+	}
+	...
+}
+~~~
+
+**Go**语言中函数没有默认参数这个概念
+
+
+
+**运算符**
+
+~~~
+算术运算符：+-*/
+
+逻辑运算符：&& || !
+
+位运算符：>> << | ^ &
+
+赋值运算符： = 、+=、++、--
+
+比较运算符： <、<=、!=、>、>=
+~~~
+
+**数组**
+
+~~~go
+var ages  [30]int	//元素的个数、类型
+var names [30]string
+
+var aa = []int{1,13,50}
+bb := aa
+fmt.Printf("aa:%T\tbb:%T\n", aa, bb)
+fmt.Printf("aa:%p\tbb:%p\n", aa, bb)
+bb[1] = 2
+
+fmt.Println(aa,bb)
+
+>go run main.go
+aa:[]int        bb:[]int
+aa:0xc00009e140 bb:0xc00009e140
+[1 2 50] [1 2 50]
+~~~
+
+
+
+**切片**
+
+
+
+**指针**
+
+
+
+**map**
 
 
 
 
 
-
-
-
-
-
-
-
-https://www.bilibili.com/video/BV14C4y147y8?p=14
+https://www.bilibili.com/video/BV14C4y147y8?p=26
 
 
 
