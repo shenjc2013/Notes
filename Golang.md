@@ -1174,7 +1174,7 @@ a5 := [5]int{0:1,4:3}
 fmt.Println(a5)
 ~~~
 
-
+**知识点**
 
 ~~~go
 var ages = [...]int{1:100, 99:200}  //第一个元素100；第99个元素：200，其他的默认为0
@@ -1188,19 +1188,17 @@ var a1 = [...][2]int{ //只有外层才可以...，二维的不可以
 
 
 
-
-
 **数组遍历**
 
 ~~~go
 //一维数组遍历
 city := [...]string{"北京","上海","深圳"}
-//1、根据索引遍历
+//方法1、根据索引遍历
 for i := 0; i < len(city); i++  {
 	fmt.Println(city[i])
 }
 
-//2、for range遍历
+//方法2、for range遍历
 for i,v := range city{
 	fmt.Println(i,v)
 }
@@ -2075,25 +2073,197 @@ fmt.Println(aa,bb)
 aa:[]int        bb:[]int
 aa:0xc00009e140 bb:0xc00009e140
 [1 2 50] [1 2 50]
+
+//数组是值类型
+func main() {
+	x := [3]int{1, 2, 3}
+	y := x //把x的值拷贝了一份给y
+	y[1] = 200 //修改了的是副本y，并不影响x
+
+	fmt.Println(x)
+	f1(x)
+	fmt.Println(x)
+}
+
+func f1(a [3]int)  {
+	a[1] = 100
+}
+
+func main() {
+	var a1 = [...][2]int{ //多维数组只有最外层可以使用...
+		[2]int{1,2},
+		[2]int{3,4},
+		[2]int{5,6},
+	}
+	fmt.Println(a1)
+}
 ~~~
 
 
 
 **切片**
 
+~~~go
+//切片(Slice) 方法1：声明+初始化
+var s1 []int  //没有分配内存，== nil
+fmt.Println(s1) 	 // []
+fmt.Println(s1==nil) //true
+s1 = []int{1, 2, 3}
+
+//方法2：make初始化，分配内存
+s2 := make([]bool, 2, 4) //类型  长度  容量
+fmt.Println(s2)		//[false false]
+fmt.Println(s2==nil) //false 已经分配内存有内存地址 != nil
+~~~
+
+切片本质
+
+切片：指针、长度、容量
+
+<img src="H:\笔记本\Golang.assets\image-20200718115108169.png" alt="image-20200718115108169" style="float:left;" />
+
+切片的拷贝
+
+~~~go
+s1 := []int{1, 2, 3}
+s2 := s1
+fmt.Println(s2) // [1 2 3]
+s2[1] = 200
+fmt.Println(s2) // [1 200 3]
+fmt.Println(s1) // [1 200 3]
+~~~
+
+切片不存值，相当于一个框，去底层数组去框值
+
+//切片只是切了一部分数据，但还是同一个内存地址；切片不存值，指向同一个底层数组
+
+ ~~~
+
+ ~~~
+
+切片的扩容策略：
+
+1、如果申请的容量大于原来的2倍，那就直接扩容到新申请的容量
+
+2、如果小于1024，那么直接两倍
+
+3、如果大于1024，就按照1.25倍去扩容
+
+4、具体存储的值类型不同，扩容策略也有差别
+
+~~~go
+var s1 []int  // nill
+s1 = append(s1, 1) //append函数追加，会自动初始化切片。
+fmt.Println(s) // [1]
+~~~
+
+copy()
+
+~~~go
+s1 := []int{1, 2, 3}
+s2 := s1  //赋值
+var s3 []int  //nil 所以打印出来的是 []
+// var s3 = make([]int, 3)
+copy(s3, s1)  //拷贝，注意copy不会自动扩容，make时需要设置长度
+fmt.Println(s2) // [1 2 3]
+s2[1] = 200
+fmt.Println(s2) // [1 200 3]
+fmt.Println(s1) // [1 200 3]
+fmt.Println(s3) // []
+~~~
+
 
 
 **指针**
 
+& 和 *
 
+~~~go
+addr := "广东"
+addrP := &addr
+fmt.Println(addrP
+fmt.Println(*addrP)
+~~~
 
 **map**
 
+map存储的是键值对
+
+~~~go
+var m1 map[string]int
+fmt.Println(m1 == nil)  //true
+
+//声明变量且申请内存地址
+var m1 = make(map[string]int, 10) //算一下存的长度
+m1["chenglh"] = 100  //如果key不存在，返回的是对应类型的零值
+fmt.Println(m1)
+
+v,ok := m1["chenglh"]
+if ok {
+    //
+} else {
+    //没有对应key
+}
+
+delete(m1, "chenglh") //如果key不存在，什么都不干
+~~~
+
+作业：
+
+~~~go
+//1、判断字符串中汉字的数量
+//统计汉字字数
+s1 := "Hello沙河有沙有河"
+var count int
+for _, v := range s1{
+    if unicode.Is(unicode.Han, v) {
+        count++
+    }
+}
+fmt.Println(count)
+
+
+//2、统计英文单词出现的次数
+s  := "how do you do"
+m1 := make(map[string]int, 10)
+s2 := strings.Split(s, " ")
+for _,w := range s2 {
+    if _,ok := m1[w]; ok {
+        m1[w]++
+    } else {
+        m1[w] = 1
+    }
+}
+for key, value := range m1 {
+    fmt.Println(key,value)
+}
+
+//3、回文判断
+//上海自来水来自海上
+//山西落雁塔雁落西山
+//黄山落叶松叶落山黄
+ss := "a山西落雁塔雁落西山a"
+//把字符串中的字符放到一个[]rune切片中
+r := make([]rune, 0, len(ss)) //容量长一点没关系
+for _,c := range ss{
+    r = append(r, c)
+}
+fmt.Println("[]rune", r) //转成ASCII码了
+for i := 0; i < len(r)/2; i++ {
+    // ss[i]  ss[len(ss)-1-i]
+    if r[i] != r[len(r)-1-i] {
+        fmt.Println("不是回文 ")
+        return
+    }
+}
+fmt.Println("是回文")
+~~~
 
 
 
 
-https://www.bilibili.com/video/BV14C4y147y8?p=26
+
+https://www.bilibili.com/video/BV14C4y147y8?p=30
 
 
 
