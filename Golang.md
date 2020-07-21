@@ -16,7 +16,7 @@ https://www.bilibili.com/video/BV1gJ411p7xC?from=search&seid=2641930791964842149
 https://www.bilibili.com/video/BV1A741117tD/?spm_id_from=333.788.videocard.19
 ```
 
-##### Day01 Golang入门
+##### Day01
 
 ###### 1.1 Go语言基础
 
@@ -202,13 +202,11 @@ func main()  {
 
 ###### 1.3 项目编译
 
-命令行：go build
+> 命令行：go build
 
-1、在项目目录下执行go build
-
-2、在其他路径下执行go build，需加上项目路径(从GOPATH/src后边写起)，编译后可执行文件保存在当前目录下
-
-3、可以使用`-o`参数来指定编译后得到的可执行文件的名字
+1. 在项目目录下执行go build
+2. 在其他路径下执行go build，需加上项目路径(从GOPATH/src后边写起)，编译后可执行文件保存在当前目录下
+3. 可以使用`-o`参数来指定编译后得到的可执行文件的名字
 
 ```bash
 ##方式一
@@ -250,7 +248,7 @@ hello.exe
 
 只需要指定目标操作系统的平台和处理器架构即可 (cmd界面下)
 
-```
+```go
 > SET CGO_ENABLED=0  // 禁用CGO，因为使用cgo的代码是不支持跨平台编译的
 > SET GOOS=linux     // 目标平台是linux
 > SET GOARCH=amd64   // 目标处理器架构是amd64
@@ -707,11 +705,9 @@ Go语言中 bool类型进行声明布尔型数据，只有 true和false两个值
 
 注意：
 
-1、布尔值变量默认值为 false
-
-2、Go语言中不允许将整型强制转换为布尔型
-
-3、布尔型无法参与数据运算，也无法与其他类型进行转换
+1. 布尔值变量默认值为 false
+2. Go语言中不允许将整型强制转换为布尔型
+3. 布尔型无法参与数据运算，也无法与其他类型进行转换
 
 ```go
 package main
@@ -743,17 +739,26 @@ import "fmt"
 
 func main()  {
 	num := 100
-	fmt.Printf("%T\n", num) //类型
-	fmt.Printf("%v\n", num) //万能输出值
-	fmt.Printf("%b\n", num) //二进制
-	fmt.Printf("%o\n", num) //八进制
-	fmt.Printf("%d\n", num) //十进制
-	fmt.Printf("%x\n", num) //十六进制
+	fmt.Printf("%T\n", num) //查看类型    int
+	fmt.Printf("%v\n", num) //万能输出值	 100
+	fmt.Printf("%b\n", num) //二进制	  1100100
+	fmt.Printf("%o\n", num) //八进制	  144
+	fmt.Printf("%d\n", num) //十进制	  100
+	fmt.Printf("%x\n", num) //十六进制	  64
+    
+    number := 100.98
+    fmt.Printf("%T，%f\n", number, number) //%f输出10进制的浮点数,(这里float64，100.980000)
 
 	name := "chenglh"
-	fmt.Printf("%s\n", name)
-	fmt.Printf("%v\n", name)
-	fmt.Printf("%#v\n", name) //会自动加上双引号
+	fmt.Printf("%s\n", name)  //字符串输出  chenglh
+	fmt.Printf("%v\n", name)  //万能输出值  chenglh
+	fmt.Printf("%#v\n", name) //"结果串"会自动加上双引号 "chenglh"
+    
+    //%c 输出单个字符
+    n1 := '程'
+	n2 := 'A'
+	fmt.Printf("%c\n",n1) //如果不格式化，显示ASCII码
+	fmt.Printf("%c\n",n2)
 }
 ~~~
 
@@ -761,18 +766,19 @@ func main()  {
 
 **字符串**
 
-Go语言里的字符串的内部实现使用 UTF-8 编码
+> Go语言里的字符串的内部实现使用 UTF-8 编码
 
-字符串：双引号
-
-字符：单引号   //只能是一个字符/英文/汉字/符号
+1. 字符串：双引号
+2. 字符：单引号  `[只能是一个字符/英文/汉字/符号]`
 
 ~~~go
 s := "hello world"
-a := '程'   //如果再写多一个字符就标红报错
+a := '程'
 fmt.Println(s)
-fmt.Println(a)  //对应是的24352 ASCI码
+fmt.Println(a)  //ASCII码值 24352
 ~~~
+
+
 
 **字符串转义**
 
@@ -806,20 +812,31 @@ s4 := "G:\\Go\\src\\www.testgo.com\\day03\\fmt" //需要转义
 **字符串操作**
 
 ~~~go
-//字符串长度
+//字符串长度 len(xx)
 s1 := "chenglh"
-fmt.Print(len(s1))
+s2 := "程“"
+fmt.Print(len(s1))   // 7个字符，1个汉字或全角字符占3个字符
+fmt.Print(len(s1))   // 6
 
-//字符串拼接
+//求字符串长度
+s3 := "chenglh程“"
+//方法1：
+ss1 := len([]rune(s3)) // 9，切片中的内容也是ASCII码
+//方法2：
+ss2 := strings.Count(s3,"") - 1   //需要引入 strings 类
+//方法3：
+ss3 := bytes.Count([]byte(s3),nil) - 1  //需要引入 bytes 类
+
+//字符串拼接 +或fmt.Sprintf
 s2 := "cheng"
 s3 := " li hui"
 ss := s2 + s3
 fmt.Println(ss)  //第一种：使用 + 连接
-fmt.Printf("%s%s\n", s2, s3) //第二种，格式化输入
+fmt.Printf("%s%s\n", s2, s3) //第二种，格式化输出 cheng li hui
 ss1 := fmt.Sprintf("%s%s", s2, s3)//第三种，Sprintf格式化后返回值给变量
-fmt.Println(ss1)
+fmt.Println(ss1) // cheng li hui
 
-//字符串分割
+//字符串分割 strings.Split
 //email := "abc@a.com"
 //emailS := strings.Split(email, "@")
 //fmt.Println(emailS) //[abc a.com]
@@ -828,24 +845,24 @@ s1 := "G:\\aaa\\bb\\ccc"
 ss := strings.Split(s1, "\\")
 fmt.Println(ss)
 
-//包含关系
+//判断包含关系 strings.contains	
 name := "cheng lihui"
-fmt.Println(strings.Contains(name, "cheng"))
-fmt.Println(strings.Contains(name, "test"))
+fmt.Println(strings.Contains(name, "cheng"))  // true
+fmt.Println(strings.Contains(name, "test"))   // false
 
-//前缀后缀
+//判断前缀后缀 strings.HasPrefix,strings.HasSuffix	
 name := "chenglihui"
 fmt.Println(strings.HasPrefix(name, "cheng"))
 fmt.Println(strings.HasSuffix(name, "ui"))
 
-//字串出现的位置
+//字串出现的位置 strings.Index(),strings.LastIndex()	
 name := "chenglihui"
 fmt.Println(strings.Index(name, "a"))  //找不到 -1
 fmt.Println(strings.Index(name, "c"))  //0 索引位置从0开始
 fmt.Println(strings.LastIndex(name, "i"))//最后一次出现i的位置
 
-//join操作，切片连接起来
-strings.(a[] string, sep string)
+//join操作，切片连接起来 strings.Join(a[]string, sep string)	
+strings.Join(a[] string, sep string)
 ~~~
 
 
@@ -861,30 +878,32 @@ var b := 'x'
 
 Go语言的字符有以下两种：
 
-1、uint8类型，或者叫byte型，代表了ASCII码的一个字符；
+1. uint8类型，或者叫byte型，代表了ASCII码的一个字符
+2. rune类型，代表一个UTF-8字符
 
-2、rune类型，代表一个UTF-8字符。
+当需要处理中文、日文或者其他复合字符时，则需要用到`rune`类型。`rune`类型实际是一个`int32`。
 
 ~~~go
-
 //byte和rune类型
 //Go语言中为了处理非ASCII码类型的字符，定义了新的rune类型
 //英文字符是 byte
 //其他语言字符是 rune类型
 
 s := "Hello意难平"
-// len()求的是byte字节的数量
-n := len(s)
-fmt.Println(n) //值：14
+n := len(s)    // len()求的是byte字节的数量，有中文，长度会有跳跃
+fmt.Println(n) // 值：14
 
 //for i := 0; i < len(s); i++  {
 //	fmt.Printf("%c\n", s[i])  // %c：字符，但是这里中文会变成“乱码”
 //}
 
-for _, c := range s { //从字符串中拿出具体的字符
-    fmt.Printf("%c\n", c)
+for _, v := range s1 {
+    fmt.Printf("%v(%c)\t", v, v)
 }
+//72(H)   101(e)  108(l)  108(l)  111(o)  24847(意)       38590(难)       24179(平)
 ~~~
+
+> 字符串底层是一个byte数组，所以可以和`[]byte`类型相互转换
 
 
 
@@ -894,11 +913,14 @@ for _, c := range s { //从字符串中拿出具体的字符
 
 ~~~go
 func changeString() {
+    //方法一：[]byte类型
     s1 := "big"
+    // 强制类型转换
     byteS1 := []byte(s1)
     byteS1[0] = 'p'
-    fmt.Println(string(byteS1))
+    fmt.Println(string(byteS1)) // 强制转换成字符串 string(byteS1)
     
+    //方法二： []rune类型
     s2 := "白萝卜"
     runeS2 := []rune(s2) //强制转换成切片
     runeS2[0] = '红' //改成 字符，如用双引号会变成红线不能编译
@@ -907,6 +929,7 @@ func changeString() {
 ~~~
 
 ~~~go
+//单双引号的类型是不一样的
 s1 := "程"  //string
 s2 := '程'  //rune(int32)
 fmt.Printf("s1:%T s2:%T", s1, s2)
@@ -915,9 +938,25 @@ fmt.Printf("s1:%T s2:%T", s1, s2)
 s1:string    s2:int32
 ~~~
 
+**类型转换**
+
+Go语言中只有强制类型转换，没有隐式类型转换。该语法只能在两个类型之间支持相互转换的时候使用。
+
+~~~go
+func sqrtDemo() {
+	var a, b = 3, 4
+	var c int
+	// math.Sqrt()接收的参数是float64类型，需要强制转换
+	c = int(math.Sqrt(float64(a*a + b*b)))
+	fmt.Println(c)
+}
+~~~
 
 
-if判断
+
+###### 1.6 流程控制
+
+**if判断**
 
 ~~~go
 if 表达式1 {}
@@ -943,11 +982,12 @@ if age := 19; age > 18 {
     fmt.Println("去写作业")
 }
 //fmt.Println(age) 作用域不到这里，飘红不让编译通过
+//变量在代码块中的作用域
 ~~~
 
 
 
-for循环
+**for循环**
 
 ~~~go
 //第一种：基本格式
@@ -968,24 +1008,22 @@ for ; i < 10; {
    i++
 }
 
-无限循环
+//无限循环
 for {
     循环语句
 }
-for循环可以通过 break、goto、return、panic 语句强制退出循环
+//for循环可以通过 break、goto、return、panic 语句强制退出循环
 ~~~
 
 
 
 **for range(键值循环)**
 
-Go语言中可以使用 for range 遍历数组、切片、字符串、map及通道 channel。
+> Go语言中可以使用 for range 遍历数组、切片、字符串、map及通道 channel
 
-1、数组、切片、字符串返回索引和值
-
-2、map返回键和值
-
-3、通道(channel)只返回通道内的值
+1. 数组、切片、字符串返回索引和值
+2. map返回键和值
+3. 通道(channel)只返回通道内的值
 
 ~~~go
 s := "cheng天明"
@@ -1000,8 +1038,54 @@ for i,v := range s {
 2 e
 3 n
 4 g
-5 天  //跳跃
-8 明
+5 天  
+8 明  //跳跃
+~~~
+
+
+
+**switch**
+
+~~~go
+//* 常用格式
+func switchDemo1() {
+    n := 1
+    switch n {
+        case 1 :
+        	fmt.Println("this is 1")
+        case 2 :
+        	fmt.Println("this is 2")
+        default :
+        	fmt.Println("this is other")
+    }
+}
+
+//* 一个分支可以有多个值，用逗号分隔
+func switchDemo2() {
+    switch n := 7; n { //代码块中的变量
+        case 1, 3, 5, 7, 9 :
+            fmt.Println("奇数")
+        case 0, 2, 4, 6, 8 :
+        	fmt.Println("偶数")
+        default :
+        	fmt.Println(n)
+    }
+}
+
+//* 分支还可以使用表达式
+func switchDemo4() {
+	age := 30
+	switch {
+        case age < 25:
+            fmt.Println("好好学习吧")
+        case age > 25 && age < 35:
+            fmt.Println("好好工作吧")
+        case age > 60:
+            fmt.Println("好好享受吧")
+        default:
+            fmt.Println("活着真好")
+	}
+}
 ~~~
 
 
@@ -1017,6 +1101,12 @@ for i := 1; i < 10; i++ {
 	fmt.Println()
 }
 ~~~
+
+
+
+##### day02 
+
+###### 2.1 复习内容
 
 ~~~go
 //单行注释
@@ -1090,44 +1180,6 @@ iota：实现枚举
 三个要点：
 1、iota在const关键字出现时将被重置为0
 2、const中每新增一行常量声明，iota累加1
-~~~
-
-
-
-**switch**
-
-~~~go
-//switch
-var n1 = 10
-switch n1 {
-    case 1:
-    	fmt.Println("this is 1")
-    case 2:
-    	fmt.Println("this is 2")
-    default:
-    	fmt.Println("this is nothing")
-}
-
-//变种
-switch n := 3; n { //先赋值然后判断
-    case 1:
-    	fmt.Println("这是1")
-    case 2:
-    	fmt.Println("这是2")
-    default:
-    	fmt.Println("不确定")
-}
-
-//判断
-age := 18
-switch {
-    case age < 18:
-    	fmt.Println("未成年")
-    case age > 18 && age < 60: 
-        fmt.Println("好好工作")
-    default:
-    	fmt.Println("好好生活")
-}
 ~~~
 
 
