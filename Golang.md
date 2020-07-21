@@ -1115,12 +1115,12 @@ for i := 1; i < 10; i++ {
 多行注释
 */
 
-变量声明
+/**变量声明
 1、var name1 string
 2、var name2 = "chenglh"
 3、函数内部声明 ： name3 := "test"
+*/
 
-匿名变量(哑元变量)
 s := "hello"
 for i,v := range s { // key , value
    fmt.Printf("%d , %c \n", i, v)
@@ -1128,6 +1128,8 @@ for i,v := range s { // key , value
 for i := range s { // key 只有一个变量是默认是 索引
    fmt.Printf("%d\n", i)
 }
+
+匿名变量(哑元变量)
 for _,v := range s { // 不需要key , 只要value
    fmt.Printf("%c \n", v)
 }
@@ -1148,8 +1150,8 @@ uint和int：具体是32位还是64位要看操作系统
 uintptr：表示指针
 
 Go语言中没办法直接定义二进制数
-var n1 = 0777
-var n2 = 0xff
+var n1 = 0777	//八进制
+var n2 = 0xff	//十六进制
 
 //浮点型
 float32和float64
