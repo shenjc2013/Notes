@@ -16,7 +16,7 @@ https://www.bilibili.com/video/BV1gJ411p7xC?from=search&seid=2641930791964842149
 https://www.bilibili.com/video/BV1A741117tD/?spm_id_from=333.788.videocard.19
 ```
 
-##### Day01
+##### Day01 第一章
 
 ###### 1.1 Go语言基础
 
@@ -1104,7 +1104,7 @@ for i := 1; i < 10; i++ {
 
 
 
-##### day02 
+##### Day02  第二章
 
 ###### 2.1 复习内容
 
@@ -1178,7 +1178,7 @@ utf-8中，一个常用汉字 一般占用3个字节
 const PI = 3.14159
 const UserNotExistErr = 10000
 
-iota：实现枚举
+//iota：实现枚举
 三个要点：
 1、iota在const关键字出现时将被重置为0
 2、const中每新增一行常量声明，iota累加1
@@ -1186,7 +1186,25 @@ iota：实现枚举
 
 
 
-**数组**
+###### 2.2 数组
+
+> 数组定义
+
+~~~go
+var 变量名 [元素数量]T
+//数组使用时可以修改数组成员，但是数组长度不可变化
+~~~
+
+~~~go
+//不能的类型不能直接赋值
+var a [3]int
+var b [4]int
+a = b //X 不可以这样做，因为此时a和b是不同的类型
+~~~
+
+
+
+举个栗子：
 
 ~~~go
 package main
@@ -1199,7 +1217,7 @@ func main()  {
 	var a1 [3]bool //[false false false]
 	var a2 [4]bool //[false false false false]
 
-	fmt.Printf("a1：%T，a2：%T\n", a1, a2)
+	fmt.Printf("a1：%T，a2：%T\n", a1, a2)  //输出结果： a1：[3]bool，a2：[4]bool
 
 	//数组的初始化
 	//默认元素都是零值(布尔值false，整形和浮点型都是0，字符串是"")
@@ -1207,26 +1225,39 @@ func main()  {
 }
 ~~~
 
-~~~go
-//初始化方式1
-a3 := [3]bool{true, false, true}
-fmt.Println(a3)
-~~~
+
+
+> 初始化方式1：[默认初始化或指定值初始化]
 
 ~~~go
-//初始化方式2
-//根据初始值自动推断数组的长度
+var a1 [3]int   // [0 0 0] 默认初始化0值
+var a2 [3]bool  // [false false false]
+a3 := [3]bool{true, false, true} // 使用指定的初始值完成初始化
+a4 := [3]int{1, 2, 3}
+~~~
+
+
+
+> 初始化方式2：[让编译器根据初始值的个数自行推断数组的长度]
+
+~~~go
 a6 := [...]int{0,1,2,3,4,5}
 fmt.Println(a6)
 ~~~
 
+
+
+> 初始化方式3：使用指定索引值的方式来初始化数组
+
 ~~~GO
-//初始化方式3
-//a5 := [5]int{1,2} 后面默认值0
+a1 := [5]int{1,2} //后面默认值0  [1 2 0 0 0]
+
 //根据索引指定来声明
-a5 := [5]int{0:1,4:3}
+a5 := [5]int{0:1, 4:3} //[1 0 0 0 3]
 fmt.Println(a5)
 ~~~
+
+
 
 **知识点**
 
@@ -1247,27 +1278,47 @@ var a1 = [...][2]int{ //只有外层才可以...，二维的不可以
 ~~~go
 //一维数组遍历
 city := [...]string{"北京","上海","深圳"}
-//方法1、根据索引遍历
+
+//方法一、根据索引遍历
 for i := 0; i < len(city); i++  {
 	fmt.Println(city[i])
 }
 
-//方法2、for range遍历
+//方法二、for range遍历
 for i,v := range city{
 	fmt.Println(i,v)
 }
+~~~
 
-//多维数组
-//[[1,2] [3,4] [5,6]]
-var all = [3][2]int{
+
+
+**二维数组定义**
+
+~~~go
+
+a := [3][2]string {
+    {"北京", "上海"},
+    {"广州", "深圳"},
+    {"成都", "重庆"},
+}
+fmt.Println(a)		 // [ [北京 上海] [广州 深圳] [成都 重庆] ]
+fmt.Println(a[2][1]) // 支持索引取值:重庆
+~~~
+
+
+
+**多维数组遍历**
+
+~~~go
+var all = [3][2]int {
     [2]int{1,2},
     [2]int{3,4},
     [2]int{5,6},
 }
 
-fmt.Println(all)
-for _,v := range all{
-    for _,vv := range v{
+fmt.Println(all)  // [[1,2] [3,4] [5,6]]
+for _,v := range all {
+    for _,vv := range v {
         fmt.Println(vv)
     }
 }
@@ -1275,9 +1326,11 @@ for _,v := range all{
 
 
 
-**切片**
+###### 2.3 切片
 
-数组的局限性，因为数组的长度是固定的并且数组长度属于类型的一部分。
+> 数组的局限性，因为数组的长度是固定的并且数组长度属于类型的一部分
+
+
 
 ~~~go
 func arraySum(x [3]int) int{
@@ -1294,31 +1347,46 @@ a := [3]int{1,2,3}
 只要定义了a数组，就不能再继续往数组a中添加新元素了
 ~~~
 
-> 切片
 
-切片(slice)是一个拥有相同类型元素的`可变长度的序列`。它是基于数组类型做的一层封装。它非常灵活，支持自动扩容。
 
-切片是一个"引用类型"，它的内部结构包含 地址、长度和容量。切片一般用于快速地操作一块数据集合。
+**切片**
+
+切片(Slice)是一个拥有相同类型元素的`可变长度的序列`。它是基于`数组类型`做的一层封装。它非常灵活，支持自动扩容。
+
+切片是一个"引用类型"，它的内部结构包含：地址、长度和容量。切片一般用于快速地操作一块数据集合。
+
+
+
+> 切片定义
 
 ~~~go
-package main
+var name []T     //声明没有初始化，即没有申请内存
 
-import "fmt"
+var name = []T{} //声明切片，并初始化变量
+~~~
 
-//切片slice
-func main()  {
-	//切片定义
-	var s1 []int    //定义一个存放int类型元素的切片
-	var s2 []string //定义一个存放string类型元素的切片
-	fmt.Println(s1, s2)
-    fmt.Println(s1==nil)  //true
-	fmt.Println(s2==nil)  //true
-    //fmt.Println(s1==s2) 飘红报错，切片是引用类型，不支持直接比较，只能和nil比较
+- name：表示变量名
+- T ：表示切片中的元素类型
 
-	//初始化
-	s1 = []int{1,2,3}
-	s2 = []string{"广东","广州","天河"}
-	fmt.Println(s1, s2)
+
+
+举个栗子：
+
+~~~go
+func main() {
+	var a []string              //声明一个字符串切片，只声明没初始化
+	var b = []int{}             //声明一个整型切片并初始化
+	var c = []bool{false, true} //声明一个布尔切片并初始化
+	var d = []bool{false, true} //声明一个布尔切片并初始化
+    
+	fmt.Println(a)              //[]
+	fmt.Println(b)              //[]
+	fmt.Println(c)              //[false true]
+    
+	fmt.Println(a == nil)       //true , 没有申请内存
+	fmt.Println(b == nil)       //false
+	fmt.Println(c == nil)       //false
+	// fmt.Println(c == d)   //切片是引用类型，不支持直接比较，只能和nil比较，会飘红，不让编译通过
 }
 ~~~
 
@@ -1326,41 +1394,33 @@ func main()  {
 
 **切片的长度和容量**
 
-切片拥有自己的长度和容量，可以通过内置的len()函数求长度，使用内置的cap()函数求切片的容量。
+> 切片拥有自己的长度和容量，可以通过内置的len()函数求长度，使用内置的cap()函数求切片的容量。
 
 ~~~go
 package main
-
 import "fmt"
-//切片slice
 
 func main()  {
-	//切片定义
-	var s1 []int    //定义一个存放int类型元素的切片
-	var s2 []string //定义一个存放string类型元素的切片
-	//fmt.Println(s1, s2)
-	//fmt.Println(s1==nil)
-	//fmt.Println(s2==nil)
-
 	//初始化
 	s1 = []int{1,2,3}
 	s2 = []string{"广东","广州","天河"}
 	fmt.Println(s1, s2)
-    //计算-长度和容量
+
+    //1、计算-长度len()和容量cap()
 	fmt.Printf("s1:len:%d s1:cap:%d\n", len(s1), cap(s1))
 	fmt.Printf("s2:len:%d s2:cap:%d\n", len(s2), cap(s2))
     
     //2、由数组得到切片
 	s1 := [...]int{1,3,5,7,9,11}
-	s2 := s1[0:4] //基于一个数组切割，左包含右不包含，(左闭右开) [1 3 5]
-	fmt.Println(s2)
+	s2 := s1[0:4] 	 // 基于一个数组切割，左包含右不包含，(0 <= 索引 < 4) => [1 3 5]
+	fmt.Println(s2)  // [1 3 5 7] 索引0-3
 
-	s3 := s1[1:6]  // [3 5 7 9 11]
-	fmt.Println(s3)
+	s3 := s1[1:6]  
+	fmt.Println(s3)	// [3 5 7 9 11]
     
-    s4 := s1[:4]  // [0:4]
-	s5 := s1[3:]  // [3:最后即len(s1)]
-	s6 := s1[:]  //  [0:最后即len(s1)]
+    s4 := s1[:4]  	// [0:4]
+	s5 := s1[3:]  	// [3:最后即len(s1)]
+	s6 := s1[:]  	// [0:最后即len(s1)]
 	fmt.Println(s4, s5, s6)
 }
 
@@ -1372,46 +1432,49 @@ s2:len:3 s2:cap:3
 
 
 
-> 切片的本质
-
-切片就是一个框，框住了一块连续的内存。属于引用类型
-
-切片的本质就是对底层数组的封装，它包含了三个信息：底层数组的指针、切片的长度（len）和切片的容量（cap）。
-
-举个例子，现在有一个数组a := [8]int{0, 1, 2, 3, 4, 5, 6, 7}，切片s1 := a[:5]，相应示意图如下
-
-<img src="H:\笔记本\Golang.assets\image-20200714155741790.png" alt="image-20200714155741790" style="float:left;" />
-
-
-
-切片s2 := a[3:6]，相应示意图如下：
-
-<img src="H:\笔记本\Golang.assets\image-20200714155917610.png" alt="image-20200714155917610" style="float:left;" />
-
-> 判断切片是否为空
-
-要检查切片是否为空，请始终使用len(s) == 0来判断，而不应该使用s == nil来判断
+**完整切片表达式**
 
 ~~~go
-s1 := [...]int{1,3,5,7,9,11}
+a[low : high : max]
+~~~
 
-//切片是引用类型，都指向了底层的一个数组，如果底层数组修改了，其他切片数据读取也是跟着改变的
-s4 := s1[:4]  // [0:4]
-s1[2] = 1200
-fmt.Println(s4) // [1 3 1200 7]
+上面的代码会构造与简单切片表达式`a[low: high]`相同类型、相同长度和元素的切片。
+
+另外，它会将得到的结果切片的容量设置为`max - low`(作差法)。
+
+在完整切片表达式中只有第一个索引值（low）可以省略；它默认为0。
+
+~~~go
+func main() {
+	a := [5]int{1, 2, 3, 4, 5}
+	t := a[1:3:5]
+	fmt.Printf("t:%v len(t):%v cap(t):%v\n", t, len(t), cap(t))
+}
+~~~
+
+输出结果：
+
+~~~go
+t:[2 3] len(t):2 cap(t):4
 ~~~
 
 
 
-**make()函数创造切片**
+> make()函数创造切片
 
 ~~~go
 make([]T, size, cap)
+~~~
 
-//T:切片的元素类型
-//size:切片中元素的数量
-//cap:切片的容量
+- T     ：切片的元素类型
+- size：切片中元素的数量
+- cap：切片的容量
 
+
+
+举个栗子：
+
+~~~go
 func main() {
 	a := make([]int, 2, 10)
 	fmt.Println(a)      //[0 0]
@@ -1424,6 +1487,41 @@ func main() {
 
 
 
+> 切片的本质
+
+切片就是一个框，框住了一块连续的内存。属于引用类型
+
+切片的本质就是对底层数组的封装，它包含了三个信息：底层数组的指针、切片的长度（len）和切片的容量（cap）。
+
+
+
+举个例子，现在有一个数组a := [8]int{0, 1, 2, 3, 4, 5, 6, 7}，切片s1 := a[:5]，相应示意图如下
+
+<img src="H:\笔记本\Golang.assets\image-20200714155741790.png" alt="image-20200714155741790" style="float:left;" />
+
+切片s2 := a[3:6]，相应示意图如下：
+
+<img src="H:\笔记本\Golang.assets\image-20200714155917610.png" alt="image-20200714155917610" style="float:left;" />
+
+~~~go
+func main() {
+    a := [8]int{0,1,2,3,4,5,6,7}
+    s1 := a[:5]
+    s1[2] = 22
+    fmt.Println(a, s1)
+    //[0 1 22 3 4 5 6 7] [0 1 22 3 4]
+    //切片是引用类型，都指向了底层的一个数组，如果底层数组修改了，其他切片数据读取也是跟着改变的
+}
+~~~
+
+
+
+> 判断切片是否为空
+
+要检查切片是否为空，请始终使用len(s) == 0来判断，而不应该使用s == nil来判断
+
+
+
 > 切片不能直接比较
 
 切片之间是不能比较的，我们不能使用==操作符来判断两个切片是否含有全部相等元素。 切片唯一合法的比较操作是和nil比较。 
@@ -1433,21 +1531,34 @@ func main() {
 ~~~go
 var s1 []int         //len(s1)=0;cap(s1)=0;s1==nil
 s2 := []int{}        //len(s2)=0;cap(s2)=0;s2!=nil  有初始化，已开辟内存空间
-s3 := make([]int, 0) //len(s3)=0;cap(s3)=0;s3!=nil
+s3 := make([]int, 0) //len(s3)=0;cap(s3)=0;s3!=nil	有初始化，已开辟内存空间
 ~~~
 
-**切片的赋值**
+
+
+**切片的赋值拷贝**
+
+拷贝前后两个变量共享底层数组，对一个切片的修改会影响另一个切片的内容
+
+举个栗子：
 
 ~~~go
-//切片的赋值拷贝
-s3 := []int{1, 3, 5}
-s4 := s3  //s3 、s4指向同一个底层数组
-fmt.Println(s3, s4) // [1 3 5]  [1 3 5]
-s3[0] = 1200
-fmt.Println(s3, s4) // [1200 3 5] [1200 3 5]
+func main() {
+	s1 := make([]int, 3) //[0 0 0]
+	s2 := s1             //将s1直接赋值给s2，s1和s2共用一个底层数组
+	s2[0] = 100
+	fmt.Println(s1)      //[100 0 0]
+	fmt.Println(s2)      //[100 0 0]
+}
 ~~~
 
+
+
 **切片遍历**
+
+切片的遍历方式和数组是一致的，支持索引遍历和`for range`遍历。
+
+例如：
 
 ~~~go
 func main() {
@@ -1465,49 +1576,61 @@ func main() {
 }
 ~~~
 
+
+
 **切片添加元素**
 
-~~~go
-package main
+Go语言的内建函数`append()`可以为切片动态添加元素。 可以一次添加一个元素，可以添加多个元素，也可以添加另一个切片中的元素（后面加…）。
 
+例如：
+
+~~~go
 func main() {
-    s := []string{"北京", "上海", "深圳"}
+    s := []string{"北京","上海","南宁"}
     //s[3] = "广州"  //索引溢界，错误写法，会导致编译错误
-    fmt.Printf("s=%v \t len(s)=%d \t cap(s)=%d\n", s, len(s), cap(s))
+	fmt.Printf("s=%v  len(s)=%d  cap(s)=%d\n", s, len(s), cap(s))
     
-    //调用append函数必须用原来的切片变量来接收返回值
-    //名字不变，但是内存地址已变化
-    s = append(s, "广州")//append追加元素，原来的底层数组放不下的时候，Go底层就会把底层数组换一个位置
-    fmt.Printf("s=%v \t len(s)=%d \t cap(s)=%d\n", s, len(s), cap(s))
+    //添加一个或多个元素
+	s = append(s, "广州","深圳")
+	fmt.Printf("s=%v  len(s)=%d  cap(s)=%d\n", s, len(s), cap(s))
+    
+    //添加另一个切片中元素
+	s1 := []string{"天津", "武汉"}
+	s = append(s, s1...) //...表示拆开(为字符串)
+	fmt.Printf("s=%v  len(s)=%d  cap(s)=%d\n", s, len(s), cap(s))
 }
 
 > go run main.go
-city=[北京 上海 深圳]    len(city)=3     cap(city)=3
-city=[北京 上海 深圳 广州]       len(city)=4     cap(city)=6
+s=[北京 上海 南宁]  len(s)=3  cap(s)=3
+s=[北京 上海 南宁 广州 深圳]  len(s)=5  cap(s)=6
+s=[北京 上海 南宁 广州 深圳 天津 武汉]  len(s)=7  cap(s)=12
 ~~~
 
-**注意：**通过var声明的零值切片可以在`append()`函数直接使用，无需初始化。
+
+
+> 注意：通过var声明的零值切片可以在`append()`函数直接使用，无需初始化。
 
 ~~~go
-//---------------数值---------------
-var s []int
-s = append(s, 1, 2, 3)
+func main() {
+	s := []int{}  // 没有必要初始化
+	s = append(s, 1, 2, 3)
 
-var s = make([]int, 0, 0)
-s = append(s, 11, 22, 33)
-fmt.Println(s)
-
-//---------------字符串---------------
-var city []string
-city = append(city, "北京","上海","深圳")
-fmt.Println(city)
-
-var s = make([]string, 0, 0)
-s = append(s, "111", "222", "333")
-fmt.Println(s)
+	var s = make([]int)  // 没有必要初始化
+	s = append(s, 1, 2, 3)
+}
 ~~~
 
-每个切片会指向一个底层数组，这个数组的容量够用就添加新增元素。当底层数组不能容纳新增的元素时，切片就会自动按照一定的策略进行“扩容”，此时该切片指向的底层数组就会更换。“扩容”操作往往发生在append()函数调用时，所以我们通常都需要用原变量接收append函数的返回值。
+每个切片会指向一个底层数组，这个数组的容量够用就添加新增元素。
+当底层数组不能容纳新增的元素时，切片就会自动按照一定的策略进行“扩容”，此时该切片指向的底层数组就会更换。
+“扩容”操作往往发生在append()函数调用时，所以我们通常都需要用原变量接收append函数的返回值。
+
+~~~go
+//调用append()函数必须用原来的切片变量来接收返回值
+//变量名字不变，但是内存地址可能已变化
+//append追加元素，原来的底层数组放不下的时候，Go底层就会把底层数组换一个位置
+~~~
+
+
 
 举例子：
 
@@ -1538,27 +1661,13 @@ func main() {
 //2、切片numSlice的容量按照1，2，4，8，16这样的规则自动进行扩容，每次扩容后都是扩容前的2倍
 ~~~
 
-**切片追加元素或切片**
-
-~~~go
-//append()函数还支持一次性追加多个元素。 例如：
-
-var citySlice []string
-// 追加一个元素
-citySlice = append(citySlice, "北京")
-// 追加多个元素
-citySlice = append(citySlice, "上海", "广州", "深圳")
-// 追加切片
-a := []string{"成都", "重庆"}
-citySlice = append(citySlice, a...) //追加切片，...表示拆开(为字符串)
-fmt.Println(citySlice) //[北京 上海 广州 深圳 成都 重庆]
-~~~
 
 
+**切片扩容策略**
 
-**切片的扩容策略**
+> 可以通过查看`$GOROOT/src/runtime/slice.go`源码
 
-可以通过查看`$GOROOT/src/runtime/slice.go`源码，其中扩容相关代码如下：
+源码如下：
 
 ~~~go
 newcap := old.cap
@@ -1581,75 +1690,85 @@ if cap > doublecap {
         }
     }
 }
-
-//从上面的代码可以看出以下内容：
-
-/**
-首先判断，如果新申请容量（cap）大于2倍的旧容量（old.cap），最终容量（newcap）就是新申请的容量（cap）。
-否则判断，如果旧切片的长度小于1024，则最终容量(newcap)就是旧容量(old.cap)的两倍，即（newcap=doublecap），
-否则判断，如果旧切片长度大于等于1024，则最终容量（newcap）从旧容量（old.cap）开始循环增加原来的1/4，即（newcap=old.cap,for {newcap += newcap/4}）直到最终容量（newcap）大于等于新申请的容量(cap)，即（newcap >= cap）
-如果最终容量（cap）计算值溢出，则最终容量（cap）就是新申请容量（cap）。
-
-需要注意的是，切片扩容还会根据切片中元素的类型不同而做不同的处理，比如int和string类型的处理方式就不一样。
-*/
 ~~~
 
-**copy拷贝**
+从上面的代码可以看出以下内容：
+
+- 首先判断，如果新申请容量（cap）大于2倍的旧容量（old.cap），最终容量（newcap）就是新申请的容量（cap）
+- 否则判断，如果旧切片的长度小于1024，则最终容量(newcap)就是旧容量(old.cap)的两倍，即（newcap=doublecap）
+- 否则判断，如果旧切片长度大于等于1024，则最终容量（newcap）从旧容量（old.cap）开始循环增加原来的1/4，即（newcap=old.cap,for {newcap += newcap/4}）直到最终容量（newcap）大于等于新申请的容量(cap)，即（newcap >= cap）
+- 如果最终容量（cap）计算值溢出，则最终容量（cap）就是新申请容量（cap）
+
+需要注意的是，切片扩容还会根据切片中元素的类型不同而做不同的处理，比如`int`和`string`类型的处理方式就不一样。
+
+
+
+**copy()拷贝切片**
+
+切片是引用类型，所以变量a = 变量b的赋值，其实都指向了同一块内存地址
+
+Go语言内建的`copy()`函数可以迅速地将一个切片的数据复制到另外一个切片空间中，是两个不同内存地址
+
+
+
+拷贝格式如下：
 
 ~~~go
-package main
+copy(destSlice, srcSlice []T)
+~~~
 
-import "fmt"
+- destSlice: 目标切片
+- srcSlice: 数据来源切片
 
+举个例子：
+
+~~~go
 func main()  {
 	s1 := []string{"张","李","程"}
-	s2 := s1
+	s2 := s1 //由于切片是引用类型，所以s1和s2其实都指向了同一块内存地址。
 	var s3 = make([]string, 3, 3)
-	copy(s3, s1) //拷贝，copy(目的,数据源) ,是两个不同的内存地址了，拷贝完成后就互不影响了
+    
+	copy(s3, s1) //不同的内存地址
 	fmt.Println(s1, s2, s3) // [张 李 程] [张 李 程] [张 李 程]
-	s2[2] = "范"
-	fmt.Println(s1, s2, s3) // [张 李 范] [张 李 范] [张 李 程]
+    
+	s2[2] = "11"
+	fmt.Println(s1, s2, s3) // [张 李 11] [张 李 11] [张 李 程]
 }
-
-//如果长度不够，会自动截断
-//如果容量不够，会编译错误
 ~~~
 
-**从切片中删除元素**
+
+
+**切片删除元素**
+
+> Go语言中并没有删除切片元素的专用方法，我们可以使用切片本身的特性来删除元素。
+
+ 代码如下：
 
 ~~~go
-package main
-import "fmt"
-
 func main()  {
-	a1 := [...]int{1, 3, 5, 7 ,9, 11, 13, 17}
+	a1 := [...]int{1, 3/*要删*/, 5, 7, 9, 11, 13, 17}
 	s1 := a1[:]
 
 	//删除索引为1的那个3值
 	s1 = append(s1[:1], s1[2:]...)
 	fmt.Println(s1) //[1 5 7 9 11 13 17]
 
-	fmt.Println(a1) //数据5 7 9 11 13 17 往前移动到"索引为1"的位置上，即得到结果[1 5 7 9 11 13 17 17]
+	fmt.Println(a1) //后续数据：5 7 9 11 13 17 往前移动到"索引为1"的位置上，即得到结果[1 5 7 9 11 13 17 17]
 }
 ~~~
 
 
 
 ~~~go
-//面试题
-package main
-import "fmt"
-
 func main()  {
-	var a = make([]int, 5, 10)
-    //定义了一个切片，长度是5，容量是10
-    //fmt.Println(a)   --> [0 0 0 0 0]
+	var a = make([]int, 5, 10) //定义了一个切片，长度是5，容量是10
+    //fmt.Println(a)   => [0 0 0 0 0]
+    
 	for i := 0; i < 10; i++ {
 		a = append(a, i) //再追加元素 0-9
 	}
-	fmt.Println(a)
-    //[0 0 0 0 0 0 1 2 3 4 5 6 7 8 9]
-    //容量是扩容了，打印出的容量结果就不确定了
+	fmt.Println(a) //[0 0 0 0 0 0 1 2 3 4 5 6 7 8 9]
+    //容量是动态扩容，打印出的容量数值是变化的
     
     //数组排序
     var a = [...]int{1,9,3,0,2,7,4}
@@ -1659,19 +1778,24 @@ func main()  {
 }
 ~~~
 
-**指针**
+
+
+###### 2.4 指针
 
 Go语言中的值类型（int、float、bool、string、array、struct）都有对应的指针类型，如：*int、*int64、*string等。
 
+只需要记住两个符号：`&`（取地址）和`*`（根据地址取值）
+
+
+
 取变量指针的语法如下：
 
-~~~
+~~~go
 ptr := &v    // v的类型为T
 ~~~
 
-其中：
-v   ：代表被取地址的变量，类型为T
-ptr：用于接收地址的变量，ptr的类型就为\*T，称做T的指针类型(int、string等)。\*代表指针。
+- v   ：变量名，类型为T
+- ptr：用于接收地址的变量，ptr的类型就为\*T，称做T的指针类型(int、string等)。\*代表指针
 
 
 
