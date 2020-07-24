@@ -1106,7 +1106,7 @@ for i := 1; i < 10; i++ {
 
 ##### Day02  第二章
 
-###### 2.1 复习内容
+###### 2.1 复习
 
 ~~~go
 //单行注释
@@ -1207,9 +1207,6 @@ a = b //X 不可以这样做，因为此时a和b是不同的类型
 举个栗子：
 
 ~~~go
-package main
-import "fmt"
-
 func main()  {
 	//数组
 	//存放元素的容器
@@ -1809,13 +1806,15 @@ func main()  {
 	// 2. * 根据地址取值
 
 	n := 18
+    s := "chenglh"
+    
 	age := &n			// 取变量n的地址，将指针保存到age中
-	s := "chenglh"
-        name := &s			// 取变量s的地址，将指针保存到name中
-        fmt.Println(age)			 //age变量的值是内存地址
-        fmt.Printf("%T\n", age)    // *int  返回int类型的指针
-	fmt.Println(name)		 //内存地址
-	fmt.Printf("%T\n", name) // *string  返回是字符串类型的指针
+    name := &s			// 取变量s的地址，将指针保存到name中
+    
+    fmt.Println(age)		 // age变量的值是内存地址
+    fmt.Printf("%T\n", age)  // *int返回int类型的指针
+	fmt.Println(name)		 // 内存地址
+	fmt.Printf("%T\n", name) // *string返回是字符串类型的指针
 
 	//根据地址取值
 	fmt.Printf("%v\n", *age)
@@ -1829,14 +1828,13 @@ func main()  {
 
 ~~~go
 //错误写法
-
 func main() {
-	var a *int	// nil pointer，没有开劈内存空间
-	*a = 100	//空指针，找不到地址去赋值，编译没问题，
+	var a *int	// nil pointer，只是声明了一个指针变量a但是没有初始化,即没有开劈内存空间
+	*a = 100	// 空指针，找不到地址去赋值，编译没问题
     //但是运行时会报错：runtime error: invalid memory address or nil pointer dereference
 	fmt.Println(*a)
 
-	var b map[string]int
+	var b map[string]int // nil
 	b["沙河娜扎"] = 100
 	fmt.Println(b)
 }
@@ -1844,23 +1842,27 @@ func main() {
 
 
 
-Go语言中new和make是内建的两个函数，主要用来分配内存
+**Go语言中new()和make()，主要用来分配内存**
 
-> new是一个内置的函数，它的函数签名如下：
+> new()是一个内置的函数，它的函数签名如下：
 
 ~~~go
 func new(Type) *Type
+~~~
 
-/**
-其中
-Type表示类型，new函数只接受一个参数，这个参数是一个类型
-*Type表示类型指针，new函数返回一个指向该类型内存地址的指针
-*/
+- Type表示类型，new函数只接受一个参数，这个参数是一个类型
+- *Type表示类型指针，new函数返回一个指向该类型内存地址的指针
 
-//new函数不太常用，使用new函数得到的是一个类型的指针，并且该指针对应的值为该类型的零值
+
+
+举个例子：
+
+~~~go
+//事实上new函数不太常用，使用new函数得到的是一个类型的指针，并且该指针对应的值为该类型的零值
 func main() {
 	a := new(int)
 	b := new(bool)
+    
 	fmt.Printf("%T\n", a) // *int
 	fmt.Printf("%T\n", b) // *bool
 	fmt.Println(*a)       // 0
@@ -1868,8 +1870,8 @@ func main() {
     
     *a = 100
 	*b = true
-	fmt.Printf("%v\n", *a)
-	fmt.Printf("%v\n", *b)
+	fmt.Printf("%v\n", *a) // 100
+	fmt.Printf("%v\n", *b) // true
 }
 ~~~
 
@@ -1886,9 +1888,13 @@ func main() {
 }
 ~~~
 
-> make，也是用于内存分配的，它只用于slice、map以及chan的内存创建，而且它返回的类型就是这三个类型本身，因为这三种类型就是引用类型，所以就没有必要返回他们的指针了。
 
-**make函数的函数签名**
+
+> make()，也是用于内存分配的，它只用于slice、map以及chan的内存创建，而且它返回的类型就是这三个类型本身，因为这三种类型就是引用类型，所以就没有必要返回他们的指针了。
+
+
+
+**make()的函数签名**
 
 ```go
 func make(t Type, size ...IntegerType) Type
@@ -1906,57 +1912,76 @@ func main() {
 }
 ~~~
 
+
+
 > new与make的区别
 
 1. 二者都是用来做内存分配的。
 2. make只用于slice、map以及channel的初始化，返回的还是这三个引用类型本身；
 3. 而new用于类型的内存分配，并且内存对应的值为类型零值，返回的是指向类型的指针。
 
-**map类型**
+
+
+###### 2.5 map
 
 Go语言中提供的映射关系容器为map，其内部使用散列表（hash）实现。
 
-map是一种无序的基于key-value的数据结构，Go语言中的map是引用类型，必须初始化才能使用。
+map是一种无序的基于key-value的数据结构，Go语言中的map是引用类型，必须初始化才能使用
+
+
 
 > map定义
 
-```go
+~~~go
 map[KeyType]ValueType
+~~~
 
-//其中
-//KeyType:表示键的类型
-//ValueType:表示键对应的值的类型
+- KeyType    ：表示键的类型
+- ValueType：表示键对应的值的类型
 
-//举例：以下编译是没有问题，但是运行时会出问题
-var m1 map[string]int
-fmt.Println(m1 == nil) //还没有初始化，没有在内存中开辟空间
-m1["age1"] = 18
-m1["age2"] = 30
-//以上赋值是不成功的
+举例说明
 
-//正确例子
-m1 := make(map[string]int, 10) //第二个参数可以不写，自动扩容；但是最好估算好容量，避免在程序运行期间再动态扩容，增加开销
-m1["age1"] = 18
-m1["age2"] = 30
+```go
+func main() {
+    //以下编译是没有问题，但是运行时会出问题
+    var m1 map[string]int
+    fmt.Println(m1 == nil) //还没有初始化，没有在内存中开辟空间
+    m1["age1"] = 18
+    m1["age2"] = 30
+    //以上赋值是不成功的
+
+    //正确例子
+    m1 := make(map[string]int, 10) //第二个参数"容量"可以不写，自动扩容；但是最好估算好容量，避免在程序运行期间再动态扩容，增加开销
+    m1["age1"] = 18
+    m1["age2"] = 30
+}
 ```
 
-map类型的变量默认初始值为nil，需要使用make()函数来分配内存。
 
-语法为：
+
+> map类型初始化分配内存，【默认初始值为nil，需要使用make()函数来分配内存】
+
+语法如下：
 
 ```go
 make(map[KeyType]ValueType, [cap])
 //其中cap表示map的容量，该参数虽然不是必须的，但是我们应该在初始化map的时候就为其指定一个合适的容量
 ```
 
-map基本使用：都是键值对出现
+
+
+**Map的使用**
+
+map基本使用：键值对出现
 
 ~~~go
 func main()  {
 	scoreMap := make(map[string]float32, 10)
+    
 	scoreMap["张三"] = 90.40
 	scoreMap["李明"] = 95.00
 	scoreMap["赵宁"] = 89.95
+    
 	fmt.Printf("scoreMap Type：%T\n", scoreMap)
 	fmt.Println(scoreMap)
 	fmt.Println(scoreMap["赵宁"])
@@ -1971,6 +1996,8 @@ map[张三:90.4 李明:95 赵宁:89.95]
 89.95
 ~~~
 
+
+
 map也支持在声明的时候填充元素：
 
 ~~~go
@@ -1983,11 +2010,17 @@ func main()  {
 }
 ~~~
 
+
+
 **判断map中某个键是否存在**
 
 ~~~go
 val,ok := map[key]
 ~~~
+
+
+
+举个栗子：
 
 ~~~go
 func main() {
@@ -1997,7 +2030,6 @@ func main() {
 		"age" : "18",
 	}
 	fmt.Println(userInfo)
-    
     fmt.Println(userInfo["telephone"]) //如果不存在这个key拿到的对应值类型的零值，这里是""
 
 	//判断map中某个键是否存在
@@ -2010,24 +2042,31 @@ func main() {
 }
 ~~~
 
-**map的遍历**
+
+
+**Map遍历**
 
 Go语言中使用for range遍历map。
 
 ~~~go
 func main() {
-	//map遍历
 	scoreMap := make(map[string]int, 10)
 	scoreMap["zhangsan"] = 88
 	scoreMap["lisi"] = 79
 	scoreMap["wangwu"] = 90
+    
 	for index,value := range scoreMap{
 		fmt.Printf("姓名：%v 成绩：%v\n",index,value)
+	}
+    
+    //如果只想要key的时候
+    for kk := range userInfo {
+		fmt.Println(kk)
 	}
 }
 ~~~
 
-**注意：** 遍历map时的元素顺序与添加键值对的顺序无关。
+**注意：** 遍历map时的元素顺序与添加键值对的顺序无关，【每次的结果可能不一样】
 
 
 
@@ -2037,12 +2076,20 @@ func main() {
 delete(map, key)
 ~~~
 
+- map：表示要删除键值对的map
+- key  ：表示要删除的键值对的键
+
+
+
+举个例子：
+
 ~~~go
 func main() {
     scoreMap := make(map[string]int)
 	scoreMap["zhangsan"] = 88
 	scoreMap["lisi"] = 79
 	scoreMap["wangwu"] = 90
+    
 	delete(scoreMap, "lisi")
 	delete(scoreMap, "wangliu") //删除不存在的key，什么也不干的
 	fmt.Println(scoreMap)
@@ -2070,29 +2117,32 @@ import (
 
 func main()  {
 	//初始化随机数种子
-	rand.Seed(time.Now().UnixNano()) //时间，加纳秒
+	rand.Seed(time.Now().UnixNano()) //时间，加上纳秒
 
 	//创建map
 	var scoreMap  = make(map[string]int, 20)
 
 	//遍历填充值
-	for i := 0; i < 20; i++ {
+	for i := 0; i < 10; i++ {
 		key := fmt.Sprintf("stu%04d", i) //生成stu开头的学号字符串
 		value := rand.Intn(100) //生成0-99的随机整数
 		scoreMap[key] = value
 	}
 	fmt.Println(scoreMap)
+    //map[No00:21 No01:52 No02:26 No03:57 No04:40 No05:1 No06:0 No07:37 No08:89 No09:29]
 
 	//取出map中的所有key存入切片keys
-	var keys  = make([]string, 0, 20)
+	var keys  = make([]string, 0, 10)
 	for key := range scoreMap {
 		keys = append(keys, key)
 	}
 	fmt.Println(keys)
+    //[No08 No09 No00 No07 No03 No04 No05 No06 No01 No02]
 
 	//对切片进行排序
 	sort.Strings(keys)
 	fmt.Println(keys)
+    //[No00 No01 No02 No03 No04 No05 No06 No07 No08 No09] 排序后的结果
 
 	//按照排序后的key遍历map
 	for _, key := range keys {
@@ -2101,25 +2151,75 @@ func main()  {
 }
 ~~~
 
+
+
 **元素为map类型的切片**
+
+~~~go
+func main() {
+    var mapSlice = make([]map[string]string, 3)
+	for index, value := range mapSlice {
+		fmt.Printf("index:%d value:%v\n", index, value)
+	}
+    /** 打印结果：
+     * index:0 value:map[]
+     * index:1 value:map[]
+     * index:2 value:map[]
+	 */
+    
+    // 对切片中的map元素进行初始化
+	mapSlice[0] = make(map[string]string, 10)
+	mapSlice[0]["name"] = "chenglh"
+	mapSlice[0]["password"] = "123456"
+	mapSlice[0]["address"] = "广东"
+	for index, value := range mapSlice {
+		fmt.Printf("index:%d value:%v\n", index, value)
+	}
+    /** 打印结果：
+     * index:0 value:map[address:广东 name:chenglh password:123456]
+	 * index:1 value:map[]
+	 * index:2 value:map[]
+	 */
+}
+~~~
 
 
 
 **值为切片类型的map**
 
 ~~~go
-https://www.liwenzhou.com/posts/Go/08_map/
+func main() {
+    var sliceMap = make(map[string][]string, 3)
+	fmt.Println(sliceMap)
+    //map[]
+
+	key := "中国"
+	value, ok := sliceMap[key]
+	if !ok {
+		value = make([]string, 0, 2)
+	}
+	value = append(value, "北京", "上海")
+	sliceMap[key] = value
+	fmt.Println(sliceMap)
+    //map[中国:[北京 上海]]
+}
 ~~~
 
 
 
-**函数**
+###### 2.6 函数
+
+> 函数的定义
 
 ~~~go
 func 函数名(参数)(返回值) {
-    函数体
+    //函数体
 }
 ~~~
+
+
+
+定义一个求两个数之和：
 
 ~~~go
 //有返回值
@@ -2127,20 +2227,24 @@ func intSum(x int, y int) int {
 	return x + y
 }
 
-//没有返回值
+//没有传参和返回值
 func sayHello() {
 	fmt.Println("Hello 沙河")
 }
 ~~~
 
+
+
 > 类型简写
 
 ~~~go
-//函数的参数中如果相邻变量的类型相同，则可以省略类型，例如：
+//函数的参数中如果相邻变量的类型相同，则可以省略类型
 func intSum(x, y int) int {
 	return x + y
 }
 ~~~
+
+
 
 > 可变参数
 
@@ -2162,7 +2266,9 @@ ret4 := intSum2(10, 20, 30)
 fmt.Println(ret1, ret2, ret3, ret4) //0 10 30 60
 ~~~
 
-> 固定参数搭配可变参数使用时，可变参数要放在固定参数的后面，示例代码如下：
+
+
+> 固定参数搭配可变参数使用时，可变参数要放在固定参数的后面
 
 ~~~go
 func intSum3(x int, y ...int) int {
@@ -2219,16 +2325,20 @@ func someFunc(x string) []int {
 
 
 
+##### Day03 第三章
+
+###### 3.1 复习
+
 **运算符**
 
-~~~
-算术运算符：+-*/
+~~~go
+算术运算符：+、-、*、/
 
 逻辑运算符：&& || !
 
 位运算符：>> << | ^ &
 
-赋值运算符： = 、+=、++、--
+赋值运算符： = 、+= 、-= 、 ++ 、--
 
 比较运算符： <、<=、!=、>、>=
 ~~~
@@ -2241,18 +2351,18 @@ var names [30]string
 
 var aa = []int{1,13,50}
 bb := aa
-fmt.Printf("aa:%T\tbb:%T\n", aa, bb)
-fmt.Printf("aa:%p\tbb:%p\n", aa, bb)
+fmt.Printf("aa:%T\tbb:%T\n", aa, bb)  //aa:[]int        bb:[]int
+fmt.Printf("aa:%p\tbb:%p\n", aa, bb)  //aa:0xc00009e140 bb:0xc00009e140
+
 bb[1] = 2
+fmt.Println(aa,bb)  //[1 2 50] [1 2 50]  数组赋值是地址引用
+~~~
 
-fmt.Println(aa,bb)
 
->go run main.go
-aa:[]int        bb:[]int
-aa:0xc00009e140 bb:0xc00009e140
-[1 2 50] [1 2 50]
 
-//数组是值类型
+数组是值类型
+
+~~~go
 func main() {
 	x := [3]int{1, 2, 3}
 	y := x //把x的值拷贝了一份给y
@@ -2276,6 +2386,8 @@ func main() {
 	fmt.Println(a1)
 }
 ~~~
+
+
 
 
 
@@ -2386,7 +2498,7 @@ if ok {
 delete(m1, "chenglh") //如果key不存在，什么都不干
 ~~~
 
-作业：
+###### 3.2 作业
 
 ~~~go
 //1、判断字符串中汉字的数量
