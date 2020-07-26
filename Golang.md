@@ -2553,7 +2553,131 @@ fmt.Println("是回文")
 
 
 
-https://www.bilibili.com/video/BV14C4y147y8?p=30
+##### Day04 第四章
+
+###### 4.1 复习
+
+**函数**
+
+函数的定义
+
+~~~go
+func 函数名(参数1,参数2...) 返回值 {
+   //函数体
+}
+~~~
+
+
+
+**函数进阶**
+
+> 高阶函数(函数可以作为参数，也可以作为返回值)
+
+~~~go
+func main() {
+    f1(f2, "chenglh")
+    ret := zl() //返回的是一个函数体
+    sum := ret(10, 20) //调用函数体
+}
+
+func f1(f func(string), name string) {
+    f(name)
+}
+
+func f2(name string) {
+    fmt.Println("Hello，",name)
+}
+
+func zl() func(int, int) int {
+    return func (x,y int) int{
+        return x+y
+    }//返回的是一个函数类型
+}
+~~~
+
+
+
+> 闭包
+
+定义：函数和其外部变量的引用
+
+~~~go
+func ys(name string){
+    fmt.Println("Hello，",name)
+}
+func low(f func()) { //类型不匹配，ys()函数传不进去
+    f()
+}
+
+//闭包
+func bibao(f func(string),name string) func() {
+    return func() {
+        f(name)
+    }
+}
+
+func main() {
+    fc := bibao(yx, "myname")
+    low(fc)
+}
+~~~
+
+
+
+> defer：延迟调用，多用于处理资源释放
+
+> 内置函数
+
+panic 和 recover
+
+~~~go
+func f1() {
+    defer func() {
+        err := recover()//收集当前的错误
+        fmt.Println("松手去爱...")
+        fmt.Println(err)
+    }()
+	panic("犯错") //程序崩溃了，后面不打印了
+    fmt.Println("f1")
+}
+
+func f2() {
+    fmt.Println("f2")
+}
+
+func main() {
+    f1()
+    f2()
+}
+~~~
+
+
+
+###### 4.2 作业
+
+
+
+
+
+
+
+
+
+**结构体(struct)**
+
+
+
+**方法**
+
+
+
+
+
+
+
+
+
+https://www.bilibili.com/video/BV14C4y147y8?p=50
 
 
 
