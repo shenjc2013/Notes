@@ -2657,13 +2657,357 @@ func main() {
 
 
 
+###### 4.3 struct
+
+Go语言中没有“类”的概念，也不支持“类”的继承等面向对象的概念。
+
+Go语言中通过结构体的内嵌再配合接口比面向对象具有更高的扩展性和灵活性。
 
 
 
+> 自定义类型
+
+~~~go
+//将myInt定义为int类型
+type myInt int
+~~~
 
 
 
-**结构体(struct)**
+> 类型别名
+
+~~~go
+//定义格式
+type TypeAlias = Type
+
+//如系统已定义：
+type byte = uint8
+type rune = int32
+~~~
+
+
+
+> 类型定义和类型别名
+
+~~~go
+//自定义类型
+type newInt int
+
+//类型别名
+type myInt = int
+
+func main() {
+	var a newInt
+	a = 100
+    fmt.Println(a)
+	fmt.Printf("type of a:%T\n", a) //type of a:main.newInt
+    
+    var b myInt
+	b = 99
+    fmt.Println(b)
+	fmt.Printf("type of b:%T\n", b) //type of b:int
+    
+    //a的类型是main.newInt，表示main包下定义的newInt类型
+    //b的类型是int
+    /*myInt类型只会在代码中存在，编译完成时并不会有myInt类型*/
+    
+    var c rune
+    c = '中'
+    fmt.Println(c)
+    fmt.Printf("type of b:%T\n", c) //int32
+}
+~~~
+
+
+
+**结构体**
+
+可以通过 struct 来定义自己的类型。
+
+
+
+> 结构体定义
+
+~~~go
+type 类型名 struct {
+    字段名 字段类型
+    字段名 字段类型
+    …
+}
+~~~
+
+
+
+举个栗子：
+
+~~~go
+type person struct {
+	name string
+	city string
+	age  int8
+    hobby []string //切片 nil
+}
+
+//同类型简写
+type person1 struct {
+    name,city string
+    age int8
+}
+
+func main() {
+    var p1 person
+	p1.name = "chenglh"
+	p1.city = "广东"
+	p1.age = 18
+    p1.hobby = []string{"篮球","足球"}
+}
+
+~~~
+
+
+
+> 结构体实例化
+
+只有当结构体实例化时，才会真正地分配内存。也就是必须实例化后才能使用结构体的字段
+结构体本身也是一种类型，我们可以像声明内置类型一样使用var关键字声明结构体类型
+
+~~~go
+var 实例名称  结构体类型
+~~~
+
+
+
+举例说明
+
+~~~go
+type person struct {
+	name string
+	city string
+	age  int8
+}
+
+func main() {
+	var p1 person
+	p1.name = "chenglh"
+	p1.city = "广东"
+	p1.age = 18
+	fmt.Printf("p1=%v\n", p1)  //p1={chenglh 广东 18}
+	fmt.Printf("p1=%#v\n", p1) //p1=main.person{name:"chenglh", city:"广东", age:18} 变量会双引号输出
+    
+    //我们通过.来访问结构体的字段（成员变量）,例如：p1.name和p1.age等
+}
+~~~
+
+
+
+> 匿名结构体
+
+在定义一些`临时数据结构`等场景下还可以使用匿名结构体
+
+~~~go
+func main() {
+    var user struct{name string; age int} //声明匿名变量为结构体，多是临时使用
+    user.name = "chenglh"
+    user.age = 18
+    fmt.Println(user) //{chenglh 18}
+    fmt.Printf("%#v\n", user)//struct{name string; age int}{name:"chenglh", age:18}
+}
+~~~
+
+
+
+结构体是值类型
+
+~~~go
+type person struct {
+    name,gender string
+}
+
+func f(x person) {
+    x.gender = "女" //修改的是副本的gender
+}
+
+func f2(x *person) {
+    (*x).gender = "女"
+}
+
+func main() {
+    var p person
+    p.name = "chenglh"
+    (*p).gender = "男"
+    f(p)
+    fmt.Println(p.gender) //男
+    f2(&p) //传入是的内存地址
+    fmt.Println(p.gender) //女
+}
+~~~
+
+
+
+> 创建指针类型结构体
+
+使用`new()`关键字对结构体进行实例化，得到的是结构体的地址。
+
+~~~GO
+var p2 = new(person)
+fmt.Printf("%T\n", p2)     //*main.person  结构体指针
+fmt.Printf("p2=%#v\n", p2) //p2=&main.person{name:"", city:"", age:0}
+~~~
+
+
+
+Go语言中支持对结构体指针直接使用 `.` 来访问结构体的成员
+
+~~~go
+var p2 = new(person)
+p2.name = "小王"
+p2.age  = 18
+p2.city = "广东"
+fmt.Printf("p2=%#v\n", p2) //p2=&main.person{name:"小王", city:"广东", age:18}
+~~~
+
+
+
+> 取地址实例化
+
+使用 `&` 对结构体进行取地址操作，相当于对该结构体类型进行了一次`new()`实例化操作
+
+~~~go
+p3 := &person{}
+fmt.Printf("%T\n", p3)     //*main.person
+fmt.Printf("p3=%#v\n", p3) //p3=&main.person{name:"", city:"", age:0}
+
+p3.name = "chenglh"
+p3.age  = 19
+p3.city = "广东"
+fmt.Printf("p3=%#v\n", p3) //p3=&main.person{name:"chenglh", city:"广东", age:19}
+~~~
+
+`p3.name = "chenglh"`其实在底层是`(*p3).name = "chenglh"`，这是Go语言帮我们实现的语法糖！
+
+
+
+> 结构体初始化
+
+没有初始化的结构体，其成员变量都是对应其类型的零值
+
+~~~go
+type person struct {
+    name string
+    city string
+    age  int8
+}
+
+func main() {
+    var p4 person
+    fmt.Printf("p4=%#v\n", p4) //p4=main.person{name:"", city:"", age:0}
+}
+~~~
+
+
+
+> 赋值初始化
+
+~~~go
+p5 := person{
+	name: "小王",
+	city: "广东",
+	age:  18,
+}
+fmt.Printf("p5=%#v\n", p5) //p5=main.person{name:"小王", city:"广东", age:18}
+~~~
+
+
+
+也可以对结构体指针进行键值对初始化，例如：
+
+~~~go
+p6 := &person{
+	name: "小王",
+	city: "广东",
+	age:  18,
+}
+fmt.Printf("p6=%#v\n", p6) //p6=&main.person{name:"小王", city:"广东", age:18}
+~~~
+
+
+
+当某些字段没有初始值的时候，该字段可以不写。此时，没有指定初始值的字段的值就是该字段类型的零值。
+
+~~~go
+p7 := &person{
+	city: "北京",
+}
+fmt.Printf("p7=%#v\n", p7) //p7=&main.person{name:"", city:"北京", age:0}
+~~~
+
+
+
+> 使用值列表初始化
+
+~~~go
+p8 := &person{
+	"小王",
+	"广东",
+	28,
+}
+fmt.Printf("p8=%#v\n", p8) //p8=&main.person{name:"小王", city:"广东", age:28}
+~~~
+
+使用这种格式初始化时，需要注意：
+
+- 必须初始化结构体的所有字段
+- 初始值的填充顺序必须与字段在结构体中的声明顺序一致
+- 该方式不能和键值初始化方式混用
+
+
+
+> 结构体内存布局
+
+结构体占用一块连续的内存
+
+~~~go
+type test struct {
+	a int8
+	b int8
+	c int8
+	d int8
+}
+n := test{
+	1, 2, 3, 4,
+}
+fmt.Printf("n.a %p\n", &n.a)
+fmt.Printf("n.b %p\n", &n.b)
+fmt.Printf("n.c %p\n", &n.c)
+fmt.Printf("n.d %p\n", &n.d)
+~~~
+
+输出结果：
+
+~~~go
+
+~~~
+
+
+
+> 空结构体
+
+空结构体是不占用空间的。
+
+~~~go
+var v struct{}
+fmt.Println(unsafe.Sizeof(v))  // 0
+~~~
+
+
+
+面试题
+
+~~~
+
+~~~
+
+
 
 
 
@@ -2677,7 +3021,7 @@ func main() {
 
 
 
-https://www.bilibili.com/video/BV14C4y147y8?p=50
+https://www.bilibili.com/video/BV14C4y147y8?p=51
 
 
 
