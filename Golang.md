@@ -2660,10 +2660,8 @@ func main() {
 ###### 4.3 struct
 
 Go语言中没有“类”的概念，也不支持“类”的继承等面向对象的概念。
-
 Go语言中通过结构体的内嵌再配合接口比面向对象具有更高的扩展性和灵活性。
-
-
+结构体是值类型，赋值的时候都是拷贝。
 
 > 自定义类型
 
@@ -2722,11 +2720,7 @@ func main() {
 
 **结构体**
 
-可以通过 struct 来定义自己的类型。
-
-
-
-> 结构体定义
+> 结构体定义  可以通过 struct 来定义自己的类型
 
 ~~~go
 type 类型名 struct {
@@ -2786,15 +2780,111 @@ type person struct {
 	age  int8
 }
 
+/**构造函数：约定成俗用new开头
+ * 如果字段少时可以返回结构体对象
+ * 但是如果字段多的时侯，返回结构体指针
+ */
+/*func newPerson(name string, age int) person{
+    return person{
+        name: name,
+        age: age,
+    }
+}*/
+//当结构体比较大的时候尽量使用结构体指针，减少程序的开销
+func newPerson(name string, age int) *person{
+    return &person{
+        name: name,
+        age: age,
+    }
+}
+
 func main() {
-	var p1 person
-	p1.name = "chenglh"
-	p1.city = "广东"
-	p1.age = 18
-	fmt.Printf("p1=%v\n", p1)  //p1={chenglh 广东 18}
-	fmt.Printf("p1=%#v\n", p1) //p1=main.person{name:"chenglh", city:"广东", age:18} 变量会双引号输出
+    p1 := newPerson("chenglh", 18)
+    p2 := newPerson("fanlp", 18)
+    fmt.Println(p1, p2)
+}
+~~~
+
+
+
+> 方法与接收者
+
+~~~go
+func (接收者 接收者类型) 方法名(参数列表)(返回参数) {
+    //方法体
+}
+~~~
+
+~~~go
+type dog struct{ //Dog 表示对象可见的，如 fmt.Printf()
+    name string
+}
+//构造方法
+func newDog(name string) dog { 
+    return dog{
+        name : name,
+    }
+}
+//方法是作用于特定类型的函数
+//接收者表示是调用该方法的具体类型变量，多用类型名首字母小写表示
+func (d dog) wang() {
+    fmt.Printf("%s：汪汪~", d.name)
+}
+func main() {
+    d1 := newDog("zhuolin")
+    d1.wang()
+}
+~~~
+
+举个栗子：
+
+~~~go
+type person struct {
+	name string
+	age  int
+}
+
+func newPerson(name string, age int) person {
+	return person{
+		name : name,
+		age  : age,
+	}
+}
+
+func (p *person) nextYear()  {//如果不使用指针，修改的始终是副本
+	p.age++
+}
+func main()  {
+	p1 := newPerson("chenglh", 18)
+	fmt.Println(p1.age)
+	p1.nextYear()
+	fmt.Println(p1.age)
+}
+~~~
+
+常见问题
+
+~~~go
+type myInt int32
+
+func main()  {
+	//声明一个int32类型的变量x 值为 10
+	//方法1
+	//var x int32
+	//x = 10
     
-    //我们通过.来访问结构体的字段（成员变量）,例如：p1.name和p1.age等
+	//方法2
+	//var x int32 = 10
+	//var x = 10  默认是int类型
+    
+	//方法3
+	//var x = int32(10)
+
+    //方法4：自定义数据类型
+    var x = myInt(10) //强制转换
+
+	fmt.Println(x)
+	fmt.Printf("%T", x) //main.myInt
 }
 ~~~
 
@@ -2816,19 +2906,20 @@ func main() {
 
 
 
-结构体是值类型
+> 结构体是值类型
 
 ~~~go
 type person struct {
     name,gender string
 }
 
-func f(x person) {
+func f(x person) {//传参，person类型
     x.gender = "女" //修改的是副本的gender
 }
 
-func f2(x *person) {
-    (*x).gender = "女"
+func f2(x *person) {//传参，内存地址
+    //(*x).gender = "女"   正常可以这样写
+    x.gender = "女"  //go的语法糖，自动根据指针去修改变量值
 }
 
 func main() {
@@ -2846,12 +2937,28 @@ func main() {
 
 > 创建指针类型结构体
 
-使用`new()`关键字对结构体进行实例化，得到的是结构体的地址。
+使用`new()`关键字对结构体进行实例化，得到的是结构体的指针地址。
 
 ~~~GO
 var p2 = new(person)
-fmt.Printf("%T\n", p2)     //*main.person  结构体指针
-fmt.Printf("p2=%#v\n", p2) //p2=&main.person{name:"", city:"", age:0}
+p2.name = "chenglh"
+fmt.Printf("%T\n", p2)     //*main.person  结构体指针 " *main 表示是main包 "
+fmt.Printf("p2=%#v\n", p2) //p2=&main.person{name:"chenglh", city:"", age:0}
+fmt.Printf("%p\n", p2)     //得到的是内存地址
+~~~
+
+make是返回值类型
+
+~~~go
+func main() {
+    var a int
+    a = 100
+    b:= &a
+    fmt.Printf("type a:%T type b:%T\n", a, b)
+    fmt.Printf("%p\n", &a)  //变量a的内存地址
+    fmt.Printf("%p\n", b)   //变量b的值
+    fmt.Printf("%p\n", &b)  //变量b的内存地址
+}
 ~~~
 
 
@@ -2922,6 +3029,7 @@ fmt.Printf("p5=%#v\n", p5) //p5=main.person{name:"小王", city:"广东", age:18
 也可以对结构体指针进行键值对初始化，例如：
 
 ~~~go
+//建议常用这种
 p6 := &person{
 	name: "小王",
 	city: "广东",
@@ -2964,22 +3072,23 @@ fmt.Printf("p8=%#v\n", p8) //p8=&main.person{name:"小王", city:"广东", age:2
 
 > 结构体内存布局
 
-结构体占用一块连续的内存
+**结构体占用一块连续的内存**
 
 ~~~go
 type test struct {
-	a int8
+	a int8  //8bit -> 1byte
 	b int8
 	c int8
 	d int8
+    //e string  会出现内存对齐(内存高级管理)
 }
 n := test{
 	1, 2, 3, 4,
 }
-fmt.Printf("n.a %p\n", &n.a)
-fmt.Printf("n.b %p\n", &n.b)
-fmt.Printf("n.c %p\n", &n.c)
-fmt.Printf("n.d %p\n", &n.d)
+fmt.Printf("n.a %p\n", &(n.a))
+fmt.Printf("n.b %p\n", &(n.b))
+fmt.Printf("n.c %p\n", &(n.c))
+fmt.Printf("n.d %p\n", &(n.d))
 ~~~
 
 输出结果：
@@ -3021,7 +3130,7 @@ fmt.Println(unsafe.Sizeof(v))  // 0
 
 
 
-https://www.bilibili.com/video/BV14C4y147y8?p=51
+https://www.bilibili.com/video/BV14C4y147y8?p=57
 
 
 

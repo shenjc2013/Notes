@@ -204,6 +204,7 @@ QUEUE_CONNECTION=redis
 > 队列任务
 
 ~~~php
+#控制器
 <?php
 namespace App\Http\Controllers;
 
@@ -224,8 +225,113 @@ class TradeController extends Controller
     }
 }
 
+#任务类
+<?php
+namespace App\Jobs;
+
+use Illuminate\Bus\Queueable;
+use Illuminate\Queue\SerializesModels;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Bus\Dispatchable;
+
+class Trade implements ShouldQueue
+{
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+
+    /** 接收传递数据 */
+    public $data;
+
+    public function __construct($data) {
+        $this->data = $data;
+    }
+
+    public function handle() {
+        $rand = mt_rand(1, 2);
+        if ($rand == 2) {
+            sleep(3);//延迟3秒执行
+            throw new \Exception('任务失败');
+        }
+        var_dump($rand, $this->data->data);
+    }
+}
+~~~
+
+
+
+> 定时任务调度
+
+1. 修改数据库配置
+
+~~~php
+# vi .env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=thinkphp
+DB_USERNAME=root
+DB_PASSWORD=123456
+DB_PREFIX=tp_
+
+# vi config/database.php
+'prefix' => env('DB_PREFIX', ''),
+~~~
+
+
+
+2. 创建数据表
+
+~~~mysql
+CREATE TABLE `tp_goods` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `counts` int(11) DEFAULT NULL,
+  `goods_name` varchar(150) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+~~~
+
+
+
+3. 任务调度程序
+
+~~~php
+# vi app\Console\Kernel.php
+protected function schedule(Schedule $schedule)
+{
+    //异步任务的处理 每一分钟
+    $schedule->call(function (){
+        $str = implode(array_merge(range('a','z'), range('A','Z'), range('0', '9')));
+        $str = substr(str_shuffle($str), 0, 5);
+        DB::table('Goods')->insert(['counts'=>4,'goods_name'=>$str]);
+    })->everyMinute();
+}
+~~~
+
+
+
+4. 调用方式
+
+~~~php
+# 一、终端命令行方式调用
+> php artisan schedule:run
+
+# 二、windows下的脚本
+# vi task.bat
+E:
+CD E:\www\blog
+php artisan schedule:run 1>> NUL 2>&1
+
+# 三、Linux下调度
 
 ~~~
+
+
+
+
+
+
+
+
 
 
 
