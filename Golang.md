@@ -1,21 +1,3 @@
-```php
-##【老男孩教育】GO语言 基础+就业班 #新版
-https://www.bilibili.com/video/BV1QJ411V73q/?p=3
-
-##2020老男孩系列之掌握Go语言
-https://www.bilibili.com/video/BV14C4y147y8?p=8
-
-##【老男孩教育】GO语言 基础+就业班 #新版
-https://www.bilibili.com/video/BV1QJ411V73q/?spm_id_from=333.788.videocard.0
-https://www.bilibili.com/video/BV1QJ411V73q/?spm_id_from=333.788.videocard.1
-
-##【最新Go Web开发教程】基于gin框架和gorm的web开发实战 (七米出品)
-https://www.bilibili.com/video/BV1gJ411p7xC?from=search&seid=2641930791964842149
-
-##2018年的
-https://www.bilibili.com/video/BV1A741117tD/?spm_id_from=333.788.videocard.19
-```
-
 ##### Day01 第一章
 
 ###### 1.1 Go语言基础
@@ -2836,7 +2818,9 @@ func main() {
 }
 ~~~
 
-举个栗子：
+
+
+举个栗子
 
 ~~~go
 type person struct {
@@ -2896,7 +2880,7 @@ func main()  {
 
 ~~~go
 func main() {
-    var user struct{name string; age int} //声明匿名变量为结构体，多是临时使用
+    var user struct{ name string; age int } //声明匿名变量为结构体，多是临时使用
     user.name = "chenglh"
     user.age = 18
     fmt.Println(user) //{chenglh 18}
@@ -3091,10 +3075,108 @@ fmt.Printf("n.c %p\n", &(n.c))
 fmt.Printf("n.d %p\n", &(n.d))
 ~~~
 
-输出结果：
+输出结果：[连续的内存地址]
 
 ~~~go
+n.a 0xc00000a0d8
+n.b 0xc00000a0d9
+n.c 0xc00000a0da
+n.d 0xc00000a0db
+~~~
 
+
+
+> 匿名字段结构体
+
+~~~go
+//匿名字段，不要使用
+type person struct {
+    string   //相当于把类型当作名字了，相同类型只能有一个，违背结构体内字段唯一性
+    int
+}
+
+func main() {
+    p1 := person{
+        "程生",
+        20,
+    }
+    fmt.Println(p1.string)
+    fmt.Println(p1.int)
+}
+~~~
+
+
+
+> 嵌套结构体
+
+~~~go
+//个人有地址
+//公司有地址
+type address struct {
+    province string
+    city string
+    dist string
+}
+type person struct {
+    name string
+    age int
+    addr address //层级嵌套 读取： p1.addr.city
+}
+type company struct {
+    name string
+    age int
+    addr address
+}
+
+func main() {
+    p1 := person{
+        name:"chenglh",
+        age:18,
+        addr: address{
+            province:"广东",
+            city:"广州",
+            dist:"天河",
+        }
+    }
+    fmt.Println(p1)
+    fmt.Println(p1.addr.city)
+}
+~~~
+
+另一种写法
+
+~~~go
+type address struct {
+	province string
+	city string
+	dist string
+}
+
+type workPlace struct {
+	province string
+	city string
+	dist string
+}
+
+type person struct {
+	name string
+	age int
+	address  //匿名嵌套结构体，读取：p1.city
+    //workPlace  //这里有两个匿名结构体，里边的字段有相同，所以不能使用 p1.city 简写来读取数据了，要写全称
+}
+func main()  {
+	p1 := person{
+		name : "cheng",
+		age : 20,
+		address:address{
+			province:"广东",
+			city:"广州",
+			dist:"天河",
+		},
+	}
+	fmt.Println(p1)
+	fmt.Println(p1.city)//在p1下找，找不到，然后去找匿名嵌套，也可以用 fmt.Println(p1.address.city)
+}
 ~~~
 
 
@@ -3110,30 +3192,77 @@ fmt.Println(unsafe.Sizeof(v))  // 0
 
 
 
-面试题
+> 结构体继承
 
+~~~go
+type animal struct {
+    name string
+}
+func (a animal)move() {
+    fmt.Println("%s:移动", a.name)
+}
+//dog
+type dog struct{
+    feet uint8
+    animal
+}
+func (d dog)wang() {
+    fmt.Println("%s：汪汪~",d.name)//匿名结构体
+}
+
+func main() {
+    d1 := dog{
+        feet:4,
+        animal:animal{name:"xiaohei"},
+    }
+    fmt.Println(d1)
+    fmt.wang()
+    fmt.move()
+}
 ~~~
 
+
+
+结构体与JSON
+
+~~~go
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+)
+type person struct {
+	//因为要传入外包格式化，变量首字母需要大写
+	//常见的格式化有：json:"name" db:"name" ini:"name"
+	Name string `json:"name"`
+	Age  int	`json:"age"`
+}
+
+func main()  {
+	p1 := person{
+		Name:"程立辉",
+		Age:19,
+	}
+	//序列化
+	b,err := json.Marshal(p1)
+	if err != nil {
+		fmt.Println("marshal failed,err:%v", err)
+		return
+	}
+	fmt.Printf("%v\n",string(b))
+
+	//反序列化
+	str := `{"name":"程范","age":18}`
+	var p2 person
+	json.Unmarshal([]byte(str), &p2)
+	fmt.Printf("%#v\n",p2)
+}
 ~~~
 
+输出结果：
 
-
-
-
-**方法**
-
-
-
-
-
-
-
-
-
-https://www.bilibili.com/video/BV14C4y147y8?p=57
-
-
-
-
-
-https://www.liwenzhou.com/posts/Go/06_slice/
+~~~go
+{"name":"程立辉","age":19}
+main.person{Name:"程范", Age:18}
+~~~
