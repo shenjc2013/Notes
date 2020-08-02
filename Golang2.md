@@ -94,3 +94,102 @@ func main() {
 
 > JSON序列化与反序列化
 
+
+
+###### 5.2 作业
+
+
+
+###### 5.3 接口(interface)
+
+> 接口是一种类型，是特殊的类型，它规定了变量有哪些方法
+
+接口定义
+
+~~~
+type 接口名 interface {
+    方法名1(参数1...)(返回值1....)
+    方法名2(参数2...)(返回值2....)
+}
+~~~
+
+举个例子：
+
+~~~go
+type cat struct {}
+type dog struct {}
+
+func (c cat)speak() {
+    fmt.Println("喵喵喵~")
+}
+func (d dog)speak() {
+    fmt.Println("汪汪汪~")
+}
+func data(x) {//传参：x dog 或 x cat；x需要具体类型
+    x.speak() //挨打了就要叫
+}
+func main() {
+    var c1 cat
+    var d1 dog
+    data(c1)
+    data(d1)
+}
+~~~
+
+改造代码
+
+~~~go
+type speaker interface{
+    speak() //只要实现了speak方法的变量都是speaker类型
+}
+type cat struct {}
+type dog struct {}
+func (c cat)speak() {
+    fmt.Println("喵喵喵~")
+}
+func (d dog)speak() {
+    fmt.Println("汪汪汪~")
+}
+func dat(x speaker) {
+    x.speak() //挨打了就要叫
+}
+func main() {
+    var c1 cat
+    var d1 dog
+    dat(c1)
+    dat(d1)
+}
+~~~
+
+开车例子
+
+~~~go
+type car interace{
+    run()
+}
+type falali struct {
+    brand string
+}
+type baoshijie struct {
+    brand string
+}
+func (f falali)run() {
+    fmt.Printf("%s速度70迈~\n", f.brand)
+}
+func (b baoshijie)run() {
+    fmt.Printf("%s速度100迈~\n", b.brand)
+}
+func drive(c car) {
+    c.run()
+}
+func main() {
+    var f1 = falali{brand:"法拉利",}
+    var b1 = baoshijie(brand:"保时捷",)
+    drive(f1)
+    drive(b1)
+}
+//不同数据库
+~~~
+
+
+
