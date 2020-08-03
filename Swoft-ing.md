@@ -18,7 +18,7 @@ PHP编辑器：phpStorm
 
 清理优化代码
 
-~~~
+~~~php
 app/Exception/*
 app/Http/Controller/*
 app/Http/Middleware/*
