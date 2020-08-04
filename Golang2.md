@@ -104,16 +104,68 @@ func main() {
 
 > 接口是一种类型，是特殊的类型，它规定了变量有哪些方法
 
-接口定义
+**接口定义**
 
-~~~
+~~~go
 type 接口名 interface {
     方法名1(参数1...)(返回值1....)
     方法名2(参数2...)(返回值2....)
 }
 ~~~
 
-举个例子：
+**接口的实现**
+
+一个变量如果实现了接口中规定的所有方法，那么这个变量就实现了这个接口，可以称这个接口类型的变量
+
+~~~go
+type animal interface{
+    move()
+    eat(string) //eat(food string)
+}
+type cat struct {
+    name string
+    feet int8
+}
+func (c cat)move() {
+    fmt.Println("走猫步！")
+}
+func (c cat)eat(food string) {
+    fmt.Printf("猫吃%s！\n", food) 
+}
+
+type chicken struct {
+    feet int8
+}
+func (c chicken)move() {
+    fmt.Println("鸡动！")
+}
+func (c chicken)eat(food string) {
+    fmt.Printf("鸡吃饲料！\n", food) 
+}
+
+func main() {
+    var a1 animal //定义一个animal接口类型的变量
+    
+    bc := cat{//定义一个cat类型的变量bc
+        name:"淘气"
+        feet:4
+    }
+    a1 = bc  //接口变量分为：类型和值两部分
+    fmt.Println(a1)
+    fmt.Printf("%T", a1)
+    a1.eat("小黄鱼")
+    
+    kfc := chicken{
+        feet:2,
+    }
+    a1 = kfc
+    fmt.Printf("%T", a1)
+}
+~~~
+
+<img src="H:\笔记本\Golang2.assets\image-20200804162045881.png" alt="image-20200804162045881" style="zoom:50%;float:left" />
+
+举个例子
 
 ~~~go
 type cat struct {}
@@ -150,18 +202,18 @@ func (c cat)speak() {
 func (d dog)speak() {
     fmt.Println("汪汪汪~")
 }
-func dat(x speaker) {
+func data(x speaker) {
     x.speak() //挨打了就要叫
 }
 func main() {
     var c1 cat
     var d1 dog
-    dat(c1)
-    dat(d1)
+    data(c1)
+    data(d1)
 }
 ~~~
 
-开车例子
+再举例子
 
 ~~~go
 type car interace{
@@ -188,8 +240,11 @@ func main() {
     drive(f1)
     drive(b1)
 }
-//不同数据库
+//不同数据库，实现连接和增删查改等操作
 ~~~
 
 
 
+
+
+https://www.bilibili.com/video/BV14C4y147y8?p=65
