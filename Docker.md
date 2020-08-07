@@ -517,7 +517,15 @@ $ docker exec -it 437965bada89 /bin/bash   //容器ID
 
 ###### 2.1 安装PHP
 
+
+
 ###### 2.2 安装Nginx
+
+~~~php
+
+~~~
+
+
 
 ###### 2.3 安装MySQL5.7
 

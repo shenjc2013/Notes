@@ -25,15 +25,7 @@ Ctrl Shift Q//引用或 >开头，可多级引用，两个回车换行就是取�
 
 ---
 
-~~~flow
-st=>start: start
-on=>operation: content
-cn=>condition: sure?
-e=>end: end
 
-st->on->cn(yes)->e
-cn(no)->on
-~~~
 
 
 

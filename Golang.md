@@ -2,27 +2,36 @@
 
 ###### 1.1 Go语言基础
 
-```
-什么是Go语言
-1、Google开源
-2、编译型语言(C、Go等)
-(php、Python解析型语言)
-3、21世纪的C语言
-天生支持并发
-执行性能好
-真正的企业级编程语言(Java、Go)
+> 什么是Go语言
 
-Go语言特点
+1. Google开源
+2. 编译型语言(C、Go等)、而php、Python解析型语言
+3. 21世纪的C语言，天生支持并发、执行性能好、真正的企业级编程语言(Java、Go)
+
+
+
+**Go语言特点**
 1、语法简洁(25个关键字)
 2、开发效率高(自带gc)
 3、执行性能好
-```
 
-解析型语言与编译型语言区别
 
-<img src="H:\笔记本\Golang.assets\image-20200525220721506.png" alt="image-20200525220721506" style="float:left;" />
 
-![](H:\笔记本\Golang.assets\image-20200525221233192.png)
+**解析型语言与编译型语言区别**
+
+<img src="./Golang.assets/image-20200525220721506.png" alt="image-20200525220721506" style="float: left; zoom: 80%;" />
+
+
+
+
+
+**编程语言的时间结点**
+
+<img src="./Golang.assets/image-20200525221233192.png" style="zoom:80%;float:left" />
+
+
+
+谁在使用？
 
 ```bash
 #百度内部Go语言应用
@@ -45,7 +54,15 @@ Go成为内部推荐语言
 ...
 ```
 
-![image-20200525222605019](H:\笔记本\Golang.assets\image-20200525222605019.png)
+
+
+新兴公司、行业
+
+<img src="./Golang.assets\image-20200525222605019.png" alt="image-20200525222605019" style="zoom:67%;float:left" />
+
+
+
+第一个程序
 
 ```go
 package main //main就是说能打包成一个可执行的exe文件
@@ -65,16 +82,17 @@ func main() {
 
 ###### 1.2 开发环境
 
+#官方链接(翻墙)： https://golang.org/dl
+
+#官方镜像(推荐)：https://golang.google.cn/dl
+
 ```bash
-##1、Golang下载安装
-https://golang.org/dl		#官网地址
-https://golang.google.cn/dl	#官方镜像(推荐)
+##1、Golang软件下载
 
 ##2、安装
 双击一步步安装即可
 
 ##3、验证(cmd或Git命令面板)
-#查看版本信息
 $ go version
 go version go1.14.2 windows/amd64
 
@@ -89,35 +107,20 @@ set GOEXE=.exe
 set GOFLAGS=
 ...
 
-##4、开发环境
+##4、开发软件
+golang 或
+vcode
 
-
-##编译
+##5、编译文件
 > go build
 > xxx.exe
 
 > go build main.go
 ```
 
-```go
-/**
- * 1、旧版本需要设置GOPATH，即代码的存放路径
- * 在系统属性 >>> 新建系统变量 >>> 变量名：GOPATH ; 变量值：E:\Go
- * 2、在 E:\Go目录下新建三个文件夹
- * bin 存放编译后生成的可执行文件
- * pkg 存放编译后生成的归档文件
- * src 存放源码文件
- * 3、E:\Go\bin也配置到环境变量中，放在PATH后面即可
- * 4、本机电脑上GOPATH应该是有默认值的，通常是%USERPROFILE%/go，需要删除按以上方法新建即可
- */
 
-#配置完成后，重新打开新的cmd
-> go env
-...
-set GOPATH=G:\Go    //项目路径
-set GOROOT=c:\go    //安装go软件的路径
-...
-```
+
+旧版本还要设置Gopath
 
 |  平台   |   GOPATH默认值   |        举例        |
 | :-----: | :--------------: | :----------------: |
@@ -126,14 +129,12 @@ set GOROOT=c:\go    //安装go软件的路径
 
 
 
-1、适合个人开发者，组织代码
+**1、适合个人开发者，组织代码**
 
-<img src="H:\笔记本\Golang.assets\image-20200525220721511.png" style="zoom:80%;float:left;" />
+<img src="./Golang.assets\image-20200525220721511.png" style="zoom:80%;float:left;" />
 
-2、目前流行的项目结构
-<img src="H:\笔记本\Golang.assets\image-20200525220721500.png" style="zoom:110%;float:left;" />
-
-
+**2、目前流行的项目结构**
+<img src="./Golang.assets/image-20200525220721500.png" style="zoom:100%;float:left;" />
 
 
 
@@ -153,32 +154,18 @@ set GOROOT=c:\go    //安装go软件的路径
 
 
 
-3、企业项目组织代码
-<img src="H:\笔记本\Golang.assets\20200526140839.png" style="zoom:200%;" />
 
-Go采用 Utf-8编码的文本，下载安装 vscode
+
+**3、企业项目组织代码**
+<img src="./Golang.assets/20200526140839.png" style="zoom:200%;" />
+
+
 
 [官方下载](https://code.visualstudio.com/Download )
 
 1、打开软件，在左侧 “扩展” > 搜索 chinese 汉化插件包 ，重启软件
 
 2、再次 “扩展” > 搜索 go 扩展插件，让软件支持Go语言开发
-
-
-第一个小程序Hello world
-
-```go
-# 1、在vscode中打开文件路径 G:\Go\src\www.testgo.com\day01\helloworld
-需要创建对应路径
-
-# 2、新建 main.go文件
-package main
-import "fmt"
-
-func main()  {
-	fmt.Println("Hello world!")
-}
-```
 
 
 
@@ -192,10 +179,6 @@ func main()  {
 
 ```bash
 ##方式一
-#day01右键  》  终端中打开 / open in Terminal
-#右上处，选择cmd，如果没有出现cmd选项，点开默认shell找到cmd
-#其实是进入命令面板
-
 #构建
 G:\Go\src\www.testgo.com\day01\helloworld>go build
 helloworld.exe
@@ -210,7 +193,7 @@ go build www.testgo.com/day01/helloworld
 helloworld.exe
 
 ##方式三
-> go build -o hello.exe
+go build -o hello.exe
 hello.exe
 ```
 
@@ -223,6 +206,8 @@ hello.exe
 //1、先编译得到exe；
 //2、把可执行文件拷贝到"GOPATH/bin"目录下。任意地方直接执行当前可执行文件
 ```
+
+
 
 > 跨平台编译
 
@@ -261,25 +246,28 @@ go build
 ```
 
 
-代码格式化
 
+###### 1.4 代码格式化
+
+```go
+> go fmt main.go  //格式化代码重排
 ```
-> go fmt main.go
-```
 
 
 
-###### 1.4 变量常量
+###### 1.5 变量常量
 
 Go语言中有25个关键字
 
 ```go
-break		default		func		interface	select
-case		defer		go			map			struct
-chan		if			else		goto		switch
-package		const		range		type		fallthrough
-continue	for			import		return		var
+break		  default		func		 interface	select
+case		  defer		  go			  map			  struct
+chan		  if			  else		  goto		  switch
+package		const		  range		  type		  fallthrough
+continue	for			  import		return		var
 ```
+
+
 
 Go语言37个保留字
 
@@ -287,9 +275,9 @@ Go语言37个保留字
 Constants:	true  false  iota  nil
 
 Types:		int  int8  int16  int32  int64  
-            uint  uint8  uint16  uint32  uint64  uintptr
-            float32  float64  complex128  complex64
-            bool  byte  rune  string  error
+          uint  uint8  uint16  uint32  uint64  uintptr
+          float32  float64  complex128  complex64
+          bool  byte  rune  string  error
 
 Functions:  make  len  cap  new  append  copy  close  delete
             complex  real  imag
@@ -310,6 +298,8 @@ var name string
 var isok bool
 ```
 
+
+
 > 批量声明
 
 ~~~go
@@ -323,10 +313,12 @@ var (
 
 
 
+举个栗子
+
 ~~~go
 package main
 var (
-	name string
+	  name string
     age  int
     isok bool
 )
@@ -338,7 +330,7 @@ func main() {
 }
 ~~~
 
-以上代码如果有错位或乱放位置，在控制台中 > go fmt main.go 可以格式化重排代码。
+
 
 ~~~go
 package main
@@ -356,15 +348,11 @@ func main() {
 	age = 16
 	isok = false
 
-	fmt.Printf("name:%s, age:%d", name, age) //打印信息
-	fmt.Print(isok) //打印结果
-    fmt.Println() //快捷打印一个空行
-    fmt.print("\n")
+  fmt.Printf("name:%s, age:%d", name, age) //name:chenglh,age:16
+	fmt.Print(isok) //false
+  fmt.Println() //快捷打印一个空行
+  fmt.print("\n")
 }
-
-##控制台：
-> go build
-> day01.exe
 ~~~
 
 
@@ -390,7 +378,7 @@ Go语言在声明变量的时候，会自动对变量对应的内存区域进行
 
 ~~~go
 //声明变量的同时赋值
-//var 变量名 类型 = 表达式
+var 变量名 类型 = 表达式
 
 //举例子
 //单个变量声明
@@ -413,20 +401,18 @@ var name = "chenglh"
 var age = 18
 ~~~
 
+
+
 > 短变量声明(函数内部)
 
 只在函数内部使用，通过 `:=` 方式声明并初始化变量
 
 ~~~go
-package main
-import ("fmt")
-
-//全局变量m
+//全局变量 m
 var m = 100
 
 func main() {
-    //简短变量声明
-    s3 := "haha" //使用了类型推导
+    s3 := "haha" //简短变量声明,使用了类型推导
     n  := 10
     m  := 200
     fmt.Println(m, n)
@@ -600,7 +586,7 @@ const (
 
 
 
-###### 1.5 数据类型
+###### 1.6 数据类型
 
 基本数据类型：**整型、浮点型、布尔型、字符串外，数组、切片、结构体、函数、map、通道（channel）等**
 
@@ -936,7 +922,7 @@ func sqrtDemo() {
 
 
 
-###### 1.6 流程控制
+###### 1.7 流程控制
 
 **if判断**
 
