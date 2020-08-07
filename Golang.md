@@ -316,28 +316,7 @@ var (
 举个栗子
 
 ~~~go
-package main
-var (
-	  name string
-    age  int
-    isok bool
-)
-
-func main() {
-    name = 'chengl'
-    age  = 16
-    isok = false
-}
-~~~
-
-
-
-~~~go
-package main
-
-import "fmt"
-
-var (
+var ( //批量声明
 	name string
 	age  int
 	isok bool
@@ -386,17 +365,17 @@ var name string = "chenglh"
 var age int = 18
 
 //多个变量声明
-var name, age = "chenglh", 18
+var name, age = "chenglh", 18 //类型推导
 ~~~
 
 
 
 > 类型推导
 
-有时候将变量的类型省略，编译器会根据等号右边的值来推导变量的类型完成初始化
+将变量的类型省略，编译器会根据等号右边的值来推导变量的类型完成初始化
 
 ~~~go
-//根据值来判断变量是什么类型
+//编译器根据值来判断变量是什么类型
 var name = "chenglh"
 var age = 18
 ~~~
@@ -439,6 +418,8 @@ func main() {
 
 匿名变量不占用命名空间，不会分配内存，所以匿名变量之间不存在重复声明。 (在`Lua`等编程语言里，匿名变量也被叫做哑元变量。)
 
+
+
 > 注意事项：
 
 1. 函数外的每个语句都必须以关键字开始（var、const、func等）
@@ -459,7 +440,7 @@ var isOk bool */
 
 //批量声明
 var (
-	name string
+	  name string
     age  int
     isOk bool
 )
@@ -488,9 +469,9 @@ func main() {
     //fmt.Print(testHeihei)
 
     //声明变量同时赋值
-	//var setStudentName string = "chenglh"
+	  //var setStudentName string = "chenglh"
     //var setStudentName = "chenglh"  //推荐使用，类型推导(根据值判断该变量是什么类型)
-	//fmt.Print(setStudentName)
+	  //fmt.Print(setStudentName)
 }
 ~~~
 
@@ -498,7 +479,9 @@ func main() {
 
 **常量**
 
-相对于变量，常量是恒定不变的值，多用于定义程序运行期间不会改变的那些值，常用于全局。 常量的声明`const`，常量在定义的时候必须赋值。
+相对于变量，常量是恒定不变的值，多用于定义程序运行期间不会改变的那些值，常用于全局。 
+
+常量的声明`const`，常量在定义的时候必须赋值。
 
 ~~~go
 package main
@@ -551,7 +534,7 @@ const (
 const (
 	n1 = iota //n1 = 0
 	n2        //n2 = iota => n2 = 1
-	_		  //_  = iota => iota = 2
+	_		      //_  = iota => iota = 2
 	n4        //n4 = iota => n4 = 3
 )
 
@@ -605,6 +588,8 @@ const (
 | uint32 | 无符号 32位整型 (0 到 4294967295)                            |
 | uint64 | 无符号 64位整型 (0 到 18446744073709551615)                  |
 
+
+
 > 特殊整型(注意：越界或溢出)
 
 | 类型    | 描述                                               |
@@ -612,6 +597,8 @@ const (
 | uint    | 32位操作系统上就是uint32，64位操作系统上就是uint64 |
 | int     | 32位操作系统上就是int32，64位操作系统上就是int64   |
 | uintptr | 无符号整型，用于存放一个指针                       |
+
+
 
 > 数字字面量语法（Number literals syntax）
 
@@ -630,16 +617,16 @@ func main()  {
 	fmt.Printf("%d \n", a) // 10
 	fmt.Printf("%b \n", a) // 1010
 
-    //八进制 以0开头(文件权限)
+  //八进制 以0开头(文件权限)
 	var b = 077
 	fmt.Printf("%o \n", b) // 77
 
-    //十六进制 以0x开头(内存地址)
+  //十六进制 以0x开头(内存地址)
 	var c = 0xff
 	fmt.Printf("%x \n", c) // ff
 	fmt.Printf("%X \n", c) // FF
     
-    var d = int8(9)
+  var d = int8(9)
 	fmt.Printf("%T\n", d)
 }
 ~~~
@@ -649,9 +636,6 @@ func main()  {
 **浮点型**
 
 ~~~go
-package main
-import "fmt"
-
 func main()  {
 	//小数默认类型，float64
 	f1 := 1.234568
@@ -661,7 +645,7 @@ func main()  {
 	f2 := float32(1.23552)
 	fmt.Printf("%T\n", f2)
     
-    //float32类型的值不能直接赋值给 float64 ,如错误用法：f1 = f2
+  //float32类型的值不能直接赋值给 float64 ,如错误用法：f1 = f2
 }
 ~~~
 
@@ -678,23 +662,14 @@ Go语言中 bool类型进行声明布尔型数据，只有 true和false两个值
 3. 布尔型无法参与数据运算，也无法与其他类型进行转换
 
 ```go
-package main
-
-import "fmt"
-
 func main()  {
 	var a1 = true
 	var a2 bool
 
-	fmt.Printf("a1类型：%T, val=%v", a1, a1)
+	fmt.Printf("a1类型：%T, val=%v", a1, a1) //a1类型：bool, val=true
 	fmt.Println()
-	fmt.Printf("a2类型：%T, val=%v", a2, a2)
+	fmt.Printf("a2类型：%T, val=%v", a2, a2) //a2类型：bool, val=false
 }
-
-/**输出结果
- * a1类型：bool, val=true
- * a2类型：bool, val=false
- */
 ```
 
 
@@ -702,28 +677,26 @@ func main()  {
 **类型总结**
 
 ~~~go
-package main
-import "fmt"
-
 func main()  {
 	num := 100
 	fmt.Printf("%T\n", num) //查看类型    int
 	fmt.Printf("%v\n", num) //万能输出值	 100
+  
 	fmt.Printf("%b\n", num) //二进制	  1100100
 	fmt.Printf("%o\n", num) //八进制	  144
 	fmt.Printf("%d\n", num) //十进制	  100
-	fmt.Printf("%x\n", num) //十六进制	  64
+	fmt.Printf("%x\n", num) //十六进制  64
     
-    number := 100.98
-    fmt.Printf("%T，%f\n", number, number) //%f输出10进制的浮点数,(这里float64，100.980000)
+  number := 100.98
+  fmt.Printf("%T，%f\n", number, number) //%f输出10进制的浮点数,(这里float64，100.980000)
 
 	name := "chenglh"
 	fmt.Printf("%s\n", name)  //字符串输出  chenglh
 	fmt.Printf("%v\n", name)  //万能输出值  chenglh
 	fmt.Printf("%#v\n", name) //"结果串"会自动加上双引号 "chenglh"
     
-    //%c 输出单个字符
-    n1 := '程'
+  //%c 输出单个字符
+  n1 := '程'
 	n2 := 'A'
 	fmt.Printf("%c\n",n1) //如果不格式化，显示ASCII码
 	fmt.Printf("%c\n",n2)
@@ -789,7 +762,7 @@ fmt.Print(len(s1))   // 6
 //求字符串长度
 s3 := "chenglh程“"
 //方法1：
-ss1 := len([]rune(s3)) // 9，切片中的内容也是ASCII码
+ss1 := len([]rune(s3)) // 9，即9个字符，切片中的内容也是ASCII码
 //方法2：
 ss2 := strings.Count(s3,"") - 1   //需要引入 strings 类
 //方法3：
@@ -844,6 +817,8 @@ var a := '中'
 var b := 'x'
 ~~~
 
+
+
 Go语言的字符有以下两种：
 
 1. uint8类型，或者叫byte型，代表了ASCII码的一个字符
@@ -870,6 +845,8 @@ for _, v := range s1 {
 }
 //72(H)   101(e)  108(l)  108(l)  111(o)  24847(意)       38590(难)       24179(平)
 ~~~
+
+
 
 > 字符串底层是一个byte数组，所以可以和`[]byte`类型相互转换
 

@@ -317,3 +317,9 @@ $ brew services restart php@7.4
 
 
 
+> http://blog.phpdr.net/mac-zendstudio-字体过小问题解决.html
+
+~~~
+-Dorg.eclipse.swt.internal.carbon.smallFonts
+~~~
+

@@ -1,12 +1,14 @@
-###### 第一章 Tp6简介
+###### 第一章 Tp6项目实战
+
+###### 1.1 框架获取
+
+~~~php
+# composer create-project topthink/think tp
+~~~
 
 
 
-
-
-> 基础架构
-
-<img src="H:\笔记本\Thinkphp6.assets\image-20200629174249021.png" alt="image-20200629174249021" style="zoom:95%;float:left;" />
+<img src="./Thinkphp6.assets/image-20200629174249021.png" alt="image-20200629174249021" style="zoom:95%;float:left;" />
 
 
 

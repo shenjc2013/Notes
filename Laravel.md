@@ -26,7 +26,7 @@ composer require predis/predis
 
 如服务器A、B、C三台，一般不建议把Redis部署到某一台服务器(如B)上，对于用户访问B时没有延迟，但对于A、C有延迟，会造成不公平。可以把Redis单独部署一台服务器，对于服务器A、B、C是公平获取锁的。
 
-<img src="H:\笔记本\Laravel.assets\image-20200728135737509.png" alt="image-20200728135737509" style="float:left;" />
+<img src="./Laravel.assets/image-20200728135737509.png" alt="image-20200728135737509" style="float:left;" />
 
 
 
