@@ -31,7 +31,7 @@ GatewayWorker不支持UDP监听，所以UDP服务请选择Workerman。
 ###### 1.3  安装
 
 ~~~php
-//1、检查环境
+//###0、检查环境
 $ curl -Ss http://www.workerman.net/check.php | php
 PHP Version >= 5.3.3                  [OK] 
 Extension pcntl check                 [OK] 
@@ -40,7 +40,7 @@ Extension posix check
 ####1、安装核心包（不包含start_gateway.php start_businessworker.php等启动入口文件）
 $ composer require workerman/gateway-worker
 
-下载聊天包demo
+/** 下载聊天包demo */
 
 ####2、参照start.php
 # vi start.php
@@ -85,9 +85,9 @@ Worker::runAll();
 ####3、把demo里的文件夹/Applications/YouraApp复制到TP6的app目录下，并修改名称为chat
 
 ####4、修改 app/chat/start_gateway.php
-$gateway = new Gateway("websocket://0.0.0.0:8282"); //tcp修改为webstock协议
+$gateway = new Gateway("websocket://0.0.0.0:8282"); //【tcp修改为webstock协议】
 
-【以后所有业务基本是走app/chat/Events.php,其他几个文件很去动代码的】
+//【以后所有业务基本是走app/chat/Events.php,其他几个文件很去动代码的】
 
 ####5、启动 (调试模式，后台守护进程模式)
 $ php start.php start | stop | restart | reload
@@ -172,7 +172,7 @@ public static function onMessage($client_id, $message) {
 
 
 
-###### 1.5 文档
+###### 1.5 接口
 
 官方文档：http://doc2.workerman.net/
 

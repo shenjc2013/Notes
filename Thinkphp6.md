@@ -1,21 +1,25 @@
 ###### 第一章 Tp6项目实战
 
-###### 1.1 框架获取
+###### 1.1 框架入门
 
 ~~~php
+//下载安装
 # composer create-project topthink/think tp
 
+//下载模板引擎
 # composer require topthink/think-view
-Driver [Think] not supported.
-  
-# composer require workerman/gateway-worker
+//提示信息：Driver [Think] not supported.表示没有模板引擎
 ~~~
 
 
 
+> 项目架构图
+
 <img src="./Thinkphp6.assets/image-20200629174249021.png" alt="image-20200629174249021" style="zoom:95%;float:left;" />
 
 
+
+> Request对象
 
 ~~~php
 <?php
@@ -25,14 +29,15 @@ use think\facade\Request;
 
 //use think\Request;
 
-class Index extends BaseController
-{
+class Index extends BaseController {
+    //方法1：注入方式调用
     //public function demo(Request $request) {
-    //    print_r($request->param());//注入方式调用
+    //    print_r($request->param());
     //}
 
+    //方法2：门面方式调用
     public function test() {
-        $params = Request::param();//门面方式调用
+        $params = Request::param();
         print_r($params);
     }
 }
@@ -40,8 +45,9 @@ class Index extends BaseController
 
 
 
+> Json数据返回
+
 ~~~php
-<?php
 public function show() {
    $result = [
        'status' => 1,
@@ -55,8 +61,15 @@ public function show() {
    
    return json($result, 201, $header);
 }
+~~~
 
-public function request(/** Request $request*/) {
+
+
+> 参数获取
+
+~~~php
+<?php
+public function request(/** Request $request */) {
     //第一种：对象获取
     dump($this->request->post());
     dump($this->request->get());
@@ -78,10 +91,10 @@ public function request(/** Request $request*/) {
 
 
 
-调试模式
+> 调试模式
 
 ~~~php
-#.evn文件
+#.env文件
 APP_DEBUG = true
 
 #错误信息页面
@@ -94,15 +107,16 @@ APP_DEBUG = true
 'error_message'    => '页面错误！请稍后再试～',
 ~~~
 
+
+
 **如果访问不存在的控制器或方法**
 
-Tp会显示一个错误信息页面，但是api请求时不需要html页面
+TP会显示一个错误信息页面，但是api请求时不需要html页面
 
 ~~~php
-#方法不存在：
+####【方法不存在】
 # vi baseController.php
-public function __call($name, $arguments)
-{
+public function __call($name, $arguments) {
 	// TODO: Implement __call() method.
     var_dump($name);
     var_dump($arguments);
@@ -117,15 +131,13 @@ public function __call($name, $arguments)
     //模板引擎返回 html页面数据
 }
 
-#控制器不存在
-#创建异步控制器
+####【控制器不存在】
 # vi app/Error.php
 <?php
 namespace app\controller;
 
 class Error {
-    public function __call($name, $arguments)
-    {
+    public function __call($name, $arguments) {
         // TODO: Implement __call() method.
         $result = [
             'status' => 0,
@@ -137,8 +149,11 @@ class Error {
 }
 ~~~
 
+
+
+> 接口统一输出
+
 ~~~php
-#通用化输出
 # vi app/common.php
 <?php
 function show($status, $message = 'error', $data = null, $httpStatus = 200) {
@@ -156,57 +171,59 @@ public function __call($name, $arguments){
 }
 ~~~
 
+
+
+###### 1.2 数据库操作
+
 > 数据库配置
 
 ~~~ php
 # vi .env
 [DATABASE]
-TYPE = mysql
+TYPE 	 = mysql
 HOSTNAME = 127.0.0.1
 DATABASE = test
 USERNAME = root
 PASSWORD = 123456
 HOSTPORT = 3306
-CHARSET = utf8
-PREFIX = tp_
-DEBUG = true
+CHARSET  = utf8
+PREFIX   = tp_			//默认是没有这个参数的，手动添加
+DEBUG    = true
 
-# vi config/database.php
-......
-
-#第一种方法
-use thinkphp\facade\Db; //使用门面模式
-$result = Db::table('hx_user')->where('id',2)->find();
-
-#第二种方法
-//通过容器方式
-$result = app('db')->table('hx_user')->where('id',2)->find();
+# 数据库具体配置config/database.php
+'prefix' => env('database.prefix', ''), // 数据库表前缀
 ~~~
 
 
 
-调试模式
+> 数据库使用
 
 ~~~php
-# vi .env
-APP_DEBUG = true
+##方法1:使用门面模式
+use thinkphp\facade\Db;
+
+$result = Db::table('tp_user')->where('id',2)->find();//table方法必须指定完整的数据表名
+//$result = Db::name('user')->where('id',1)->find();  //这里不需要写前缀
+
+##方法2:通过容器方式
+$result = app('db')->table('tp_user')->where('id',2)->find();
 ~~~
 
 
 
-输出Sql语句：
+> 输出Sql语句
 
 ~~~php
-#第一种方式
+#方法1：->fetchSql()
 $result = Db::table('tp_user')
 	->order('id', 'desc')
     ->where('id',2)
     ->page(1,2)
-    ->fetchSql()   //打印sql语句
+    ->fetchSql()   ////打印sql语句
     ->select();
 dump($result) ;
 
-#第二种方式
+#方法2：Db::getLastSql()
 $result = Db::table('tp_user')
     ->order('id', 'desc')
     ->where('id',2)
@@ -217,7 +234,7 @@ echo Db::getLastSql();
 
 
 
-新增：
+> 新增数据
 
 ~~~php
 #插入一条
@@ -228,6 +245,7 @@ $data = [
     'updated_time' => date('Y-m-d H:i:s')
 ];
 $result = Db::table('tp_user')->insert($data);
+//$result = Db::name('user')->insert($data);
 
 #插入多条
 $data = [
@@ -257,13 +275,44 @@ $result = Db::table('hx_user')->where('id', 1)->delete();
 echo Db::getLastSql();
 ~~~
 
+
+
+> 更新操作
+
 ~~~php
-#更新操作
-Db::table('hx_user')->where('id', 2)->update(['user_name'=>'test']);
+Db::name('user')->where('id', 2)->update(['user_name'=>'li44']);
+Db::name('user')->where('id', 3)->save(['user_name'=>'zhang33']);
 echo Db::getLastSql();
 ~~~
 
-> 模型操作
+
+
+> 查询操作
+
+~~~php
+//查询一条
+$userInfo = Db::name('user')->where('id', 1)->find();
+
+//查询多条
+$result = Db::name('user')->where('user_state', 1)->select()->toArray();
+
+//查询一个字段值
+$user_name = Db::name('user')->where('id', 1)->value('user_name');
+
+//查询一列字段，返回索引数组
+$result = Db::name('user')->where('user_state',1)->column('user_name');
+
+//指定id列为key
+$result = Db::name('user')->where('user_state',1)->column('user_name','id');
+
+//指定id列为key，查询所有/部分字段
+$result = Db::name('user')->where('user_state',1)->column('*', 'id');
+//$result = Db::name('user')->where('user_state',1)->column('id,user_name,user_mobile', 'id');
+~~~
+
+
+
+###### 1.3 模型操作
 
 ~~~php
 <?php
