@@ -323,3 +323,15 @@ $ brew services restart php@7.4
 -Dorg.eclipse.swt.internal.carbon.smallFonts
 ~~~
 
+
+
+###### 1.5 压力测试
+
+~~~
+ab -n1000 -c 1000 -k http://www.tp6.com
+-n 请求数
+-c 客户端数
+
+ap工具是apache部分功能
+~~~
+

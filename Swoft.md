@@ -2029,3 +2029,10 @@ $result = User::updateOrCreate(['user_mobile'=>'13678910022'], $updateData);
 
 ###### 4.1 消息队列
 
+
+
+###### 5.1 webstock
+
+绑定uid和fd
+
+https://www.cnblogs.com/heijinli/p/12935495.html

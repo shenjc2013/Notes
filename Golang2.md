@@ -163,7 +163,7 @@ func main() {
 }
 ~~~
 
-<img src="H:\笔记本\Golang2.assets\image-20200804162045881.png" alt="image-20200804162045881" style="zoom:50%;float:left" />
+<img src="./Golang2.assets/image-20200804162045881.png" alt="image-20200804162045881" style="zoom:50%;float:left" />
 
 举个例子
 
@@ -242,6 +242,107 @@ func main() {
 }
 //不同数据库，实现连接和增删查改等操作
 ~~~
+
+
+
+###### 5.4 包(package)
+
+> 包(package)是多个Go源码的集合，是一种高级的代码复用方案，go也为我们提供了很多内置包，如fmt、os、io等。
+
+
+
+**定义包**
+
+~~~go
+package 包名
+~~~
+
+
+
+**可见性**
+
+如果想在一个包中引用另外一个包里的标识符(如变量、常量、类型、函数等)，该标识符必须是对外可见的(public)
+
+在go语言中只需要将标识符的首字母大写即可对外可见。
+
+~~~go
+package pkg
+
+import "fmt"
+
+var a = 100 //首字母小写，包外不可见
+const Mode = 1 //包外可见，可用
+
+type person struct { //包外不可用
+    name string
+}
+
+func Sum(x, y int) int {//包外可用
+    return x + y
+}
+
+func age() {//包外不可用
+    var Age = 18 //局部变量，函数外、包外不可用
+    fmt.Println(Age)
+}
+~~~
+
+
+
+结构体中的字段名和接口中的方法名如果首字母都是大写，外部包可以访问这些字段和方法。例如：
+
+~~~go
+type Student struct {
+	  Name  string //可在包外访问的方法
+	  class string //仅限包内访问的字段
+}
+
+type Payer interface {
+	  init() //仅限包内访问的方法
+	  Pay()  //可在包外访问的方法
+}
+~~~
+
+
+
+**包的导入**
+
+~~~go
+import "包的路径"
+~~~
+
+- import导入语句通常放在文件开头包声明语句的下面。
+- 导入的包名需要使用双引号包裹起来。
+- 包名是从$GOPATH/src/后开始计算的，使用/进行路径分隔。
+- Go语言中禁止循环导入包。
+
+
+
+> 单行导入
+
+~~~go
+import "包1"
+import "包2"
+~~~
+
+
+
+> 多行导入
+
+~~~go
+import (
+    "包1"
+    "包2"
+)
+~~~
+
+
+
+
+
+
+
+
 
 
 

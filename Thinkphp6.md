@@ -4,6 +4,11 @@
 
 ~~~php
 # composer create-project topthink/think tp
+
+# composer require topthink/think-view
+Driver [Think] not supported.
+  
+# composer require workerman/gateway-worker
 ~~~
 
 
