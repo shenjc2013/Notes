@@ -338,7 +338,65 @@ import (
 
 
 
+**fmt包**
 
+~~~go
+/** Print Println的区别 */
+fmt.Print("A")
+fmt.Print("B")
+fmt.Print("C")
+// ABC  输出是连在一起
+
+fmt.Println("A")
+fmt.Println("B")
+fmt.Println("C")
+// 每个字母占一行
+
+fmt.Print("A"， "B", "C")
+// ABC 输出是连在一起的
+
+fmt.Println("A", "B", "C")
+// A B C 一次性输出多个字符串时，Println输出是有一个空格的
+
+/** Printf() 格式化输出 */
+fmt.Printf(a)
+~~~
+
+
+
+> Printf总结
+
+~~~go
+func main()  {
+	num := 100
+	fmt.Printf("%T\n", num) //查看类型    int
+	fmt.Printf("%v\n", num) //万能输出值	 100
+  
+	fmt.Printf("%b\n", num) //二进制	  1100100
+	fmt.Printf("%o\n", num) //八进制	  144
+	fmt.Printf("%d\n", num) //十进制	  100
+	fmt.Printf("%x\n", num) //十六进制  64
+    
+  number := 100.98
+  fmt.Printf("%T，%f\n", number, number) //%f输出10进制的浮点数,(这里float64，100.980000)
+
+	name := "chenglh"
+	fmt.Printf("%s\n", name)  //字符串输出  chenglh
+	fmt.Printf("%v\n", name)  //万能输出值  chenglh
+	fmt.Printf("%#v\n", name) //"结果串"会自动加上双引号 "chenglh"
+    
+  //%c 输出单个字符
+  n1 := '程'
+	n2 := 'A'
+	fmt.Printf("%c\n",n1) //如果不格式化，显示ASCII码
+	fmt.Printf("%c\n",n2)
+  
+  age := 18
+  nickname = "chenglh"
+  fmt.Printf("%T\n", &age)      // *int    返回int类型的指针
+	fmt.Printf("%T\n", &nickname) // *string 返回string类型的指针
+}
+~~~
 
 
 
