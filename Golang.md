@@ -475,9 +475,9 @@ func main() {
     //fmt.Print(testHeihei)
 
     //声明变量同时赋值
-	  //var setStudentName string = "chenglh"
-    //var setStudentName = "chenglh"  //推荐使用，类型推导(根据值判断该变量是什么类型)
-	  //fmt.Print(setStudentName)
+	//var setStudentName string = "chenglh"
+    //var setStudentName = "chenglh"  //推荐使用，类型推导
+    //fmt.Print(setStudentName)
 }
 ~~~
 
@@ -629,9 +629,11 @@ import (
 func main()  {
 	var num int8 = 18
 	fmt.Println("num=%v; 占空间：%v字节\n", num, unsafe.Sizeof(num))
-  //num=18; 占空间：1字节
+	//num=18; 占空间：1字节
 }
 ~~~
+
+
 
 > 关于字节
 
@@ -647,11 +649,11 @@ func main()  {
 
 1024GB   = 1TB
 
-如 8Bit 时，首位是表示 有/无符号，其他7位表示0或1 ，2^7 -1 = 127
+如 8Bit 时，`首位`是标识 **有/无符号**，其他7位用0或1表示，即2^7 -1 = 127
 
 
 
-类型的转换
+**类型的转换**
 
 ~~~go
 var a1 int32 = 10
@@ -659,9 +661,79 @@ var a2 int64 = 21
 fmt.Println(int64(a1)+ a2) //根据赋值的结果，可以转成32或64位来计算
 ~~~
 
- 注意高位向低位转换时，看是否越界而造成结果出错
+注意高位向低位转换时，看是否越界而造成结果出错
 
 低位向高位转换就不存在这个问题了
+
+
+
+**float类型**
+
+> Go语言中，int和float 默认是跟着系统位数走的，32位系统对应int32、float32；64位系统对应int64，float64
+
+~~~go
+//定义float类型
+var a float32 = 3.12
+fmt.Printf("值：%v, 浮点值：%f，类型：%T\n")
+//值：3.14，浮点值：3.140000，类型：float32
+//4 float32占4个字节
+
+//float64占8个字节
+
+var c float64 = 3.1415925535
+fmt.Printf("原值：%v, 浮点值：%f，类型：%T\n")
+//原值：3.1415925535, 浮点值：3.141593，类型：float64 默认4舍5近保留6位小数
+
+//float类型，指定小数位输出结果， 如 %.2f 两位小数 
+
+//64位系统中，浮点数默认类型：float64
+f1 := 1.234568
+fmt.Printf("%T\n", f1)
+
+//显式声明类型
+f2 := float32(1.23552)
+fmt.Printf("%T\n", f2)
+
+//float32类型的值不能直接赋值给 float64 ,如错误用法：f1 = f2
+
+/** 科学计数法 */
+var aa float32 = 3.14e2  // 3.14乘以10的两次方
+fmt.Printf("原值：%v, 浮点值：%f，类型：%T\n", aa, aa, aa)
+//原值：314, 浮点值：314.000000，类型：float32
+
+var bb float32 = 3.14e-2 // 3.14除以10的两次方
+fmt.Printf("原值：%v, 浮点值：%f，类型：%T\n", bb, bb, bb)
+~~~
+
+
+
+**float精度丢失问题**
+
+~~~go
+import (
+	"fmt"
+	"github.com/shopspring/decimal"
+)
+
+var num float64 = 1129.6
+fmt.Println(num * 100) // 112959.99999999999
+
+m1 := 8.2
+m2 := 3.4
+fmt.Println(m1 - m2) // 4.799999999999999
+
+/** 使用第三方包来解决精度损失的问题
+ https://github.com/shopspring/decimal
+ > go get github.com/shopspring/decimal  下载包
+*/
+
+//修复精度
+//加法 Add ；减法 Sub；乘法 Mul；除法 Div
+var num1 float64 = 8.2
+var num2 int = 2
+add_ret := decimal.NewFromFloat(num1).Add(decimal.NewFromFloat(float64(num2)))
+fmt.Println(add_ret)
+~~~
 
 
 
@@ -682,35 +754,17 @@ func main()  {
 	fmt.Printf("%d \n", a) // 10
 	fmt.Printf("%b \n", a) // 1010
 
-  //八进制 以0开头(文件权限)
+    //八进制 以0开头(文件权限)
 	var b = 077
 	fmt.Printf("%o \n", b) // 77
 
-  //十六进制 以0x开头(内存地址)
+    //十六进制 以0x开头(内存地址)
 	var c = 0xff
 	fmt.Printf("%x \n", c) // ff
 	fmt.Printf("%X \n", c) // FF
-    
-  var d = int8(9)
+
+	var d = int8(9)
 	fmt.Printf("%T\n", d)
-}
-~~~
-
-
-
-**浮点型**
-
-~~~go
-func main()  {
-	//小数默认类型，float64
-	f1 := 1.234568
-	fmt.Printf("%T\n", f1)
-
-	//显式声明类型
-	f2 := float32(1.23552)
-	fmt.Printf("%T\n", f2)
-    
-  //float32类型的值不能直接赋值给 float64 ,如错误用法：f1 = f2
 }
 ~~~
 
@@ -752,16 +806,16 @@ func main()  {
 	fmt.Printf("%d\n", num) //十进制	  100
 	fmt.Printf("%x\n", num) //十六进制  64
     
-  number := 100.98
-  fmt.Printf("%T，%f\n", number, number) //%f输出10进制的浮点数,(这里float64，100.980000)
+	number := 100.98
+	fmt.Printf("%T，%f\n", number, number) //%f输出10进制的浮点数,(这里float64，100.980000)
 
 	name := "chenglh"
 	fmt.Printf("%s\n", name)  //字符串输出  chenglh
 	fmt.Printf("%v\n", name)  //万能输出值  chenglh
 	fmt.Printf("%#v\n", name) //"结果串"会自动加上双引号 "chenglh"
     
-  //%c 输出单个字符
-  n1 := '程'
+	//%c 输出单个字符
+	n1 := '程'
 	n2 := 'A'
 	fmt.Printf("%c\n",n1) //如果不格式化，显示ASCII码
 	fmt.Printf("%c\n",n2)
@@ -773,6 +827,16 @@ func main()  {
 **字符串**
 
 > Go语言里的字符串的内部实现使用 UTF-8 编码
+
+字符串定义
+
+~~~go
+var str1 string = "值"
+var str2 = "值"
+str3 := "值"
+~~~
+
+
 
 1. 字符串：双引号
 2. 字符：单引号  `[只能是一个字符/英文/汉字/符号]`
@@ -816,6 +880,18 @@ s4 := "G:\\Go\\src\\www.testgo.com\\day03\\fmt" //需要转义
 
 
 **字符串操作**
+
+|                 方法                 |      说明      |
+| :----------------------------------: | :------------: |
+|               len(str)               |     求长度     |
+|           + 或 fmt.Sprintf           |   字符串拼接   |
+|            strings.Split             |   分割字符串   |
+|           strings.contains           |  判断是否包含  |
+| strings.HasPrefix；strings.HasSuffix |   前后缀判断   |
+|  strings.Index()，strings.LastIndex  | 子串出现的位置 |
+| strings.Join(a[]string,  sep string) |    join操作    |
+
+
 
 ~~~go
 //字符串长度 len(xx)
@@ -869,16 +945,25 @@ fmt.Println(strings.LastIndex(name, "i"))//最后一次出现i的位置
 
 //join操作，切片连接起来 strings.Join(a[]string, sep string)	
 strings.Join(a[] string, sep string)
+
+//切片就是数组
+arr := []string{"php","java","golang"}
+fmt.Println(strings.Join(arr, "-"))
 ~~~
 
 
 
 **byte和rune类型**
 
-组成每个字符串的元素叫做“字符”，可以通过遍历或者单个获取字符串元素获得字符。字符用单引号包裹起来，如：
+Go语言的字符有以下两种：
+
+1. uint8类型，或叫 byte型，代表ASCII码的一个字符
+2. rune类型，代表一个 utf-8 字符
+
+当需要处理中文，日文或其他复合字符时，则需要用到 rune类型，rune类型实际是一个 int32
 
 ~~~go
-var a := '中'
+var a := '中' //ASCII对应的码值，%c 原样输出
 var b := 'x'
 ~~~
 
@@ -892,20 +977,30 @@ Go语言的字符有以下两种：
 当需要处理中文、日文或者其他复合字符时，则需要用到`rune`类型。`rune`类型实际是一个`int32`。
 
 ~~~go
+var name = "chenglh"
+fmt.Printf("%c , %T", name[3], name[3]) //n , uint8
+
+//unsafe.Sizeof()没法查看string类型数据所占用的存储空间，全部是返回 16字节
+//一个汉字占用 3 字节
+~~~
+
+
+
+~~~go
 //byte和rune类型
 //Go语言中为了处理非ASCII码类型的字符，定义了新的rune类型
-//英文字符是 byte
+//英文字符是 byte类型
 //其他语言字符是 rune类型
 
 s := "Hello意难平"
 n := len(s)    // len()求的是byte字节的数量，有中文，长度会有跳跃
 fmt.Println(n) // 值：14
 
-//for i := 0; i < len(s); i++  {
+//for i := 0; i < len(s); i++  { //byte
 //	fmt.Printf("%c\n", s[i])  // %c：字符，但是这里中文会变成“乱码”
 //}
 
-for _, v := range s1 {
+for _, v := range s1 { // rune
     fmt.Printf("%v(%c)\t", v, v)
 }
 //72(H)   101(e)  108(l)  108(l)  111(o)  24847(意)       38590(难)       24179(平)
@@ -923,7 +1018,7 @@ for _, v := range s1 {
 
 ~~~go
 func changeString() {
-    //方法一：[]byte类型
+    //方法一：[]byte类型，单纯的英文，数值，符号等字符串
     s1 := "big"
     // 强制类型转换
     byteS1 := []byte(s1)
@@ -948,6 +1043,8 @@ fmt.Printf("s1:%T s2:%T", s1, s2)
 s1:string    s2:int32
 ~~~
 
+
+
 **类型转换**
 
 Go语言中只有强制类型转换，没有隐式类型转换。该语法只能在两个类型之间支持相互转换的时候使用。
@@ -959,6 +1056,37 @@ func sqrtDemo() {
 	// math.Sqrt()接收的参数是float64类型，需要强制转换
 	c = int(math.Sqrt(float64(a*a + b*b)))
 	fmt.Println(c)
+    //尽量低位向高位转换，否则可以数据溢出就影响实际结果
+    
+    //1、Sprintf函数，其他类型转string
+    var e int64 = 1
+    var f float64 = 12.456
+    var g bool = true
+    var h byte = 'a'
+    str1 := fmt.Sprintf("%d\n", e)
+    str2 := fmt.Sprintf("%f\n", f)
+    str3 := fmt.Sprintf("%t\n", g) //bool值  %t格式化
+    str4 := fmt.Sprintf("%c\n", h)
+    
+    //2、strconv包
+    var e int64 = 12
+	var f float64 = 12.3456
+	var g bool = true
+	var h byte = 'h'
+	str1 := strconv.FormatInt(e, 10) //var e int = 12 就需要转成 int64(e) 作为参数；10进制数形式
+	str2 := strconv.FormatFloat(f, 'f',4, 64) //值；格式化类型，f | b | e | E | G；保留几位小数；格式化的类型
+	str3 := strconv.FormatBool(g)
+	str4 := strconv.FormatUint(uint64(h), 10)
+	fmt.Printf("str1:%v type:%T\n", str1, str1)
+	fmt.Printf("str2:%v type:%T\n", str2, str2)
+	fmt.Printf("str3:%v type:%T\n", str3, str3)
+	fmt.Printf("str4:%v type:%T\n", str4, str4)
+    /**
+    str1:12 type:string
+    str2:12.3456 type:string
+    str3:true type:string
+    str4:104 type:string
+    */
 }
 ~~~
 
