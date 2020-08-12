@@ -404,6 +404,128 @@ func main()  {
 
 ###### 6.1 复习
 
+###### 6.2 作业
+
+
+
+###### 6.3 包(time)
+
+time包提供了时间的显示和测量用的函数，日历的计算采用的是公历。
+
+**日期时间**
+
+~~~go
+timeObj := time.Now() //时间对象
+
+fmt.Printf("%T\n", timeObj) //类型：time.Time
+fmt.Printf("%v\n", timeObj) //2020-08-12 10:54:19.2226132 +0800 CST m=+0.004000001
+
+year  := timeObj.Year()
+month := timeObj.Month() //默认是英文的月份,可以使用int强制转换数值
+day   := timeObj.Day()
+hour  := timeObj.Hour()
+minute:= timeObj.Minute()
+second:= timeObj.Second()
+
+fmt.Printf("%d-%02d-%02d %02d:%02d:%02d", year, month, day, hour, minute, second);
+//2020-08-12 11:06:57
+
+//12小时制  03
+date1 := timeObj.Format("2006-01-02 03:04:05") //格式化的模板，可自定义
+fmt.Println(date1)
+
+//24小时制  15
+date := timeObj.Format("2006-01-02 15:04:05")
+fmt.Println(date)
+~~~
+
+
+
+**时间戳**
+
+~~~go
+timeObj := time.Now() 			 //时间对象
+
+unixtime := timeObj.Unix() 		 //获取当前时间戳
+unixNatime := timeObj.UnixNano() //纳秒时间戳
+~~~
+
+
+
+**时间戳转字符串**
+
+~~~go
+unixTime := 1597202822
+
+timeOjb := time.Unix(int64(unixtime), 0)//第一个参数是64位的秒数，第二个参数是纳秒
+var date = timeOjb.Format("2006-01-02 15:04:05")
+fmt.Println(date)
+~~~
+
+
+
+**字符串转时间戳**
+
+~~~go
+var str = "2020-08-12 11:38:00"
+var template = "2006-01-02 15:04:05"  //str 与 template格式要一样
+timeObj,_ := time.ParseInLocation(template, str, time.Local)
+fmt.Println(timeObj.Unix())
+
+var str = "2020-08-12"
+var temp = "2006-01-02"
+timeObj,_ := time.Parse(temp, str)
+fmt.Println(timeObj.Unix())
+~~~
+
+
+
+**时间操作函数**
+
+~~~go
+var timeObj = time.Now()
+fmt.Println(timeObj)
+timeObj = timeObj.Add(time.Hour) //打印一小时后的时间
+fmt.Println(timeObj)
+
+//休眠1秒
+time.Sleep(time.Second)
+
+/**
+const (
+	Nanosecond  Duration = 1 //类自定义 Duration = int64别名
+	Microsecond          = 1000 * Nanosecond
+	Millisecond          = 1000 * Microsecond
+	Second               = 1000 * Millisecond
+	Minute               = 60 * Second
+	Hour                 = 60 * Minute
+)
+*/
+~~~
+
+
+
+**定时器**
+
+~~~go
+//ticker.C 定时器
+ticker := time.NewTicker(time.Second)
+for tt := range ticker.C {
+    fmt.Println(tt)
+}
+
+//关闭定时器 ticker.Stop
+number := 5
+ticker := time.NewTicker(time.Second)
+for tt := range ticker.C {
+    number--
+    fmt.Println(tt)
+    if number <= 0 {
+        ticker.Stop() //终止定时器
+        break
+    }
+}
+~~~
 
 
 
@@ -419,11 +541,4 @@ func main()  {
 
 
 
-
-
-
-
-
-
-
-https://www.bilibili.com/video/BV14C4y147y8?p=65
+https://www.bilibili.com/video/BV14C4y147y8?p=79
