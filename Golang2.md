@@ -1,4 +1,4 @@
-##### Day05
+#### Day05
 
 ###### 5.1 复习
 
@@ -100,7 +100,7 @@ func main() {
 
 
 
-###### 5.3 接口(interface)
+##### 5.3 接口(interface)
 
 > 接口是一种类型，是特殊的类型，它规定了变量有哪些方法
 
@@ -126,22 +126,14 @@ type cat struct {
     name string
     feet int8
 }
-func (c cat)move() {
-    fmt.Println("走猫步！")
-}
-func (c cat)eat(food string) {
-    fmt.Printf("猫吃%s！\n", food) 
-}
+func (c cat)move() { fmt.Println("走猫步！") }
+func (c cat)eat(food string) { fmt.Printf("猫吃%s！\n", food) }
 
 type chicken struct {
     feet int8
 }
-func (c chicken)move() {
-    fmt.Println("鸡动！")
-}
-func (c chicken)eat(food string) {
-    fmt.Printf("鸡吃饲料！\n", food) 
-}
+func (c chicken)move() { fmt.Println("鸡动！") }
+func (c chicken)eat(food string) { fmt.Printf("鸡吃饲料！\n", food) }
 
 func main() {
     var a1 animal //定义一个animal接口类型的变量
@@ -165,28 +157,29 @@ func main() {
 
 <img src="./Golang2.assets/image-20200804162045881.png" alt="image-20200804162045881" style="zoom:50%;float:left" />
 
+
+
 举个例子
 
 ~~~go
 type cat struct {}
 type dog struct {}
 
-func (c cat)speak() {
-    fmt.Println("喵喵喵~")
-}
-func (d dog)speak() {
-    fmt.Println("汪汪汪~")
-}
-func data(x) {//传参：x dog 或 x cat；x需要具体类型
+func (c cat)speak() { fmt.Println("喵喵喵~") }
+func (d dog)speak() { fmt.Println("汪汪汪~") }
+
+func hitta(x) {//传参：x dog 或 x cat；x需要具体类型
     x.speak() //挨打了就要叫
 }
 func main() {
     var c1 cat
     var d1 dog
-    data(c1)
-    data(d1)
+    hitta(c1)
+    hitta(d1)
 }
 ~~~
+
+
 
 改造代码
 
@@ -196,22 +189,21 @@ type speaker interface{
 }
 type cat struct {}
 type dog struct {}
-func (c cat)speak() {
-    fmt.Println("喵喵喵~")
-}
-func (d dog)speak() {
-    fmt.Println("汪汪汪~")
-}
-func data(x speaker) {
+func (c cat)speak() { fmt.Println("喵喵喵~") }
+func (d dog)speak() { fmt.Println("汪汪汪~") }
+
+func hitta(x speaker) {
     x.speak() //挨打了就要叫
 }
 func main() {
     var c1 cat
     var d1 dog
-    data(c1)
-    data(d1)
+    hitta(c1)
+    hitta(d1)
 }
 ~~~
+
+
 
 再举例子
 
@@ -225,12 +217,9 @@ type falali struct {
 type baoshijie struct {
     brand string
 }
-func (f falali)run() {
-    fmt.Printf("%s速度70迈~\n", f.brand)
-}
-func (b baoshijie)run() {
-    fmt.Printf("%s速度100迈~\n", b.brand)
-}
+func (f falali)run() { fmt.Printf("%s速度70迈~\n", f.brand) }
+func (b baoshijie)run() { fmt.Printf("%s速度100迈~\n", b.brand) }
+
 func drive(c car) {
     c.run()
 }
@@ -245,7 +234,7 @@ func main() {
 
 
 
-###### 5.4 包(package)
+##### 5.4 包(package)
 
 > 包(package)是多个Go源码的集合，是一种高级的代码复用方案，go也为我们提供了很多内置包，如fmt、os、io等。
 
@@ -400,6 +389,278 @@ func main()  {
 
 
 
+##### 5.5 文件操作
+
+###### 5.5.1 文件读操作
+
+> 打开与关闭文件 os.Open() 和 file.Close()
+
+~~~go
+// 只读方式打开文件
+file, err := os.Open("./main.go") //返回*File, err
+if err != nil {
+  fmt.Println("open file failed!, err:", err)
+  return
+}
+// 关闭文件
+file.Close()
+~~~
+
+
+
+> 读取文件 file.Read()
+
+~~~go
+func (f *File) Read(b []byte) (n int, err error)
+~~~
+
+函数接收一个字节切片，返回读取的字节数和可能的具体错误，读到文件末尾会返回 `0` 和 `io.EOF`
+
+
+
+**指定字节读取文件**
+
+~~~go
+func main()  {
+	file,err := os.Open("./main.go")
+	if err != nil {
+		fmt.Println("读取文件出错")
+	}
+	defer file.Close()
+
+  //循环读取文件
+	var content []byte
+	var tmp = make([]byte, 128)
+	for {
+		n, err := file.Read(tmp) //指定字节读取
+		if err == io.EOF {
+			fmt.Println("文件读完了")
+			break
+		}
+		if err != nil {
+			fmt.Println("read file failed,err:", err)
+			return
+		}
+		content = append(content, tmp[:n]...)
+	}
+	fmt.Println(string(content))
+}
+~~~
+
+
+
+**一行行读取文件 **
+
+~~~go
+//bufio读取文件
+//bufio是在file的基础上封装了一层API，支持更多的功能。
+
+func main()  {
+	file, err := os.Open("./main.go")
+	if err != nil {
+		fmt.Println("open file failed, err:", err)
+		return
+	}
+	defer file.Close()
+
+	var contents []byte
+	reader := bufio.NewReader(file)
+	for {
+		line, err := reader.ReadString('\n') //注意是字符
+		if err == io.EOF {//读到文件末了
+			if err == io.EOF {
+				if len(line) != 0 {
+					contents = append(contents, line[:]...)
+				}
+				fmt.Println("文件读完了")
+				break
+			}
+		}
+		if err != nil {
+			fmt.Println("文件读取出错")
+		}
+		contents = append(contents, line[:]...)
+	}
+
+	fmt.Println(string(contents[:]))
+}
+~~~
+
+
+
+**ioutil读取整个文件**
+
+`io/ioutil`包的`ReadFile`方法能够读取完整的文件，只需要将文件名作为参数传入。
+
+~~~go
+func main()  {
+	contents,err := ioutil.ReadFile("./main.go")
+	if err != nil {
+		fmt.Println("read file railed, err:", err)
+		return
+	}
+	fmt.Println(string(contents))
+}
+~~~
+
+
+
+###### 5.5.2 文件写操作
+
+定义格式：
+
+~~~go
+func OpenFile(name string, flag int, perm FileMode) (*File, error) {
+	...
+}
+//参数1：文件名；参数2：打开文件的模式；参数3：文件权限 一个八进制数。r（读）04，w（写）02，x（执行）01。
+~~~
+
+
+
+**文件打开模式：**
+
+| 模式        |   含义   |
+| :---------- | :------: |
+| os.O_WRONLY |   只写   |
+| os.O_CREATE | 创建文件 |
+| os.O_RDONLY |   只读   |
+| os.O_RDWR   |   读写   |
+| os.O_TRUNC  |   清空   |
+| os.O_APPEND |   追加   |
+
+
+
+> Write、WriteString
+
+~~~go
+func main()  {
+	file,err := os.OpenFile("log.txt",os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0666)
+	if err != nil {
+		fmt.Println("open file failed, err:", err)
+		return
+	}
+	defer file.Close()
+
+	str := "天若有情\n"
+	file.Write([]byte(str))    //通过字节写进去
+	file.WriteString("人间正道")//通过字符串写进去
+}
+~~~
+
+
+
+> Bufio.NewWriter
+
+~~~go
+func main()  {
+	file,err := os.OpenFile("log.txt", os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0666)
+	if err != nil {
+		fmt.Println("创建文件失败")
+	}
+	defer file.Close()
+
+	writer := bufio.NewWriter(file)
+	for i := 0; i < 10; i++ {
+		writer.WriteString(fmt.Sprintf("this is line:%d\n", i))//将数据写入缓存
+	}
+	writer.Flush()//刷新缓冲区
+}
+~~~
+
+
+
+> Ioutil.WriteFile
+
+~~~go
+func main()  {
+	//一次性读取文件
+	contents,error := ioutil.ReadFile("./main.go")
+	if error != nil {
+		fmt.Println("read file railed, err:", error)
+		return
+	}
+
+	//一次性写入文件
+	err := ioutil.WriteFile("log.txt", []byte(contents), 0666)
+	if err != nil {
+		fmt.Println("创建文件失败", err)
+		return
+	}
+}
+~~~
+
+
+
+###### 5.5.3 复制文件
+
+~~~go
+// 自定义 CopyFile 拷贝文件函数
+func CopyFile(dstName, srcName string) (written int64, err error) {
+	// 以读方式打开源文件
+	src, err := os.Open(srcName)
+	if err != nil {
+		fmt.Printf("open %s failed, err:%v.\n", srcName, err)
+		return
+	}
+	defer src.Close()
+
+	// 以写|创建的方式打开目标文件
+	dst, err := os.OpenFile(dstName, os.O_WRONLY|os.O_CREATE, 0644)
+	if err != nil {
+		fmt.Printf("open %s failed, err:%v.\n", dstName, err)
+		return
+	}
+	defer dst.Close()
+
+	//调用io.Copy()拷贝内容
+	return io.Copy(dst, src)
+}
+
+func main()  {
+	_, err := CopyFile("dst.txt", "src.txt")
+	if err != nil {
+		fmt.Println("copy file failed, err:", err)
+		return
+	}
+	fmt.Println("copy done!")
+}
+~~~
+
+
+
+###### 5.5.4 模拟cat命令
+
+~~~go
+func cat(r *bufio.Reader)  {
+	for {
+		buf, err := r.ReadBytes('\n') //注意是字符
+		if err == io.EOF {
+			break
+		}
+		fmt.Fprintf(os.Stdout, "%s", buf)
+	}
+}
+
+func main()  {
+	flag.Parse() //解析命令行参数
+	if flag.NArg() == 0 {
+		cat(bufio.NewReader(os.Stdin))
+	}
+
+	for i := 0; i < flag.NArg(); i++ {
+		f, err := os.Open(flag.Arg(i))
+		if err != nil {
+			fmt.Fprintf(os.Stdout, "reading from %s failed, err:%v\n", flag.Arg(i), err)
+			continue
+		}
+		cat(bufio.NewReader(f))
+	}
+}
+~~~
+
+
+
 ##### Day06
 
 ###### 6.1 复习
@@ -462,6 +723,21 @@ var date = timeOjb.Format("2006-01-02 15:04:05")
 fmt.Println(date)
 ~~~
 
+~~~go
+//定义为通用函数
+func timestampToDate(timestamp int64) string {
+	timeObj := time.Unix(timestamp, 0)
+	year := timeObj.Year()
+	month:= int(timeObj.Month())
+	day  := timeObj.Day()
+	hour := timeObj.Hour()
+	minute:= timeObj.Minute()
+	second := timeObj.Second()
+
+	return fmt.Sprintf("%d-%02d-%02d %02d:%02d:%02d", year,month,day,hour,minute,second)
+}
+~~~
+
 
 
 **字符串转时间戳**
@@ -478,20 +754,23 @@ timeObj,_ := time.Parse(temp, str)
 fmt.Println(timeObj.Unix())
 ~~~
 
+~~~go
+//定义为通用函数
+func dateToTimestamp(strTime string) int64 {
+	var tempTime = "2006-01-02 15:04:05"
+	timeObj,_ := time.ParseInLocation(tempTime, strTime, time.Local)
+
+	return timeObj.Unix()
+}
+~~~
 
 
-**时间操作函数**
+
+**时间包中常量**
 
 ~~~go
-var timeObj = time.Now()
-fmt.Println(timeObj)
-timeObj = timeObj.Add(time.Hour) //打印一小时后的时间
-fmt.Println(timeObj)
+type Duration int64
 
-//休眠1秒
-time.Sleep(time.Second)
-
-/**
 const (
 	Nanosecond  Duration = 1 //类自定义 Duration = int64别名
 	Microsecond          = 1000 * Nanosecond
@@ -500,8 +779,23 @@ const (
 	Minute               = 60 * Second
 	Hour                 = 60 * Minute
 )
-*/
 ~~~
+
+
+
+**时间操作函数**
+
+> Add
+
+~~~go
+//时间 + 时间间隔（如30分钟、1小时后）
+timeObj := time.Now()
+later := timeOjb.Add(time.Hour * 2) //返回的还是时间对象
+~~~
+
+
+
+> Sub
 
 
 
@@ -509,23 +803,306 @@ const (
 
 ~~~go
 //ticker.C 定时器
-ticker := time.NewTicker(time.Second)
+ticker := time.NewTicker(time.Second) //1秒执行一次
 for tt := range ticker.C {
     fmt.Println(tt)
 }
 
-//关闭定时器 ticker.Stop
 number := 5
 ticker := time.NewTicker(time.Second)
 for tt := range ticker.C {
     number--
     fmt.Println(tt)
     if number <= 0 {
-        ticker.Stop() //终止定时器
+        ticker.Stop() //关闭定时器 ticker.Stop 终止定时器
         break
     }
 }
 ~~~
+
+
+
+**时间格式化**
+
+~~~go
+now := time.Now()
+
+fmt.Println(now.Format("2006-01-02 15:04:05"))// 24小时制
+fmt.Println(now.Format("2006-01-02 03:04:05"))// 12小时制
+fmt.Println(now.Format("2006/01/02 15:04"))
+fmt.Println(now.Format("15:04 2006/01/02"))
+fmt.Println(now.Format("2006/01/02"))
+~~~
+
+
+
+举例子：
+
+~~~go
+now := time.Now()
+
+// 加载时区
+loc, err := time.LoadLocation("Asia/Shanghai")
+if err != nil {
+	fmt.Println(err)
+	return
+}
+// 按照指定时区和指定格式解析字符串时间
+timeObj, err := time.ParseInLocation("2006/01/02 15:04:05", "2019/08/04 14:15:20", loc)
+if err != nil {
+	fmt.Println(err)
+	return
+}
+fmt.Println(timeObj)
+
+//编写程序统计一段代码的执行耗时时间，单位精确到微秒
+fmt.Println(timeObj.Sub(now))
+~~~
+
+
+
+###### 6.4 日志需求
+
+
+
+
+
+##### Day07
+
+###### 7.1 复习
+
+
+
+###### 7.2 作业
+
+
+
+###### 7.3 反射
+
+
+
+###### 7.4 配置文件
+
+
+
+##### 7.5 strconv内置包
+
+> 包strconv主要实现对字符串和基本数据类型之间的转换。
+
+基本数据类型包括：布尔、整型和浮点型等。
+
+
+
+###### 7.5.1 字符串转整型
+
+~~~go
+str := "1000"
+int64(str)
+
+iNum := int32(97)
+ret2 := string(i) //把当成asci编码和utf-8编码,转成字符一定不能这样写
+fmt.Println(ret2) //字母a
+~~~
+
+
+
+> Atoi() 字符串转整数int类型
+
+~~~go
+func Atoi(s string) (i int, err error) //如果转不成功，返回错误,只能是“数值字符串”能才转成功
+~~~
+
+
+
+举个例子：
+
+~~~go
+str := "100000"
+ret1,err := strconv.Atoi(str)
+if err != nil {
+  fmt.Println("解析出错") // 1000程 | 10a00
+}
+fmt.Printf("%#v , %T\n", ret1, ret1) // 100000  int
+~~~
+
+
+
+> Itoa() 整形转字符串
+
+~~~go
+func Itoa(i int) string
+~~~
+
+
+
+举个例子:
+
+~~~go
+str1 := 1000
+ret2 := strconv.Itoa(str1)
+fmt.Printf("%#v , %T\n", ret2, ret2) // "1000" string
+~~~
+
+
+
+C语言中没有string类型而是用字符数组(array)表示字符串，所以`Itoa`对很多C系的程序员很好理解。
+
+
+
+###### 7.5.2 Parse系列函数
+
+> Parse类函数用于转换字符串为给定类型的值：ParseBool()、ParseFloat()、ParseInt()、ParseUint()。
+
+
+
+举例说明：
+
+~~~go
+//字符串转数值
+str := "1000"
+ret1, err := strconv.ParseInt(str, 10, 64)//Parse解析的意思， 10进制；64位，而函数确实只返回int64
+if err != nil {
+	fmt.Println("解析出错")
+}
+fmt.Printf("%#v , %T", ret1, ret1) // 1000 int
+
+//把字符串中解析出布尔类型
+boolStr := "true"
+boolVal,_ := strconv.ParseBool(boolStr)
+fmt.Printf("%#v , %T\n", boolVal, boolVal) // true bool
+
+//把字符串解析出浮点数
+floatStr := "3.14159"
+floatVal,_ := strconv.ParseFloat(floatStr, 64)
+fmt.Printf("%#v , %T\n", floatVal, floatVal)//3.14159  float64
+~~~
+
+
+
+注意点：区别sprintf和itoa
+
+测试效率：
+
+~~~go
+//测试Sprintf 与  strconv 的效率
+func main()  {
+	startTime := time.Now()
+	for iNum := 0; iNum < 10000; iNum++ {
+		fmt.Sprintf("%v", iNum)
+	}
+	fmt.Println(time.Now().Sub(startTime)) // 874.956µs
+
+	startTime1 := time.Now()
+	for iNum := 0; iNum < 10000; iNum++ {
+		strconv.Itoa(iNum)
+	}
+	fmt.Println(time.Now().Sub(startTime1)) //261.744µs
+}
+~~~
+
+结论如下：
+
+~~~
+可见时间性能相差约3倍，Sprintf 性能差些可以预见，因为它接收的是 interface，需要进行反射等操作。
+建议使用 strconv 包中的方法进行转换。
+~~~
+
+
+
+###### 7.5.3 Format系列函数
+
+> 格式化成string类型
+
+
+
+
+
+##### 7.6 网络并发
+
+并发：同一时间段内执行多个任务(同两个人聊天)
+
+并行：同一时刻执行多个任务 （两个人一起进门）
+
+
+
+> Go语言的并发通过goroutine实现。
+
+goroutine类似于线程，属于用户态的线程，我们可以根据需要创建成千上万个goroutine并发工作。
+goroutine是由Go语言的运行时（runtime）调度完成，而线程是由操作系统调度完成。
+Go语言还提供channel在多个goroutine间进行通信。
+goroutine和channel是 Go 语言秉承的 CSP（Communicating Sequential Process）并发模式的重要实现基础。
+
+
+
+**goroutine**
+
+在java/c++中要实现并发编程，需要维护一个线程池，包装任务，需要自己去高度线程执行任务并维护上下文切换
+
+goroutine的概念类似于线程，但 goroutine是由Go的运行时（runtime）调度和管理的。
+Go程序会智能地将 goroutine 中的任务合理地分配给每个CPU。
+Go语言之所以被称为现代化的编程语言，就是因为它在语言层面已经内置了调度和上下文切换的机制。
+
+
+
+**串行执行**
+
+~~~go
+func hello() {
+	fmt.Println("Hello Goroutine!")
+}
+func main() {
+	hello()
+	fmt.Println("main goroutine done!")
+}
+~~~
+
+
+
+**启用单个gorouteine**
+
+~~~go
+func main() {
+	go hello() //启动另外一个goroutine去执行hello函数
+	fmt.Println("main goroutine done!") //只打印这一行结果
+  //time.Sleep(time.Second)
+}
+/** 当main（）函数返回的时候，goroutine就结束，使用简单粗暴的方式 time.Sleep等一等hello函数
+~~~
+
+
+
+举例子：
+
+~~~go
+func hello(i int)  {
+	fmt.Println("hello,goroutine~",i)
+}
+func main()  {
+	for i := 0; i < 10; i++ {
+		go hello(i)
+	}
+	fmt.Println("this is main")
+	time.Sleep(time.Second)
+}
+
+//匿名函数
+for i := 0; i < 10; i++ {
+   //go func() {
+   //   fmt.Println(i) 因为是使用协程调用函数，for遍历太快了，这里的i与预想中的i++不一样
+   //}()
+		go func(i int) {
+			fmt.Println(i)
+		}(i)
+}
+~~~
+
+
+
+
+
+
+
+
 
 
 

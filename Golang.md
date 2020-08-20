@@ -1249,18 +1249,19 @@ for i := 1; i < 10; i++ {
 ~~~go
 //单行注释
 
-/**多行注释
-多行注释
-*/
+/**
+ * 多行注释
+ * 多行注释
+ */
 
 /**变量声明
 1、var name1 string
 2、var name2 = "chenglh"
-3、函数内部声明 ： name3 := "test"
+3、函数内部短声明 ： name3 := "test"
 */
 
 s := "hello"
-for i,v := range s { // key , value
+for i,v := range s { //遍历字符串（中文|英文） key , value
    fmt.Printf("%d , %c \n", i, v)
 }
 for i := range s { // key 只有一个变量是默认是 索引
@@ -1268,12 +1269,12 @@ for i := range s { // key 只有一个变量是默认是 索引
 }
 
 匿名变量(哑元变量)
-for _,v := range s { // 不需要key , 只要value
+for _,v := range s {
    fmt.Printf("%c \n", v)
 }
 
 continue 继续下一次循环
-for i := 0; i <10; i++ {
+for i := 0; i < 10; i++ {
     if (i == 5) {
         continue
     }
@@ -1282,7 +1283,7 @@ for i := 0; i <10; i++ {
 基本数据类型
 //整型
 无符号：uint8,uint16,uint32,uint64
-带符号：int8,int16,int32,int64
+带符号：int8, int16, int32, int64
 
 uint和int：具体是32位还是64位要看操作系统
 uintptr：表示指针
@@ -1309,7 +1310,7 @@ true和false
 //字符串、字符、字节
 字符串：双引号
 字符：单引号，单个字母、单个符号、单个文字
-字节：1byte=8bit
+字节：1byte = 8bit
 utf-8中，一个常用汉字 一般占用3个字节
 
 //常量
@@ -1334,7 +1335,7 @@ var 变量名 [元素数量]T
 ~~~
 
 ~~~go
-//不能的类型不能直接赋值
+//不同的类型不能直接赋值
 var a [3]int
 var b [4]int
 a = b //X 不可以这样做，因为此时a和b是不同的类型
@@ -1521,7 +1522,7 @@ func main() {
 	fmt.Println(a == nil)       //true , 没有申请内存
 	fmt.Println(b == nil)       //false
 	fmt.Println(c == nil)       //false
-	// fmt.Println(c == d)   //切片是引用类型，不支持直接比较，只能和nil比较，会飘红，不让编译通过
+	// fmt.Println(c == d)      //切片是引用类型，不支持直接比较，只能和nil比较，会飘红，不让编译通过
 }
 ~~~
 
@@ -1532,20 +1533,17 @@ func main() {
 > 切片拥有自己的长度和容量，可以通过内置的len()函数求长度，使用内置的cap()函数求切片的容量。
 
 ~~~go
-package main
-import "fmt"
-
 func main()  {
 	//初始化
 	s1 = []int{1,2,3}
 	s2 = []string{"广东","广州","天河"}
 	fmt.Println(s1, s2)
 
-    //1、计算-长度len()和容量cap()
+  //1、计算-长度len()和容量cap()
 	fmt.Printf("s1:len:%d s1:cap:%d\n", len(s1), cap(s1))
 	fmt.Printf("s2:len:%d s2:cap:%d\n", len(s2), cap(s2))
     
-    //2、由数组得到切片
+  //2、由数组得到切片
 	s1 := [...]int{1,3,5,7,9,11}
 	s2 := s1[0:4] 	 // 基于一个数组切割，左包含右不包含，(0 <= 索引 < 4) => [1 3 5]
 	fmt.Println(s2)  // [1 3 5 7] 索引0-3
@@ -1553,9 +1551,9 @@ func main()  {
 	s3 := s1[1:6]  
 	fmt.Println(s3)	// [3 5 7 9 11]
     
-    s4 := s1[:4]  	// [0:4]
+  s4 := s1[:4]  	// [0:4]
 	s5 := s1[3:]  	// [3:最后即len(s1)]
-	s6 := s1[:]  	// [0:最后即len(s1)]
+	s6 := s1[:]  	  // [0:最后即len(s1)]
 	fmt.Println(s4, s5, s6)
 }
 
@@ -1584,13 +1582,8 @@ func main() {
 	a := [5]int{1, 2, 3, 4, 5}
 	t := a[1:3:5]
 	fmt.Printf("t:%v len(t):%v cap(t):%v\n", t, len(t), cap(t))
+  //t:[2 3] len(t):2 cap(t):4
 }
-~~~
-
-输出结果：
-
-~~~go
-t:[2 3] len(t):2 cap(t):4
 ~~~
 
 
@@ -1632,11 +1625,11 @@ func main() {
 
 举个例子，现在有一个数组a := [8]int{0, 1, 2, 3, 4, 5, 6, 7}，切片s1 := a[:5]，相应示意图如下
 
-<img src="H:\笔记本\Golang.assets\image-20200714155741790.png" alt="image-20200714155741790" style="float:left;" />
+<img src="./Golang.assets/image-20200714155741790.png" alt="image-20200714155741790" style="float:left;" />
 
 切片s2 := a[3:6]，相应示意图如下：
 
-<img src="H:\笔记本\Golang.assets\image-20200714155917610.png" alt="image-20200714155917610" style="float:left;" />
+<img src="./Golang.assets/image-20200714155917610.png" alt="image-20200714155917610" style="float:left;" />
 
 ~~~go
 func main() {
