@@ -867,7 +867,7 @@ fmt.Println(timeObj.Sub(now))
 
 
 
-##### Day07
+#### 第七天课程
 
 ###### 7.1 复习
 
@@ -949,32 +949,59 @@ C语言中没有string类型而是用字符数组(array)表示字符串，所以
 
 
 
-###### 7.5.2 Parse系列函数
+###### 7.5.2 Sprintf函数
 
-> Parse类函数用于转换字符串为给定类型的值：ParseBool()、ParseFloat()、ParseInt()、ParseUint()。
+> Sprintf() 其他类型转换成字符串
+
+~~~go
+//Sprintf 使用时 int - %d ; float - %f ; bool - %t ; byte - %c  %2f两位小数
+
+var i int = 20
+var f float64 = 12.542
+var t bool = true
+var b byte = 'a'
+
+str1 := fmt.Sprintf("%d", i)
+fmt.Printf("值：%#v,类型：%T\n", str1, str1)
+
+str2 := fmt.Sprintf("%f", f)
+fmt.Printf("值：%#v,类型：%T\n", str2, str2)
+
+str3 := fmt.Sprintf("%t", t)
+fmt.Printf("值：%#v,类型：%T\n", str3, str3)
+
+str4 := fmt.Sprintf("%c", b)
+fmt.Printf("值：%#v,类型：%T\n", str4, str4)
+
+/**
+ * 值："20",类型：string
+ * 值："12.542",类型：string
+ * 值："true",类型：string
+ * 值："a",类型：string
+ */
+~~~
 
 
+
+###### 7.5.3 Parse系列函数
+
+> Parse类函数用于转换字符串为给定类型的值：ParseBool()、ParseFloat()、ParseInt()、ParseUint()
 
 举例说明：
 
 ~~~go
-//字符串转数值
-str := "1000"
-ret1, err := strconv.ParseInt(str, 10, 64)//Parse解析的意思， 10进制；64位，而函数确实只返回int64
-if err != nil {
-	fmt.Println("解析出错")
-}
+//字符串转换成其他类型
+str        := "1000"
+boolStr    := "true"
+floatStr   := "3.14159"
+
+ret1, _    := strconv.ParseInt(str, 10, 64)//Parse解析的意思，10进制；64位，而函数确实只返回int64
+boolVal,_  := strconv.ParseBool(boolStr)	 //把字符串中解析出布尔类型
+floatVal,_ := strconv.ParseFloat(floatStr, 64)//把字符串解析出浮点数
+
 fmt.Printf("%#v , %T", ret1, ret1) // 1000 int
-
-//把字符串中解析出布尔类型
-boolStr := "true"
-boolVal,_ := strconv.ParseBool(boolStr)
 fmt.Printf("%#v , %T\n", boolVal, boolVal) // true bool
-
-//把字符串解析出浮点数
-floatStr := "3.14159"
-floatVal,_ := strconv.ParseFloat(floatStr, 64)
-fmt.Printf("%#v , %T\n", floatVal, floatVal)//3.14159  float64
+fmt.Printf("%#v , %T\n", floatVal, floatVal)// 3.14159  float64
 ~~~
 
 
@@ -1009,15 +1036,38 @@ func main()  {
 
 
 
-###### 7.5.3 Format系列函数
+###### 7.5.4 Format系列函数
 
-> 格式化成string类型
+> Format()函数，将给定类型数据格式化为string类型数据的功能。FormatBool() 、FormatInt()、FormatUint()、FormatFloat()
 
+~~~go
+/**
+ * func FormatBool(b bool) string
+ *
+ * func FormatInt(i int64, base int) string
+ * base 必须在2到36之间，结果中会使用小写字母’a’到’z’表示大于10的数字
+ *
+ * func FormatUint(i uint64, base int) string
+ *
+ * func FormatFloat(f float64, fmt byte, prec, bitSize int) string
+ * 参数1：传入要格式化的值；
+ * 参数2："f" 正常格式;b 二进制；e 十进制指数；E 十进制指数；g (很大e格式)；G(很大的E格式)
+ * 参数3：prec控制精度,对 f、e、E它表示小数点后的数字个数；对g、G 它控制总的数学个数。prec=-1则代表使用最少数量的、但又必需的 
+ * 数字来表示f
+ * 参数4：bitSize表示f的来源类型（32：float32、64：float64），会据此进行舍入。
+ */
 
+s1 := strconv.FormatBool(true) //"true"
+s2 := strconv.FormatFloat(3.1415, 'E', -1, 64) // 3.1415E+00
+s3 := strconv.FormatInt(-2, 16) //-2
+s4 := strconv.FormatUint(2, 16) //2
+~~~
 
 
 
 ##### 7.6 网络并发
+
+###### 7.6.1 并发与并行
 
 并发：同一时间段内执行多个任务(同两个人聊天)
 
@@ -1025,19 +1075,18 @@ func main()  {
 
 
 
-> Go语言的并发通过goroutine实现。
+###### 7.6.2 goroutine
 
-goroutine类似于线程，属于用户态的线程，我们可以根据需要创建成千上万个goroutine并发工作。
-goroutine是由Go语言的运行时（runtime）调度完成，而线程是由操作系统调度完成。
-Go语言还提供channel在多个goroutine间进行通信。
-goroutine和channel是 Go 语言秉承的 CSP（Communicating Sequential Process）并发模式的重要实现基础。
+> Go语言的并发通过goroutine实现
+
+- goroutine类似于线程，属于用户态的线程，我们可以根据需要创建成千上万个goroutine并发工作
+- goroutine是由Go语言的运行时（runtime）调度完成，而线程是由操作系统调度完成
+- Go语言还提供channel在多个goroutine间进行通信
+- goroutine和channel是 Go 语言秉承的 CSP（Communicating Sequential Process）并发模式的重要实现基础。
 
 
 
-**goroutine**
-
-在java/c++中要实现并发编程，需要维护一个线程池，包装任务，需要自己去高度线程执行任务并维护上下文切换
-
+在java/c++中要实现并发编程，需要维护一个线程池，包装任务，需要自己去高度线程执行任务并维护上下文切换。
 goroutine的概念类似于线程，但 goroutine是由Go的运行时（runtime）调度和管理的。
 Go程序会智能地将 goroutine 中的任务合理地分配给每个CPU。
 Go语言之所以被称为现代化的编程语言，就是因为它在语言层面已经内置了调度和上下文切换的机制。
@@ -1058,7 +1107,9 @@ func main() {
 
 
 
-**启用单个gorouteine**
+**启用单个goroutine**
+
+一个`goroutine`必定对应一个函数，可以创建多个`goroutine`去执行相同的函数。
 
 ~~~go
 func main() {
@@ -1066,12 +1117,13 @@ func main() {
 	fmt.Println("main goroutine done!") //只打印这一行结果
   //time.Sleep(time.Second)
 }
-/** 当main（）函数返回的时候，goroutine就结束，使用简单粗暴的方式 time.Sleep等一等hello函数
+//当main()函数返回的时候该goroutine就结束了，所有在main()函数中启动的goroutine会一同结束，
+/** 使用简单粗暴的方式 time.Sleep()等一等hello()函数执行 */
 ~~~
 
 
 
-举例子：
+举个例子：
 
 ~~~go
 func hello(i int)  {
@@ -1095,6 +1147,565 @@ for i := 0; i < 10; i++ {
 		}(i)
 }
 ~~~
+
+
+
+使用sleep时间来等待协程执行时间不可控，使用`sync.WaitGroup`来实现goroutine的同步
+
+~~~go
+var wg sync.WaitGroup
+
+func hello()  {
+	fmt.Println("hello,welcome~")
+	wg.Done()
+}
+func main()  {
+	wg.Add(1)
+	go hello()
+	//fmt.Println("job.")  会先执行打印job. ；协程的还需要时间处理，会后打印
+	wg.Wait()
+	fmt.Println("job.") //程序先阻塞挂起，等待执行完hello()方法，再执行后面的程序
+}
+~~~
+
+
+
+**启动多个groutine**
+
+~~~go
+var wg sync.WaitGroup
+
+func hello(i int) {
+	defer wg.Done() // goroutine结束就登记-1
+	fmt.Println("Hello Goroutine!", i)
+}
+func main() {
+	for i := 0; i < 10; i++ {
+		wg.Add(1) // 启动一个goroutine就登记+1
+		go hello(i)
+	}
+	wg.Wait() // 等待所有登记的goroutine都结束
+}
+~~~
+
+多次执行上面的代码，会发现每次打印的数字的顺序都不一致。这是因为10个`goroutine`是并发执行的，而`goroutine`的调度是随机的。
+
+
+
+###### 7.6.3 groutine与线程
+
+> 可增长的栈
+
+OS线程（操作系统线程）一般都有固定的栈内存（通常为2MB）
+
+`goroutine`的栈在其生命周期开始时只有很小的栈（最小2KB），`goroutine`的栈不是固定的，可增缩，最大可达1G
+
+Go语言中一次创建十万左右的`goroutine`也是可以的
+
+
+
+> goroutine调度
+
+**GPM**是Go语言运行时（runtime）层面的实现，是go语言自己实现的一套调度系统。
+
+- **G** 就是个goroutine，里面除了存放本goroutine信息外，还有与所在P的绑定等信息。
+- **P** 管理着一组goroutine队列，P里面会存储当前goroutine运行的上下文环境（函数指针，堆栈地址及地址边界），P会对自己管理的goroutine队列做一些调度（比如把占用CPU时间较长的goroutine暂停、运行后续的goroutine等等）当自己的队列消费完了就去全局队列里取，如果全局队列里也消费完了会去其他P的队列里抢任务。
+- **M（machine)**是Go运行时（runtime）对操作系统内核线程的虚拟， M与内核线程一般是一一映射的关系， 一个groutine最终是要放到M上执行的；
+
+
+
+**M（machine）**是Go运行时（runtime）对操作系统内核线程的虚拟， M与内核线程一般是一一映射的关系， 一个groutine最终是要放到M上执行的；
+
+
+
+P的个数是通过**runtime.GOMAXPROCS**设定（最大256），Go1.5版本之后默认为物理线程数。 
+
+在并发量大的时候会增加一些P和M，但不会太多，切换太频繁的话得不偿失。
+
+
+
+> GOMAXPROCS
+
+Go运行时的调度器使用`GOMAXPROCS`参数来确定需要使用多少个OS线程来同时执行Go代码。默认值是机器上的CPU核心数。例如在一个8核心的机器上，调度器会把Go代码同时调度到8个OS线程上（GOMAXPROCS是m:n调度中的n）。
+
+Go语言中可以通过`runtime.GOMAXPROCS()`函数设置当前程序并发时占用的CPU逻辑核心数。
+
+Go1.5版本之前，默认使用的是单核心执行。Go1.5版本之后，默认使用全部的CPU逻辑核心数。
+
+
+
+我们可以通过将任务分配到不同的CPU逻辑核心上实现并行的效果，这里举个例子：
+
+~~~go
+func a() {
+	for i := 1; i < 10; i++ {
+		fmt.Println("A:", i)
+	}
+}
+
+func b() {
+	for i := 1; i < 10; i++ {
+		fmt.Println("B:", i)
+	}
+}
+
+func main() {
+	runtime.GOMAXPROCS(1) //开一个cpu来跑
+	go a()
+	go b()
+	time.Sleep(time.Second)
+}
+~~~
+
+两个任务只有一个逻辑核心，此时是做完一个任务再做另一个任务。 
+
+将逻辑核心数设为2，此时两个任务并行执行，代码如下。
+
+~~~go
+func a() {
+	for i := 1; i < 10; i++ {
+		fmt.Println("A:", i)
+	}
+}
+
+func b() {
+	for i := 1; i < 10; i++ {
+		fmt.Println("B:", i)
+	}
+}
+
+func main() {
+	runtime.GOMAXPROCS(2)
+	go a()
+	go b()
+	time.Sleep(time.Second)
+}
+~~~
+
+
+
+###### 7.6.4 channel
+
+单纯地将函数并发执行是没有意义的。函数与函数间需要交换数据才能体现并发执行函数的意义。
+
+虽然可以使用共享内存进行数据交换，但是共享内存在不同的`goroutine`中容易发生竞态问题。
+
+为了保证数据交换的正确性，必须使用互斥量对内存进行加锁，这种做法势必造成性能问题。
+
+
+
+Go语言的并发模型是`CSP(Communicating Sequential Processes)`，提倡**通过通信共享内存**而不是**通过共享内存而实现通信**。
+
+`channel`是可以让一个`goroutine`发送特定值到另一个`goroutine`的通信机制。
+
+
+
+Go 语言中的通道（channel）是一种**特殊的类型**。通道像一个传送带或者队列，总是遵循先入先出（First In First Out）的规则，保证收发数据的顺序。每一个通道都是一个具体类型的导管，也就是声明channel的时候需要为其指定元素类型。
+
+
+
+> channel定义
+
+~~~go
+var 变量 chan 元素类型
+~~~
+
+
+
+channel 是一种类型，也是引用类型。
+
+~~~go
+var ch1 chan int   // 声明一个传递整型的通道
+var ch2 chan bool  // 声明一个传递布尔型的通道
+var ch3 chan []int // 声明一个传递int切片的通道
+~~~
+
+
+
+通道是引用类型，通道类型的空值是`nil`。
+
+~~~go
+var ch1 chan int
+fmt.Println(ch1) // <nil>
+~~~
+
+
+
+> 创建channel
+
+~~~go
+make(chan 元素类型, [缓冲大小]) //缓冲大小 选填
+~~~
+
+
+
+创建channel
+
+~~~go
+ch1 := make(chan int)
+ch2 := make(chan bool)
+ch3 := make(chan []int)
+~~~
+
+
+
+> channel操作
+
+通道有发送（send）、接收(receive）和关闭（close）三种操作
+
+
+
+**发送 **
+
+~~~go
+ch1 <- 10 // 把10发送到ch1中
+~~~
+
+
+
+**接收**
+
+~~~go
+x := <- ch1 // 从ch1中接收值并赋值给变量x
+<-ch1       // 从ch1中接收值，忽略结果
+~~~
+
+
+
+**关闭**
+
+~~~go
+close(ch1)
+~~~
+
+
+
+关闭后的通道有以下特点：
+
+1. 对一个关闭的通道再发送值就会导致panic。
+2. 对一个关闭的通道进行接收会一直获取值直到通道为空。
+3. 对一个关闭的并且没有值的通道执行接收操作会得到对应类型的零值。
+4. 关闭一个已经关闭的通道会导致panic。
+
+
+
+> 无缓冲的通道
+
+无缓冲的通道又称为阻塞的通道。
+
+~~~go
+func main(){
+  ch := make(chan int)
+  ch <- 10
+  fmt.Println("发送成功")
+}
+~~~
+
+上面这段代码能够通过编译，但是执行的时候会出现以下错误：
+
+~~~go
+fatal error: all goroutines are asleep - deadlock!
+
+goroutine 1 [chan send]:
+main.main()
+        /Users/xx/go/src/day07/04channel1/main.go:7 +0x54
+exit status 2
+~~~
+
+为什么会出现`deadlock`错误呢？
+
+因为我们使用`ch := make(chan int)`创建的是无缓冲的通道，无缓冲的通道只有在有人接收值的时候才能发送值。
+
+简单来说就是无缓冲的通道必须有接收才能发送。
+
+上面的代码会阻塞在 ch <- 10 这一行代码形成死锁，那如何解决这个问题呢？
+
+
+
+一种方法是启用一个goroutine去接收值，例如：
+
+~~~go
+func recv(c chan int) {
+	ret := <-c
+	fmt.Println("接收成功", ret)
+}
+func main() {
+	ch := make(chan int)
+	go recv(ch) // 启用goroutine从通道接收值
+	ch <- 10
+	fmt.Println("发送成功")
+}
+~~~
+
+
+
+使用无缓冲通道进行通信将导致发送和接收的goroutine同步化。因此，无缓冲通道也被称为同步通道。
+
+
+
+> 有缓冲的通道
+
+另一种方法是创建有缓冲区的通道。
+
+我们可以在使用make函数初始化通道的时候为其指定通道的容量，例如：
+
+~~~go
+func main() {
+	ch := make(chan int, 1) // 创建一个容量为1的有缓冲区通道
+	ch <- 10
+	fmt.Println("发送成功")
+}
+~~~
+
+只要通道的容量大于零，那么该通道就是有缓冲的通道，通道的容量表示通道中能存放元素的数量。
+
+只有容量满了就装不下了，就阻塞了，等到协程取走一个就能往里面放一个。
+
+使用内置的`len`函数获取通道内元素的数量，使用`cap`函数获取通道的容量。
+
+
+
+> For range  从通道循环取值
+
+当向通道中发送完数据时，我们可以通过`close`函数来关闭通道。
+
+当通道被关闭时，再往该通道发送值会引发`panic`，从该通道取值的操作会先取完通道中的值，再然后取到的值一直都是对应类型的零值。
+
+~~~go
+//channel练习
+//关闭通道，for range也退出循环
+
+func main()  {
+	ch1 := make(chan int)
+	ch2 := make(chan int)
+
+	//开启goroutine将 0- 100发送到ch1中
+	go func() {
+		for iNum := 1; iNum <= 100; iNum++ {
+			ch1 <- iNum
+		}
+		close(ch1)
+	}()
+
+	//开启goroutine从ch1中接收者，并将该值的平方发送到ch2中
+	go func() {
+		for {
+      //方法1：判断该通道是否被关闭
+			ret,ok := <- ch1 //通道关闭后再取值时，ok=false
+			if !ok {
+				break
+			}
+			ch2 <- ret * ret
+		}
+		close(ch2)
+	}()
+
+  //方法2：判断该通道是否被关闭
+	//遍历ch2中接收的值
+	for result := range ch2 {
+		fmt.Println(result)
+	}
+}
+~~~
+
+
+
+以上有两种方式在接收值的时候判断该通道是否被关闭，不过我们通常使用的是`for range`的方式。使用`for range`遍历通道，当通道被关闭的时候就会退出`for range`。
+
+
+
+###### 7.6.5 单向通道
+
+在不同的任务函数中使用通道都会对其进行限制，比如限制通道在函数中只能发送或只能接收。
+
+Go语言中提供了**单向通道**来处理这种情况。
+
+~~~go
+//单向通道
+
+//只能发送进通道
+func counter(count chan<- int)  {
+	for iNum := 1; iNum <= 100; iNum++ {
+		count <- iNum
+	}
+	close(count)
+}
+
+//只能从count通道中取值
+func squarer(square chan<- int, count <-chan int)  {
+	for i := range count {
+		square <- i * i
+	}
+	close(square)
+}
+
+func printer(out <- chan int)  {
+	for i := range out{
+		fmt.Println(i)
+	}
+}
+
+func main()  {
+	ch1 := make(chan int)
+	ch2 := make(chan int)
+	go counter(ch1)
+	go squarer(ch2, ch1)
+	printer(ch2)
+}
+~~~
+
+- `chan<- int`是一个只写单向通道（只能对其写入int类型值），可以对其执行发送操作但是不能执行接收操作；
+- `<-chan int`是一个只读单向通道（只能从其读取int类型值），可以对其执行接收操作但是不能执行发送操作。
+
+
+
+> 通道异常
+
+<img src="Golang2.assets/image-20200821133857394.png" alt="image-20200821133857394" style="zoom:50%;float:left;" />
+
+
+
+关闭已经关闭的`channel`也会引发`panic`。
+
+
+
+###### 7.6.6 worker pool
+
+**Worker pool  即是goroutine池**，在工作中我们通常会使用可以指定启动的goroutine数量–`worker pool`模式，控制`goroutine`的数量，防止`goroutine`泄漏和暴涨。
+
+一个简易的`work pool`示例代码如下：
+
+~~~go
+func worker(id int, jobs <-chan int, results chan<- int) {
+	for j := range jobs {
+		fmt.Printf("worker:%d start job:%d\n", id, j)
+		time.Sleep(time.Second)
+		fmt.Printf("worker:%d end job:%d\n", id, j)
+		results <- j * 2
+	}
+}
+
+func main() {
+	jobs := make(chan int, 100)
+	results := make(chan int, 100)
+	// 开启3个goroutine
+	for w := 1; w <= 3; w++ {
+		go worker(w, jobs, results)
+	}
+	// 5个任务
+	for j := 1; j <= 5; j++ {
+		jobs <- j
+	}
+	close(jobs)
+	// 输出结果
+	for a := 1; a <= 5; a++ {
+		<-results
+	}
+}
+/**
+ * worker:3 start job:1
+ * worker:1 start job:2
+ * worker:2 start job:3
+ * worker:3 end job:1
+ * worker:2 end job:3
+ * worker:2 start job:5
+ * worker:3 start job:4
+ * worker:1 end job:2
+ * worker:2 end job:5
+ * worker:3 end job:4
+ */
+~~~
+
+
+
+###### 7.6.7 select
+
+select 多路复用
+
+在某些场景下我们需要同时从多个通道接收数据。通道在接收数据时，如果没有数据可以接收将会发生阻塞。你也许会写出如下代码使用遍历的方式来实现：
+
+~~~go
+for{
+    // 尝试从ch1接收值
+    data, ok := <-ch1
+    // 尝试从ch2接收值
+    data, ok := <-ch2
+    …
+}
+~~~
+
+可以使select优化效率。
+
+~~~go
+select{
+    case <-ch1:
+        ...
+    case data := <-ch2:
+        ...
+    case ch3<-data:
+        ...
+    default:
+        默认操作
+}
+~~~
+
+举个例子：
+
+~~~go
+func main() {
+	ch := make(chan int, 1)
+	for i := 0; i < 10; i++ {
+		select {
+		case x := <-ch:
+			fmt.Println(x)
+		case ch <- i:
+		}
+	}
+}
+//打印出来的是：0 2 4 6 8
+~~~
+
+使用`select`语句能提高代码的可读性。
+
+- 可处理一个或多个channel的发送/接收操作。
+- 如果多个case同时满足，select会随机选择一个。
+- 对于没有case的select{}会一直等待，可用于阻塞main函数。
+
+
+
+##### 7.7 并发安全与锁
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

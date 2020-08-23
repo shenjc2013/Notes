@@ -1,4 +1,4 @@
-##### Day01 第一章
+##### 第一天课程
 
 ###### 1.1 Go语言基础
 
@@ -257,7 +257,7 @@ go build
 
 ###### 1.5 变量常量
 
-Go语言中有25个关键字
+**Go语言中有25个关键字**
 
 ```go
 break		  default		func		 interface	select
@@ -328,7 +328,7 @@ var ( //批量声明
 
 func main() {
 	name = "chenglh"
-	age = 16
+	age  = 16
 	isok = false
 
   fmt.Printf("name:%s, age:%d", name, age) //name:chenglh,age:16
@@ -344,8 +344,9 @@ func main() {
 
 Go语言在声明变量的时候，会自动对变量对应的内存区域进行初始化操作。
 
+变量的零值：
+
 ~~~php
-##例如：
 整型和浮点型变量的默认值为0
 
 字符串变量的默认值为空字符串
@@ -369,7 +370,7 @@ var name string = "chenglh"
 var age int = 18
 
 //多个变量声明
-var name, age = "chenglh", 18 //类型推导
+var name, age = "chenglh", 18 //go语言中建议使用类型推导
 ~~~
 
 
@@ -379,7 +380,6 @@ var name, age = "chenglh", 18 //类型推导
 将变量的类型省略，编译器会根据等号右边的值来推导变量的类型完成初始化
 
 ~~~go
-//编译器根据值来判断变量是什么类型
 var name = "chenglh"
 var age = 18
 ~~~
@@ -397,10 +397,8 @@ var m = 100
 func main() {
     s3 := "haha" //简短变量声明,使用了类型推导
     n  := 10
-    m  := 200
-    fmt.Println(m, n)
-  
-  // s3, n, m := "haha", 10, 20
+    m   = 200
+    fmt.Println(s3, m, n)// s3, n, m := "haha", 200, 10
 }
 ~~~
 
@@ -408,7 +406,9 @@ func main() {
 
 > 匿名变量
 
-在使用多重赋值时，如果想要忽略某个值，可以使用`匿名变量（anonymous variable）`。 匿名变量用一个下划线`_`表示，例如：
+在使用多重赋值时，如果想要忽略某个值，可以使用`匿名变量（anonymous variable）`。 
+
+匿名变量用一个下划线`_`表示，例如：
 
 ```go
 func foo() (int, string) {
@@ -417,8 +417,8 @@ func foo() (int, string) {
 func main() {
 	x, _ := foo()
 	_, y := foo()
-	fmt.Println("x=", x)
-	fmt.Println("y=", y)
+	fmt.Println("x=", x) //10
+	fmt.Println("y=", y) //chenglh
 }
 ```
 
@@ -429,17 +429,13 @@ func main() {
 > 注意事项：
 
 1. 函数外的每个语句都必须以关键字开始（var、const、func等）
-2. `:=`不能使用在函数外。
-3. `_`多用于占位，表示忽略值。
+2. `:=` 不能使用在函数外。
+3. `_` 多用于占位，表示忽略值。
 4. <u>同一个作用域中，不能`重复声明`同名的变量</u>
 
 ~~~go
-//例子
-package main
-import "fmt"
-
 //声明变量
-/*
+/* 单个声明
 var name string
 var age int
 var isOk bool */
@@ -453,14 +449,14 @@ var (
 
 var (
 	//student_name string
-	studentName  string //使用驼峰式，上面和下面的声明，编辑器会有小波浪线
+	studentName  string //使用驼峰式，上面和下面的声明，编辑器会有小波浪线提示
 	//StudentName  string
 )
 
 func main() {
 	//赋值
 	name = "chenglh"
-	age = 16
+	age  = 16
 	isOk = true
 
 	fmt.Print(isOk) //在终端打印字符
@@ -469,15 +465,15 @@ func main() {
 	fmt.Println("this end")   // 输出+换行符
 	fmt.Println() //打印一个空行
 
-    //Go语言中，非全局变量声明后必须使用，不使用就编译不过去
-    //var testHeihei string
-    //testHeihei = "测试使用"
-    //fmt.Print(testHeihei)
+  //Go语言中，非全局变量声明后必须使用，不使用就编译不过去
+  //var testHeihei string
+  //testHeihei = "测试使用"
+  //fmt.Print(testHeihei)
 
-    //声明变量同时赋值
+  //声明变量同时赋值
 	//var setStudentName string = "chenglh"
-    //var setStudentName = "chenglh"  //推荐使用，类型推导
-    //fmt.Print(setStudentName)
+  var setStudentName = "chenglh"
+  //fmt.Print(setStudentName)
 }
 ~~~
 
@@ -489,22 +485,31 @@ func main() {
 
 常量的声明`const`，常量在定义的时候必须赋值。
 
+常量，一经定义后，程序运行期间不能改变
+
+> 单个常量声明
+
 ~~~go
-package main
+const pi = 3.141529
+const e = 2.7182
+~~~
 
-//常量，一经定义后，程序运行期间不能改变
 
-//单个常量声明
-//const pi = 3.141529
-//const e = 2.7182
 
-//批量常量声明
+> 批量常量声明
+
+~~~go
 const (
     pi = 3.141529
     e = 2.7182
 )
+~~~
 
-//const同时声明多个常量时，如果省略了值则表示和上面一行的值相同。
+
+
+const同时声明多个常量时，如果省略了值则表示和上面一行的值相同。
+
+~~~go
 const (
     n1 = 100
     n2
@@ -519,7 +524,9 @@ const (
 
 `iota`是go语言的常量计数器，只能在常量的表达式中使用。
 
-`iota`在`const关键字出现时将被重置为0`。const中每新增一行常量声明将使`iota`计数一次(iota可理解为const语句块中的行索引)。 使用iota能简化定义，在定义枚举时很有用。
+`iota`在`const关键字出现时将被重置为0`。const中每新增一行常量声明将使`iota`计数一次(iota可理解为const语句块中的行索引)。 
+
+使用iota能简化定义，在定义枚举时很有用。
 
 ~~~go
 //举个例子
@@ -585,15 +592,14 @@ const (
 
 ###### 1.6 数据类型
 
-基本数据类型：**整型、浮点型、布尔型、字符串外，数组、切片、结构体、函数、map、通道（channel）等**
+基本数据类型：**【整型、浮点型、布尔型、字符串】，【数组、切片、结构体、函数、map、通道（channel）】等**
 
 
 
 > 整型分两大类
 
-> 带符号整型：int8、int16、int32、int64
-
-> 无符号整型：uint8、uint16、uint32、uint64
+- 带符号整型：int8、int16、int32、int64
+- 无符号整型：uint8、uint16、uint32、uint64
 
 |  类型  | 描述                                                         | 占用空间 |
 | :----: | ------------------------------------------------------------ | -------- |
@@ -613,7 +619,7 @@ const (
 | 类型    | 描述                                               |
 | :------ | :------------------------------------------------- |
 | uint    | 32位操作系统上就是uint32，64位操作系统上就是uint64 |
-| int     | 32位操作系统上就是int32，64位操作系统上就是int64   |
+| int     | 32位操作系统上就是int32，  64位操作系统上就是int64 |
 | uintptr | 无符号整型，用于存放一个指针                       |
 
 
@@ -709,6 +715,16 @@ fmt.Printf("原值：%v, 浮点值：%f，类型：%T\n", bb, bb, bb)
 
 **float精度丢失问题**
 
+引用第三方类库解决，https://github.com/shopspring/decimal
+
+~~~go
+> go get github.com/shopspring/decimal  //下载包
+~~~
+
+
+
+使用第三方包来解决精度损失的问题
+
 ~~~go
 import (
 	"fmt"
@@ -721,11 +737,6 @@ fmt.Println(num * 100) // 112959.99999999999
 m1 := 8.2
 m2 := 3.4
 fmt.Println(m1 - m2) // 4.799999999999999
-
-/** 使用第三方包来解决精度损失的问题
- https://github.com/shopspring/decimal
- > go get github.com/shopspring/decimal  下载包
-*/
 
 //修复精度
 //加法 Add ；减法 Sub；乘法 Mul；除法 Div
@@ -754,11 +765,11 @@ func main()  {
 	fmt.Printf("%d \n", a) // 10
 	fmt.Printf("%b \n", a) // 1010
 
-    //八进制 以0开头(文件权限)
+  //八进制 以0开头(文件权限)
 	var b = 077
 	fmt.Printf("%o \n", b) // 77
 
-    //十六进制 以0x开头(内存地址)
+  //十六进制 以0x开头(内存地址)
 	var c = 0xff
 	fmt.Printf("%x \n", c) // ff
 	fmt.Printf("%X \n", c) // FF
@@ -783,11 +794,10 @@ Go语言中 bool类型进行声明布尔型数据，只有 true和false两个值
 ```go
 func main()  {
 	var a1 = true
-	var a2 bool
+	var a2 bool  //默认零值 false
 
-	fmt.Printf("a1类型：%T, val=%v", a1, a1) //a1类型：bool, val=true
-	fmt.Println()
-	fmt.Printf("a2类型：%T, val=%v", a2, a2) //a2类型：bool, val=false
+	fmt.Printf("a1类型：%T, val=%v\n", a1, a1) //a1类型：bool, val=true
+	fmt.Printf("a2类型：%T, val=%v\n", a2, a2) //a2类型：bool, val=false
 }
 ```
 
@@ -814,10 +824,10 @@ func main()  {
 	fmt.Printf("%v\n", name)  //万能输出值  chenglh
 	fmt.Printf("%#v\n", name) //"结果串"会自动加上双引号 "chenglh"
     
-	//%c 输出单个字符
+	//%c 输出单个字符，即对应的是ASCII码
 	n1 := '程'
 	n2 := 'A'
-	fmt.Printf("%c\n",n1) //如果不格式化，显示ASCII码
+	fmt.Printf("%c\n",n1) // %c原样输出，否则对应是的ASCII码
 	fmt.Printf("%c\n",n2)
 }
 ~~~
@@ -839,7 +849,7 @@ str3 := "值"
 
 
 1. 字符串：双引号
-2. 字符：单引号  `[只能是一个字符/英文/汉字/符号]`
+2. 字符    ：单引号  `[只能是一个字符/英文/汉字/符号]`
 
 ~~~go
 s := "hello world"
@@ -902,6 +912,7 @@ fmt.Print(len(s1))   // 6
 
 //求字符串长度
 s3 := "chenglh程“"
+
 //方法1：
 ss1 := len([]rune(s3)) // 9，即9个字符，切片中的内容也是ASCII码
 //方法2：
@@ -1242,7 +1253,7 @@ for i := 1; i < 10; i++ {
 
 
 
-##### Day02  第二章
+##### 第二天课程
 
 ###### 2.1 复习
 
@@ -1327,18 +1338,23 @@ const UserNotExistErr = 10000
 
 ###### 2.2 数组
 
-> 数组定义
+> 数组定义，长度也是数组的一部分，会自动初始化为零o值
 
 ~~~go
 var 变量名 [元素数量]T
-//数组使用时可以修改数组成员，但是数组长度不可变化
 ~~~
+
+数组使用时可以修改数组成员，但是数组长度不可变化
+
+
 
 ~~~go
 //不同的类型不能直接赋值
 var a [3]int
 var b [4]int
 a = b //X 不可以这样做，因为此时a和b是不同的类型
+
+fmt.Println(s1, s2)  //[0 0 0] [0 0 0 0]
 ~~~
 
 
@@ -1363,27 +1379,41 @@ func main()  {
 
 
 
-> 初始化方式1：[默认初始化或指定值初始化]
+> 初始化 ：[默认初始化或指定值初始化]
+
+1、先声明，后赋值
 
 ~~~go
 var a1 [3]int   // [0 0 0] 默认初始化0值
 var a2 [3]bool  // [false false false]
-a3 := [3]bool{true, false, true} // 使用指定的初始值完成初始化
+
+//赋值方法
+a1[0] = 100
+a2[1] = true
+~~~
+
+
+
+2、声明和赋值一同
+
+~~~go
+a3 := [3]bool{true, false, true}
 a4 := [3]int{1, 2, 3}
 ~~~
 
 
 
-> 初始化方式2：[让编译器根据初始值的个数自行推断数组的长度]
+3、自行推导数组的长度
 
 ~~~go
+a5 := [...]string{"北京","上海","深圳","广州"}
 a6 := [...]int{0,1,2,3,4,5}
-fmt.Println(a6)
+
 ~~~
 
 
 
-> 初始化方式3：使用指定索引值的方式来初始化数组
+4、使用指定索引值的方式来初始化数组
 
 ~~~GO
 a1 := [5]int{1,2} //后面默认值0  [1 2 0 0 0]
@@ -1409,6 +1439,15 @@ var a1 = [...][2]int{ //只有外层才可以...，二维的不可以
 
 
 
+**求数组的长度**
+
+~~~go
+a1 := [...]int{1:10,3:30,5:50}
+len(a1)
+~~~
+
+
+
 **数组遍历**
 
 ~~~go
@@ -1428,16 +1467,81 @@ for i,v := range city{
 
 
 
+作业一：求数组的和、平均数
+
+~~~go
+  //作业：求数组的和、平均数
+	var sum = 0
+	var arr = [...]int{10, 120, 54, 44, 9}
+	for _ ,value := range arr {
+		sum += value
+	}
+	fmt.Printf("数组的和：%v, 平均数：%.2f\n", sum, float64(sum)/float64(len(arr)))
+~~~
+
+作业二：求数组最大值及其索引
+
+~~~go
+  //作业：求出数组里的最大值，及对应的key
+	var arr = [...]int{22,11,9, 10, 1, 5, 10, 45, 2}
+	var maxValue,maxIndex = 0, 0
+	for index , value := range arr {
+		if value > maxValue {
+			maxValue = value
+			maxIndex = index
+		}
+	}
+	fmt.Printf("数组最大值是：%v，索引是：%v\n", maxValue, maxIndex)
+~~~
+
+作业三：从数组[1, 3, 5, 7, 8] 中找出和为8的两个元素的下标分别为(0, 3)、(1, 2)
+
+~~~go
+  var arr = [...]int{1, 3, 5, 7, 8}
+	for i := 0; i < len(arr); i++ {
+		for j := i + 1; j < len(arr); j++ {
+			if arr[i] + arr[j] == 8 {
+				fmt.Printf("(%v, %v)", i, j)
+			}
+		}
+	}
+~~~
+
+作业四：冒泡算法
+
+~~~go
+  //作业：冒泡算法
+	var arr = [...]int{1, 3, 5, 7, 8, 2}
+	for i := 0; i < len(arr); i++ {
+		for j := i + 1; j < len(arr); j++ {
+			tmpVal := arr[i]
+			if arr[i] < arr[j] {
+				arr[i] = arr[j]
+				arr[j] = tmpVal
+			}
+		}
+	}
+	fmt.Println(arr)
+~~~
+
+
+
 **二维数组定义**
 
 ~~~go
+var 数组变量名 [元素数量][元素数组]T
+~~~
 
-a := [3][2]string {
+
+
+~~~go
+// a := [...][2] string{} 只能最外一层是推导，二维或以上的不能推导
+a := [3][2]string{
     {"北京", "上海"},
     {"广州", "深圳"},
     {"成都", "重庆"},
 }
-fmt.Println(a)		 // [ [北京 上海] [广州 深圳] [成都 重庆] ]
+fmt.Println(a)		   // [ [北京 上海] [广州 深圳] [成都 重庆] ]
 fmt.Println(a[2][1]) // 支持索引取值:重庆
 ~~~
 
@@ -1466,8 +1570,6 @@ for _,v := range all {
 
 > 数组的局限性，因为数组的长度是固定的并且数组长度属于类型的一部分
 
-
-
 ~~~go
 func arraySum(x [3]int) int{
     sum := 0;
@@ -1477,10 +1579,10 @@ func arraySum(x [3]int) int{
     return sum
 }
 
-这个求各函数只能接受 [3]int类型，其他的都不支持
+//这个求各函数只能接受 [3]int类型，其他的都不支持
 
 a := [3]int{1,2,3}
-只要定义了a数组，就不能再继续往数组a中添加新元素了
+//只要定义了a数组，就不能再继续往数组a中添加新元素了
 ~~~
 
 
@@ -1506,6 +1608,27 @@ var name = []T{} //声明切片，并初始化变量
 
 
 
+切片的声明与初始化
+
+~~~go
+var arr1 []int   //没有初始化，nil 不能直接设置值
+//arr1[0] = 10   这样是不允许的
+
+//方法1：定义并初始化变量
+var arr2 = []int{1, 3, 4, 6}
+
+//方法2：指定索引初始化
+var arr3 = []int{1:10, 2: 20, 3:30, 4:50}
+fmt.Println(arr3)
+
+//方法3：追加方式
+var arr4 []int
+arr4 = append(arr4, 10,1)
+fmt.Println(arr4)
+~~~
+
+
+
 举个栗子：
 
 ~~~go
@@ -1524,6 +1647,49 @@ func main() {
 	fmt.Println(c == nil)       //false
 	// fmt.Println(c == d)      //切片是引用类型，不支持直接比较，只能和nil比较，会飘红，不让编译通过
 }
+~~~
+
+
+
+**切片遍历**
+
+切片的遍历方式和数组是一致的，支持索引遍历和`for range`遍历。
+
+~~~go
+var strSlices = []string{"php", "java", "c++","golang", "python"}
+
+//切片遍历方法一
+for i := 0 ; i < len(strSlices); i++ {
+		fmt.Println(strSlices[i])
+}
+
+//切片遍历方法二
+for _,val := range strSlices {
+		fmt.Println(val)
+}
+~~~
+
+
+
+**切片是基于数组**
+
+~~~go
+//基于数组定义切片
+a := [5]int{0, 1, 2 ,3, 4}
+b := a[:] //获取数组里面的所有值
+
+fmt.Printf("a:%v，类型：%T\n", a, a)
+fmt.Printf("b:%v，类型：%T\n", b, b)
+
+//a:[0 1 2 3 4]，类型：[5]int
+//b:[0 1 2 3 4]，类型：[]int
+
+c := a[1:3]   // [1, 3) 左包右不包
+fmt.Printf("c:%v，类型：%T\n", c, c)
+//c:[1 2]，类型：[]int
+
+d := a[2:] // 从下标2开始 到 最后
+//d:[2 3 4]，类型：[]int
 ~~~
 
 
@@ -1677,30 +1843,6 @@ func main() {
 	s2[0] = 100
 	fmt.Println(s1)      //[100 0 0]
 	fmt.Println(s2)      //[100 0 0]
-}
-~~~
-
-
-
-**切片遍历**
-
-切片的遍历方式和数组是一致的，支持索引遍历和`for range`遍历。
-
-例如：
-
-~~~go
-func main() {
-	s := []int{1, 3, 5}
-
-    //方法1：索引数组遍历
-	for i := 0; i < len(s); i++ {
-		fmt.Println(i, s[i])
-	}
-
-    //方法2：for range循环
-	for index, value := range s {
-		fmt.Println(index, value)
-	}
 }
 ~~~
 
@@ -2453,6 +2595,25 @@ func someFunc(x string) []int {
 ~~~
 
 **Go**语言中函数没有默认参数这个概念
+
+
+
+###### 2.7 nil值
+
+当声明了一个变量，但却没有赋值时，golang中会自动给变量赋值一个默认零值。
+
+~~~go
+bool > false
+numbers > 0
+string > ""
+
+pointers > nil
+slices > nil
+maps > nil
+channels > nil
+functions > nil
+interfaces > nil
+~~~
 
 
 
