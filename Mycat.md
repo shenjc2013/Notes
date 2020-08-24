@@ -7,6 +7,8 @@ https://www.bilibili.com/video/BV1WJ411x7bD?from=search&seid=1544761594681441588
 
 
 
+show variables  like '%slow_query_log%';
+
 
 
 Insert into table_bak select * from table

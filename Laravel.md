@@ -327,7 +327,9 @@ php artisan schedule:run 1>> NUL 2>&1
 
 
 
+###### 1.3 RBAC权限管理
 
+https://www.bilibili.com/video/av329058585?p=3
 
 
 

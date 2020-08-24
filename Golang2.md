@@ -1,8 +1,8 @@
-#### Day05
+#### 第五天课程
 
-###### 5.1 复习
+##### 5.1 复习
 
-> 结构体
+结构体
 
 ~~~go
 type person struct{
@@ -13,7 +13,7 @@ type person struct{
 
 
 
-> 构造函数
+构造函数
 
 ~~~go
 type fb struct {
@@ -57,7 +57,7 @@ func main()  {
 
 
 
-> 方法和接收者
+方法和接收者
 
 ~~~go
 type person struct {
@@ -84,19 +84,19 @@ func main() {
 
 
 
-> 结构体嵌套
+结构体嵌套
 
 
 
-> 结构体匿名字段
+结构体匿名字段
 
 
 
-> JSON序列化与反序列化
+JSON序列化与反序列化
 
 
 
-###### 5.2 作业
+##### 5.2 作业
 
 
 
@@ -661,7 +661,7 @@ func main()  {
 
 
 
-##### Day06
+#### 第六天课程
 
 ###### 6.1 复习
 
@@ -1675,6 +1675,160 @@ func main() {
 
 ##### 7.7 并发安全与锁
 
+引出：有时候在Go代码中可能会存在多个`goroutine`同时操作一个资源（临界区），这种情况会发生`竞态问题`（数据竞态）。
+
+如多个 goroutine操作全局变量时，会出现问题
+
+~~~go
+var x int64
+var wg sync.WaitGroup
+
+func add() {
+	for i := 0; i < 5000; i++ {
+		x = x + 1
+	}
+	wg.Done()
+}
+func main() {
+	wg.Add(2)
+	go add()
+	go add()
+	wg.Wait()
+    fmt.Println(x) //每次执行的结果都不一样，add()共同去获取变量x
+}
+~~~
+
+
+
+###### 7.7.1 互斥锁
+
+互斥锁是一种常用的控制共享资源访问的方法，它能够保证同时只有一个goroutine可以访问共享资源。
+Go语言中使用sync包的Mutex类型来实现互斥锁。
+
+~~~go
+var x = 0
+var wg sync.WaitGroup
+var lock sync.Mutex
+
+//互斥锁
+
+func Sum()  {
+	for i := 0; i < 5000 ; i++  {
+		lock.Lock()   //加锁
+		x += 1
+		lock.Unlock() //解锁
+	}
+	wg.Done()
+}
+
+func main()  {
+	wg.Add(2)
+	go Sum()
+	go Sum()
+	wg.Wait()
+	fmt.Println(x)
+}
+~~~
+
+使用互斥锁能够保证同一时间有且只有一个`goroutine`进入临界区，其他的`goroutine`则在等待锁；
+当互斥锁释放后，等待的`goroutine`才可以获取锁进入临界区，多个`goroutine`同时等待一个锁时，唤醒的策略是随机的。
+
+
+
+###### 7.7.2 读写互斥锁
+
+互斥锁是完全互斥的，但是有很多实际的场景下是读多写少的，当我们并发的去读取一个资源不涉及资源修改的时候是没有必要加锁的，这种场景下使用读写锁是更好的一种选择。
+
+> 读写锁在Go语言中使用`sync`包中的`RWMutex`类型。
+
+读写锁分为两种：读锁和写锁。
+当一个goroutine获取**读锁**之后，其他的goroutine如果是`获取读锁会继续获得锁`，如果是获取写锁就会等待；
+当一个goroutine获取**写锁**之后，其他的goroutine无论是`获取读锁还是写锁都会等待`。
+
+
+
+举个例子：现一个变量，写10次，读1000次。
+
+~~~go
+var (
+	x      int64
+	wg     sync.WaitGroup
+	lock   sync.Mutex
+	rwlock sync.RWMutex
+)
+
+func write() {
+	// lock.Lock()   // 加互斥锁
+	rwlock.Lock()    // 加写锁
+	x = x + 1
+	time.Sleep(10 * time.Millisecond) // 假设读操作耗时10毫秒
+	rwlock.Unlock()                   // 解写锁
+	// lock.Unlock()                  // 解互斥锁
+	wg.Done()
+}
+
+func read() {
+	// lock.Lock()               // 加互斥锁
+	rwlock.RLock()               // 加读锁
+	time.Sleep(time.Millisecond) // 假设读操作耗时1毫秒
+	rwlock.RUnlock()             // 解读锁
+	// lock.Unlock()             // 解互斥锁
+	wg.Done()
+}
+
+func main() {
+	start := time.Now()
+	for i := 0; i < 10; i++ {
+		wg.Add(1)
+		go write()
+	}
+
+	for i := 0; i < 1000; i++ {
+		wg.Add(1)
+		go read()
+	}
+
+	wg.Wait()
+	end := time.Now()
+	fmt.Println(end.Sub(start))
+}
+~~~
+
+需要注意的是读写锁非常适合读多写少的场景，如果读和写的操作差别不大，读写锁的优势就发挥不出来。
+
+
+
+###### 7.7.3 sync.WaitGroup
+
+| 方法名                          | 功能                |
+| ------------------------------- | ------------------- |
+| (wg * WaitGroup) Add(delta int) | 计数器 + delta      |
+| (wg *WaitGroup) Done()          | 计数器 -  1         |
+| (wg *WaitGroup) Wait()          | 阻塞直到计数器变为0 |
+
+`sync.WaitGroup`内部维护着一个计数器，计数器的值可以增加和减少。例如当我们启动了N 个并发任务时，就将计数器值增加N。每个任务完成时通过调用Done()方法将计数器减1。通过调用Wait()来等待并发任务执行完，当计数器值为0时，表示所有并发任务已经完成。
+
+需要注意`sync.WaitGroup`是一个结构体，传递的时候要传递指针。
+
+
+
+###### 7.7.4 sync.Once
+
+在编程的很多场景下我们需要确保某些操作在高并发的场景下只执行一次，例如只加载一次配置文件、只关闭一次通道等。
+
+Go语言中的`sync`包中提供了一个针对只执行一次场景的解决方案–`sync.Once`。
+
+其签名如下：
+
+~~~go
+func (o *Once) Do(f func()) {}
+~~~
+
+备注：如果要执行的函数`f`需要传递参数就需要搭配闭包来使用。
+
+
+
+###### 7.7.5 sync.Map
 
 
 
@@ -1684,18 +1838,9 @@ func main() {
 
 
 
+##### 7.8 原子操作
 
-
-
-
-
-
-
-
-
-
-
-
+###### 7.1.1 atomic包
 
 
 

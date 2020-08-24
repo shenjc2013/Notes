@@ -1591,7 +1591,7 @@ a := [3]int{1,2,3}
 
 切片(Slice)是一个拥有相同类型元素的`可变长度的序列`。它是基于`数组类型`做的一层封装。它非常灵活，支持自动扩容。
 
-切片是一个"引用类型"，它的内部结构包含：地址、长度和容量。切片一般用于快速地操作一块数据集合。
+切片是一个"引用类型"，它的内部结构包含：`地址、长度和容量`。切片一般用于快速地操作一块数据集合。
 
 
 
@@ -1599,7 +1599,6 @@ a := [3]int{1,2,3}
 
 ~~~go
 var name []T     //声明没有初始化，即没有申请内存
-
 var name = []T{} //声明切片，并初始化变量
 ~~~
 
@@ -1623,13 +1622,20 @@ fmt.Println(arr3)
 
 //方法3：追加方式
 var arr4 []int
-arr4 = append(arr4, 10,1)
+arr4 = append(arr4, 10, 1)
 fmt.Println(arr4)
+
+//方法4：make()
+var arr5 = make([]int, 4, 8)
+fmt.Println(arr5)
+//arr5:[0 0 0 0]，长度：4,容量：8
+
+
 ~~~
 
 
 
-举个栗子：
+举个例子：
 
 ~~~go
 func main() {
@@ -1647,6 +1653,33 @@ func main() {
 	fmt.Println(c == nil)       //false
 	// fmt.Println(c == d)      //切片是引用类型，不支持直接比较，只能和nil比较，会飘红，不让编译通过
 }
+~~~
+
+
+
+> make()函数创造切片
+
+~~~go
+make([]T, size, cap)
+~~~
+
+- T     ：切片的元素类型
+- size：切片中元素的数量
+- cap：切片的容量
+
+
+
+举个栗子：
+
+~~~go
+func main() {
+	a := make([]int, 2, 10)
+	fmt.Println(a)      //[0 0]
+	fmt.Println(len(a)) //2
+	fmt.Println(cap(a)) //10
+}
+
+//上面代码中a的内部存储空间已经分配了10个，但实际上只用了2个。 容量并不会影响当前元素的个数，所以len(a)返回2，cap(a)则返回该切片的容量。
 ~~~
 
 
@@ -1690,6 +1723,9 @@ fmt.Printf("c:%v，类型：%T\n", c, c)
 
 d := a[2:] // 从下标2开始 到 最后
 //d:[2 3 4]，类型：[]int
+
+e := a[:3] //[0 ,3)
+//e:[0,1,2]
 ~~~
 
 
@@ -1705,11 +1741,11 @@ func main()  {
 	s2 = []string{"广东","广州","天河"}
 	fmt.Println(s1, s2)
 
-  //1、计算-长度len()和容量cap()
+    //1、计算-长度len()和容量cap()
 	fmt.Printf("s1:len:%d s1:cap:%d\n", len(s1), cap(s1))
 	fmt.Printf("s2:len:%d s2:cap:%d\n", len(s2), cap(s2))
     
-  //2、由数组得到切片
+    //2、由数组得到切片
 	s1 := [...]int{1,3,5,7,9,11}
 	s2 := s1[0:4] 	 // 基于一个数组切割，左包含右不包含，(0 <= 索引 < 4) => [1 3 5]
 	fmt.Println(s2)  // [1 3 5 7] 索引0-3
@@ -1717,7 +1753,7 @@ func main()  {
 	s3 := s1[1:6]  
 	fmt.Println(s3)	// [3 5 7 9 11]
     
-  s4 := s1[:4]  	// [0:4]
+    s4 := s1[:4]  	// [0:4]
 	s5 := s1[3:]  	// [3:最后即len(s1)]
 	s6 := s1[:]  	  // [0:最后即len(s1)]
 	fmt.Println(s4, s5, s6)
@@ -1728,6 +1764,11 @@ func main()  {
 s1:len:3 s1:cap:3
 s2:len:3 s2:cap:3
 ~~~
+
+关于切片的长度和容量
+
+* 长度：切片的长度就是它包含元素的个数
+* 容量：切片的容量是从它的第一个元素开始数，到其底层数组元素末尾的个数
 
 
 
@@ -1748,44 +1789,17 @@ func main() {
 	a := [5]int{1, 2, 3, 4, 5}
 	t := a[1:3:5]
 	fmt.Printf("t:%v len(t):%v cap(t):%v\n", t, len(t), cap(t))
-  //t:[2 3] len(t):2 cap(t):4
+    //t:[2 3] len(t):2 cap(t):4
 }
-~~~
-
-
-
-> make()函数创造切片
-
-~~~go
-make([]T, size, cap)
-~~~
-
-- T     ：切片的元素类型
-- size：切片中元素的数量
-- cap：切片的容量
-
-
-
-举个栗子：
-
-~~~go
-func main() {
-	a := make([]int, 2, 10)
-	fmt.Println(a)      //[0 0]
-	fmt.Println(len(a)) //2
-	fmt.Println(cap(a)) //10
-}
-
-//上面代码中a的内部存储空间已经分配了10个，但实际上只用了2个。 容量并不会影响当前元素的个数，所以len(a)返回2，cap(a)则返回该切片的容量。
 ~~~
 
 
 
 > 切片的本质
 
-切片就是一个框，框住了一块连续的内存。属于引用类型
+切片就是一个框，框住了一块连续的内存。**属于引用类型**
 
-切片的本质就是对底层数组的封装，它包含了三个信息：底层数组的指针、切片的长度（len）和切片的容量（cap）。
+切片的本质就是对底层数组的封装，它包含了三个信息：**底层数组的指针、切片的长度（len）和切片的容量（cap）**。
 
 
 
@@ -1856,6 +1870,15 @@ Go语言的内建函数`append()`可以为切片动态添加元素。 可以一�
 
 ~~~go
 func main() {
+    //1、append()切片扩容
+    var sliceA []int
+    sliceA = append(sliceA, 12) //追加1个或多个
+    
+    //2、append()合并切片
+    sliceA1 = []string{"php","js","go"}
+    sliceB1 = []string{"linux","vb"}
+    sliceA1 = append(sliceA1, sliceB1...)
+    
     s := []string{"北京","上海","南宁"}
     //s[3] = "广州"  //索引溢界，错误写法，会导致编译错误
 	fmt.Printf("s=%v  len(s)=%d  cap(s)=%d\n", s, len(s), cap(s))
@@ -1868,6 +1891,13 @@ func main() {
 	s1 := []string{"天津", "武汉"}
 	s = append(s, s1...) //...表示拆开(为字符串)
 	fmt.Printf("s=%v  len(s)=%d  cap(s)=%d\n", s, len(s), cap(s))
+    
+    //4、切片的扩容策略
+    var sliceA []int
+    for i := 1; i <= 10; i++ {
+        sliceA = append(sliceA, i)
+        fmt.Printf("sliceA=%v  len(sliceA)=%d  cap(sliceA)=%d\n", sliceA, len(sliceA), cap(sliceA))
+    }
 }
 
 > go run main.go
@@ -2071,7 +2101,7 @@ ptr := &v    // v的类型为T
 
 例如：变量b存储的是变量a的地址，变量b本身就有一个指针地址
 
-<img src="./Golang.assets/image-20200715165332528.png" alt="image-20200715165332528" style="float: left; zoom: 90%;" />
+<img src="./Golang.assets/image-20200715165332528.png" alt="image-20200715165332528" style="float: left; zoom: 85%;" />
 
 ~~~go
 func main()  {
