@@ -665,6 +665,8 @@ func main()  {
 
 ###### 6.1 复习
 
+
+
 ###### 6.2 作业
 
 
@@ -690,6 +692,7 @@ second:= timeObj.Second()
 
 fmt.Printf("%d-%02d-%02d %02d:%02d:%02d", year, month, day, hour, minute, second);
 //2020-08-12 11:06:57
+//注意： %02d 2表示宽度，如果整数不够人列，就补上0
 
 //12小时制  03
 date1 := timeObj.Format("2006-01-02 03:04:05") //格式化的模板，可自定义
@@ -705,63 +708,64 @@ fmt.Println(date)
 **时间戳**
 
 ~~~go
-timeObj := time.Now() 			 //时间对象
+//10位数的时间戳是以 秒   为单位；
+//13位数的时间戳是以 毫秒 为单位；
+//19位数的时间戳是以 纳秒 为单位；
 
-unixtime := timeObj.Unix() 		 //获取当前时间戳
+timeObj    := time.Now() 			   //时间对象
+unixtime   := timeObj.Unix() 		 //获取当前时间戳
 unixNatime := timeObj.UnixNano() //纳秒时间戳
 ~~~
 
 
 
-**时间戳转字符串**
+**常用时间操作**
 
 ~~~go
-unixTime := 1597202822
+//获取当前时间戳
+time.Now().Unix()								 //时间戳
+time.Now().UnixNano() / 1e6  		 //毫秒，作了运算
+time.Now().UnixNano()						 //纳秒
+time.Now().UnixNano() / 1e9	  	 //纳秒转成时间戳
 
-timeOjb := time.Unix(int64(unixtime), 0)//第一个参数是64位的秒数，第二个参数是纳秒
-var date = timeOjb.Format("2006-01-02 15:04:05")
-fmt.Println(date)
-~~~
+//获取当前日期时间
+time.Now().Format("2006-01-02 15:04:05")
+time.Now().Format("2006-01-02")
+time.Now().Format("2006") //年
+time.Now().Format("01")		//月
+time.Now().Format("02")		//日
+time.Now().Format("15")		//时
+time.Now().Format("04")		//分
+time.Now().Format("05")		//秒
 
-~~~go
-//定义为通用函数
-func timestampToDate(timestamp int64) string {
-	timeObj := time.Unix(timestamp, 0)
-	year := timeObj.Year()
-	month:= int(timeObj.Month())
-	day  := timeObj.Day()
-	hour := timeObj.Hour()
-	minute:= timeObj.Minute()
-	second := timeObj.Second()
+year   := time.Now().Year()
+month  := time.Now().Month() //得到的是英文的，int强制转换成数值
+day    := time.Now().Day()
+hour   := time.Now().Hour()
+minute := time.Now().Minute()
+second := time.Now().Second()
 
-	return fmt.Sprintf("%d-%02d-%02d %02d:%02d:%02d", year,month,day,hour,minute,second)
-}
-~~~
+//时间戳转换日期格式化
+var timestamp = 1598844373
+ret := time.Unix(int64(timestamp), 0).Format("2006-01-02 15:04:05")//可以单单格式化年/月/日/时/分/秒或其他组合
 
-
-
-**字符串转时间戳**
-
-~~~go
-var str = "2020-08-12 11:38:00"
-var template = "2006-01-02 15:04:05"  //str 与 template格式要一样
-timeObj,_ := time.ParseInLocation(template, str, time.Local)
-fmt.Println(timeObj.Unix())
-
-var str = "2020-08-12"
-var temp = "2006-01-02"
-timeObj,_ := time.Parse(temp, str)
+//日期格式化成时间戳
+date := "2020-08-31 13:33:42"
+temp := "2006-01-02 15:04:05"
+timeObj,_ := time.ParseInLocation(temp, date, time.Local) //temp与date的格式必须要一致,可以直接年月日
 fmt.Println(timeObj.Unix())
 ~~~
 
-~~~go
-//定义为通用函数
-func dateToTimestamp(strTime string) int64 {
-	var tempTime = "2006-01-02 15:04:05"
-	timeObj,_ := time.ParseInLocation(tempTime, strTime, time.Local)
 
-	return timeObj.Unix()
-}
+
+时间格式化例子
+
+~~~go
+fmt.Println(time.Now().Format("2006-01-02 15:04:05"))// 24小时制
+fmt.Println(time.Now().Format("2006-01-02 03:04:05"))// 12小时制
+fmt.Println(time.Now().Format("2006/01/02 15:04"))
+fmt.Println(time.Now().Format("15:04 2006/01/02"))
+fmt.Println(time.Now().Format("2006/01/02"))
 ~~~
 
 
@@ -769,7 +773,7 @@ func dateToTimestamp(strTime string) int64 {
 **时间包中常量**
 
 ~~~go
-type Duration int64
+type Duration int64 //自定义类型
 
 const (
 	Nanosecond  Duration = 1 //类自定义 Duration = int64别名
@@ -791,52 +795,72 @@ const (
 //时间 + 时间间隔（如30分钟、1小时后）
 timeObj := time.Now()
 later := timeOjb.Add(time.Hour * 2) //返回的还是时间对象
+
+//7天后
+later := time.Now().Add(7*24*time.Hour)
+fmt.Println(later.Format("2006-01-02 15:04:05"))
 ~~~
 
 
 
 > Sub
 
+~~~go
+//时间作差
+t1 := "2020-08-31 00:00:00"
+t2 := "2020-08-31 23:30:10"
+
+a,_ := time.Parse(tmp, t1)
+b,_ := time.Parse(tmp, t2)
+ret := b.Sub(a);
+fmt.Printf("val:%v，T:%T\n",ret,ret)	//val:23h30m10s，T:time.Duration
+~~~
+
+
+
+> Before
+
+~~~go
+t1 := "2020-08-31 00:00:00"
+tmp:= "2006-01-02 15:04:05"
+
+a,_ := time.Parse(tmp, t1)
+fmt.Println(time.Now().Before(a)) //true
+~~~
+
 
 
 **定时器**
 
 ~~~go
-//ticker.C 定时器
-ticker := time.NewTicker(time.Second) //1秒执行一次
-for tt := range ticker.C {
-    fmt.Println(tt)
-}
+  //方法一
+	//var ticker = time.NewTicker(time.Second)
+	//for tt := range ticker.C {
+	//	fmt.Println("定时器",tt)
+	//}
 
-number := 5
-ticker := time.NewTicker(time.Second)
-for tt := range ticker.C {
-    number--
-    fmt.Println(tt)
-    if number <= 0 {
-        ticker.Stop() //关闭定时器 ticker.Stop 终止定时器
-        break
-    }
-}
+	//清理定时器
+	var timeNum = 5
+	var ticker = time.NewTicker(time.Second)
+	for tt := range ticker.C {
+		timeNum --
+		if timeNum < 0 {
+			ticker.Stop() //关闭定时器 ticker.Stop() 终止定时器
+			break
+		}
+		fmt.Println("执行任务：", tt)
+	}
+
+	//方法二
+	//for {
+	//	fmt.Println("计划任务")
+	//	time.Sleep(time.Second)
+	//}
 ~~~
 
 
 
-**时间格式化**
-
-~~~go
-now := time.Now()
-
-fmt.Println(now.Format("2006-01-02 15:04:05"))// 24小时制
-fmt.Println(now.Format("2006-01-02 03:04:05"))// 12小时制
-fmt.Println(now.Format("2006/01/02 15:04"))
-fmt.Println(now.Format("15:04 2006/01/02"))
-fmt.Println(now.Format("2006/01/02"))
-~~~
-
-
-
-举例子：
+作业一：
 
 ~~~go
 now := time.Now()

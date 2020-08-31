@@ -9,7 +9,7 @@ Workerman
 
 ##### Workerman
 
-###### 1.1 简介
+###### 1.1 框架简介
 
 Workerman是一款**开源高性能异步**PHP socket框架。
 
@@ -19,7 +19,7 @@ GatewayWorker框架，是对Workerman的进一步封装。
 
 
 
-###### 1.2 区别
+###### 1.2 需求区别
 
 如果你的项目是长连接并且需要客户端与客户端之间通讯，建议使用GatewayWorker。
 短连接或者不需要客户端与客户端之间通讯的项目建议使用Workerman。
@@ -28,7 +28,7 @@ GatewayWorker不支持UDP监听，所以UDP服务请选择Workerman。
 
 
 
-###### 1.3  安装
+###### 1.3  软件安装
 
 ~~~php
 //###0、检查环境
@@ -75,7 +75,7 @@ define('GLOBAL_START', 1);
 require_once __DIR__ . '/vendor/autoload.php';
 
 // 加载所有Applications/*/start.php，以便启动所有服务
-foreach(glob(__DIR__.'/app/*/start*.php') as $start_file) //修改这里文件名称 app
+foreach(glob(__DIR__.'/app/*/start*.php') as $start_file) //【修改这里文件名称 app】
 {
     require_once $start_file;
 }
@@ -97,7 +97,7 @@ php start.php start -d
 
 
 
-###### 1.4 开发
+###### 1.4 开发请求
 
 创建控制器
 

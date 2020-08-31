@@ -1344,9 +1344,9 @@ const UserNotExistErr = 10000
 var 变量名 [元素数量]T
 ~~~
 
+
+
 数组使用时可以修改数组成员，但是数组长度不可变化
-
-
 
 ~~~go
 //不同的类型不能直接赋值
@@ -1356,8 +1356,6 @@ a = b //X 不可以这样做，因为此时a和b是不同的类型
 
 fmt.Println(s1, s2)  //[0 0 0] [0 0 0 0]
 ~~~
-
-
 
 举个栗子：
 
@@ -1507,21 +1505,38 @@ for i,v := range city{
 	}
 ~~~
 
-作业四：冒泡算法
+作业四：比较算法
 
 ~~~go
-  //作业：冒泡算法
+  //作业：比较算法，前一项与后面所有元素比较
 	var arr = [...]int{1, 3, 5, 7, 8, 2}
 	for i := 0; i < len(arr); i++ {
 		for j := i + 1; j < len(arr); j++ {
-			tmpVal := arr[i]
-			if arr[i] < arr[j] {
+			if arr[i] > arr[j] {
+				tmpVal := arr[i]
 				arr[i] = arr[j]
 				arr[j] = tmpVal
 			}
 		}
 	}
 	fmt.Println(arr)
+~~~
+
+作业五：冒泡算法
+
+~~~go
+  //作业：冒泡算法，相邻两元素比较
+	var bubbling = [...]int{1, 3, 5, 7, 8, 2}
+	for i := 0; i < len(bubbling); i++ {
+		for j := 0; j < len(bubbling) - i - 1; j++ {
+			if bubbling[j] > bubbling[j+1] {
+				tmpVal := bubbling[j]
+				bubbling[j] = bubbling[j+1]
+				bubbling[j+1] = tmpVal
+			}
+		}
+	}
+	fmt.Println(bubbling)
 ~~~
 
 
@@ -1591,7 +1606,7 @@ a := [3]int{1,2,3}
 
 切片(Slice)是一个拥有相同类型元素的`可变长度的序列`。它是基于`数组类型`做的一层封装。它非常灵活，支持自动扩容。
 
-切片是一个"引用类型"，它的内部结构包含：`地址、长度和容量`。切片一般用于快速地操作一块数据集合。
+切片是一个**引用类型**，它的内部结构包含：`地址、长度和容量`。切片一般用于快速地操作一块数据集合。
 
 
 
@@ -1610,27 +1625,38 @@ var name = []T{} //声明切片，并初始化变量
 切片的声明与初始化
 
 ~~~go
-var arr1 []int   //没有初始化，nil 不能直接设置值
-//arr1[0] = 10   这样是不允许的
+  var arr1 []int   //没有初始化，nil 不能直接设置值
+  //arr1[0] = 10   这样是不允许的
+  //golang中，是没法通过下标来给切片扩容的。越界操作
 
-//方法1：定义并初始化变量
-var arr2 = []int{1, 3, 4, 6}
+  //方法1：定义并初始化变量
+  var arr2 = []int{1, 3, 4, 6} //推导长度，容量
 
-//方法2：指定索引初始化
-var arr3 = []int{1:10, 2: 20, 3:30, 4:50}
-fmt.Println(arr3)
+  //方法2：指定索引初始化
+  var arr3 = []int{1:10, 2: 20, 3:30, 4:50}
+  fmt.Println(arr3)
 
-//方法3：追加方式
-var arr4 []int
-arr4 = append(arr4, 10, 1)
-fmt.Println(arr4)
+  //方法3：append() 追加方式，给切片扩容，长度和容量都能改变！
+  var arr4 []int
+  arr4 = append(arr4, 10, 1)
+  fmt.Println(arr4)
 
-//方法4：make()
-var arr5 = make([]int, 4, 8)
-fmt.Println(arr5)
-//arr5:[0 0 0 0]，长度：4,容量：8
+  //方法4：make()
+  var arr5 = make([]int, 4, 8)
+  fmt.Println(arr5)			//arr5:[0 0 0 0]，长度：4,容量：8
 
+  //方法5：切片追加切片，即合并切片
+  var slicesA = []string{"php","java"}
+  var slicesB = []string{"c++","vb"}
+  slicesA = append(slicesA, slicesB...) // ...表示把切片分割成字符串追加
 
+	//切片是引用类型
+	sliceA := []int{1, 2, 3, 4, 5}
+	sliceB := sliceA
+	fmt.Printf("a:%v，b:%v\n", sliceA, sliceB)//a:[1 2 3 4 5]，b:[1 2 3 4 5]
+
+	sliceB[1] = 20
+	fmt.Printf("a:%v，b:%v\n", sliceA, sliceB)//a:[1 20 3 4 5]，b:[1 20 3 4 5]
 ~~~
 
 
@@ -1691,6 +1717,8 @@ func main() {
 ~~~go
 var strSlices = []string{"php", "java", "c++","golang", "python"}
 
+//修改对就的值，和修改数组的值一样，strSlices[1] = "xxx"
+
 //切片遍历方法一
 for i := 0 ; i < len(strSlices); i++ {
 		fmt.Println(strSlices[i])
@@ -1708,11 +1736,11 @@ for _,val := range strSlices {
 
 ~~~go
 //基于数组定义切片
-a := [5]int{0, 1, 2 ,3, 4}
+a := [5]int{0, 1, 2 ,3, 4} //这里是数组
 b := a[:] //获取数组里面的所有值
 
-fmt.Printf("a:%v，类型：%T\n", a, a)
-fmt.Printf("b:%v，类型：%T\n", b, b)
+fmt.Printf("a:%v，类型：%T\n", a, a) //a是数组
+fmt.Printf("b:%v，类型：%T\n", b, b) //b是切片
 
 //a:[0 1 2 3 4]，类型：[5]int
 //b:[0 1 2 3 4]，类型：[]int
@@ -1741,11 +1769,11 @@ func main()  {
 	s2 = []string{"广东","广州","天河"}
 	fmt.Println(s1, s2)
 
-    //1、计算-长度len()和容量cap()
+  //1、计算-长度len()和容量cap()
 	fmt.Printf("s1:len:%d s1:cap:%d\n", len(s1), cap(s1))
 	fmt.Printf("s2:len:%d s2:cap:%d\n", len(s2), cap(s2))
     
-    //2、由数组得到切片
+  //2、由数组得到切片
 	s1 := [...]int{1,3,5,7,9,11}
 	s2 := s1[0:4] 	 // 基于一个数组切割，左包含右不包含，(0 <= 索引 < 4) => [1 3 5]
 	fmt.Println(s2)  // [1 3 5 7] 索引0-3
@@ -1753,7 +1781,7 @@ func main()  {
 	s3 := s1[1:6]  
 	fmt.Println(s3)	// [3 5 7 9 11]
     
-    s4 := s1[:4]  	// [0:4]
+  s4 := s1[:4]  	// [0:4]
 	s5 := s1[3:]  	// [3:最后即len(s1)]
 	s6 := s1[:]  	  // [0:最后即len(s1)]
 	fmt.Println(s4, s5, s6)
@@ -1846,17 +1874,34 @@ s3 := make([]int, 0) //len(s3)=0;cap(s3)=0;s3!=nil	有初始化，已开辟内�
 
 **切片的赋值拷贝**
 
-拷贝前后两个变量共享底层数组，对一个切片的修改会影响另一个切片的内容
+拷贝前后两个变量共享底层数组，对一个切片的修改会影响另一个切片的内容。
+
+~~~go
+值类型：  改变变量副本值的时候，不会改变变量本身的值。
+引用类型：改变变量副本值的时候，会改变变量本身的值。
+~~~
+
+
 
 举个栗子：
 
 ~~~go
 func main() {
 	s1 := make([]int, 3) //[0 0 0]
-	s2 := s1             //将s1直接赋值给s2，s1和s2共用一个底层数组
+	s2 := s1  //将s1直接赋值给s2，s1和s2共用一个底层数组
+  //指向的是同一个内存地址
+  
 	s2[0] = 100
 	fmt.Println(s1)      //[100 0 0]
 	fmt.Println(s2)      //[100 0 0]
+  
+  //1、copy()函数，复制切片
+  sliceA := []int{1,2,3,45}
+  sliceB := make([]int, 4, 4)
+  copy(sliceB, sliceA)
+  fmt.Println(sliceA, sliceB) //两个值相同
+  sliceB[0] = 111 //修改切片
+  fmt.Println(sliceA, sliceB) //两个值不一样
 }
 ~~~
 
@@ -1864,7 +1909,7 @@ func main() {
 
 **切片添加元素**
 
-Go语言的内建函数`append()`可以为切片动态添加元素。 可以一次添加一个元素，可以添加多个元素，也可以添加另一个切片中的元素（后面加…）。
+Go语言的内建函数`append()`可以为切片动态添加元素。 可以一次添加一个元素，可以添加多个元素，也可以添加另一个切片中的元素。
 
 例如：
 
@@ -1877,20 +1922,20 @@ func main() {
     //2、append()合并切片
     sliceA1 = []string{"php","js","go"}
     sliceB1 = []string{"linux","vb"}
-    sliceA1 = append(sliceA1, sliceB1...)
+    sliceA1 = append(sliceA1, sliceB1...) // ...
     
     s := []string{"北京","上海","南宁"}
     //s[3] = "广州"  //索引溢界，错误写法，会导致编译错误
-	fmt.Printf("s=%v  len(s)=%d  cap(s)=%d\n", s, len(s), cap(s))
+	  fmt.Printf("s=%v  len(s)=%d  cap(s)=%d\n", s, len(s), cap(s))
     
     //添加一个或多个元素
-	s = append(s, "广州","深圳")
-	fmt.Printf("s=%v  len(s)=%d  cap(s)=%d\n", s, len(s), cap(s))
+	  s = append(s, "广州","深圳")
+	  fmt.Printf("s=%v  len(s)=%d  cap(s)=%d\n", s, len(s), cap(s))
     
     //添加另一个切片中元素
-	s1 := []string{"天津", "武汉"}
-	s = append(s, s1...) //...表示拆开(为字符串)
-	fmt.Printf("s=%v  len(s)=%d  cap(s)=%d\n", s, len(s), cap(s))
+	  s1 := []string{"天津", "武汉"}
+  	s = append(s, s1...) //...表示拆开(为字符串)
+	  fmt.Printf("s=%v  len(s)=%d  cap(s)=%d\n", s, len(s), cap(s))
     
     //4、切片的扩容策略
     var sliceA []int
@@ -1932,11 +1977,10 @@ func main() {
 
 
 
-举例子：
+slice扩容策略：
 
 ~~~go
 func main() {
-	//append()添加元素和切片扩容
 	var numSlice []int
 	for i := 0; i < 10; i++ {
 		numSlice = append(numSlice, i)
@@ -1944,16 +1988,16 @@ func main() {
 	}
 }
 
->go run main.go
-[0]  					len:1  cap:1  ptr:0xc00000a0d8
-[0 1]  					len:2  cap:2  ptr:0xc00000a130 //扩容后地址改变
-[0 1 2]  				len:3  cap:4  ptr:0xc00000c3c0
-[0 1 2 3]  				len:4  cap:4  ptr:0xc00000c3c0
-[0 1 2 3 4]  			len:5  cap:8  ptr:0xc00000e200 //扩容后地址改变
-[0 1 2 3 4 5]  			len:6  cap:8  ptr:0xc00000e200
-[0 1 2 3 4 5 6]  		len:7  cap:8  ptr:0xc00000e200
-[0 1 2 3 4 5 6 7]  		len:8  cap:8  ptr:0xc00000e200 //扩容后地址改变
-[0 1 2 3 4 5 6 7 8]  	len:9  cap:16 ptr:0xc000076080
+> go run main.go
+[0]  									len:1  cap:1  ptr:0xc00000a0d8
+[0 1]  								len:2  cap:2  ptr:0xc00000a130 //扩容后地址改变
+[0 1 2]  							len:3  cap:4  ptr:0xc00000c3c0 //扩容后地址改变
+[0 1 2 3]  						len:4  cap:4  ptr:0xc00000c3c0
+[0 1 2 3 4]  					len:5  cap:8  ptr:0xc00000e200 //扩容后地址改变
+[0 1 2 3 4 5]  				len:6  cap:8  ptr:0xc00000e200
+[0 1 2 3 4 5 6]  			len:7  cap:8  ptr:0xc00000e200
+[0 1 2 3 4 5 6 7]  		len:8  cap:8  ptr:0xc00000e200
+[0 1 2 3 4 5 6 7 8]  	len:9  cap:16 ptr:0xc000076080 //扩容后地址改变
 [0 1 2 3 4 5 6 7 8 9]	len:10 cap:16 ptr:0xc000076080
 
 //从上面的结果可以看出：
@@ -1966,8 +2010,6 @@ func main() {
 **切片扩容策略**
 
 > 可以通过查看`$GOROOT/src/runtime/slice.go`源码
-
-源码如下：
 
 ~~~go
 newcap := old.cap
@@ -2020,19 +2062,15 @@ copy(destSlice, srcSlice []T)
 - destSlice: 目标切片
 - srcSlice: 数据来源切片
 
-举个例子：
-
 ~~~go
 func main()  {
-	s1 := []string{"张","李","程"}
-	s2 := s1 //由于切片是引用类型，所以s1和s2其实都指向了同一块内存地址。
-	var s3 = make([]string, 3, 3)
-    
-	copy(s3, s1) //不同的内存地址
-	fmt.Println(s1, s2, s3) // [张 李 程] [张 李 程] [张 李 程]
-    
-	s2[2] = "11"
-	fmt.Println(s1, s2, s3) // [张 李 11] [张 李 11] [张 李 程]
+  sliceA := []int{1, 2, 3, 45}
+  sliceB := make([]int, 4, 4)
+  copy(sliceB, sliceA)
+  fmt.Println(sliceA, sliceB) //[1 2 3 45] [1 2 3 45]
+  
+  sliceB[0] = 114
+  fmt.Println(sliceA, sliceB) //[1 2 3 45] [114 2 3 45]
 }
 ~~~
 
@@ -2041,8 +2079,6 @@ func main()  {
 **切片删除元素**
 
 > Go语言中并没有删除切片元素的专用方法，我们可以使用切片本身的特性来删除元素。
-
- 代码如下：
 
 ~~~go
 func main()  {
@@ -2059,19 +2095,99 @@ func main()  {
 
 
 
+作业：修改字符串中指定字符
+
+~~~go
+  //字符串转成切片，修改字符
+	str := "chenglh,hello welcome!"
+	sliceStr := []byte(str)
+	fmt.Println(sliceStr)
+	sliceStr[8] = 'H'
+	fmt.Println(string(sliceStr))
+
+	//中英混合
+	str2 := "程辉chenglh"
+	sliceStr2 := []rune(str2)
+	sliceStr2[1] = '平'
+	fmt.Println(string(sliceStr2))
+~~~
+
+
+
+作业：升序
+
+~~~go
+  //切片排序
+	intList := []int{2, 4, 5, 1, 0, 3}
+	float64List := []float64{4.2, 5.9, 12.2, 10.2, 3.1, 3.15098, 10.99, 1.222}
+	stringList := []string{"a", "c", "b", "z", "x", "d", "f", "i"}
+
+	//1、sort升序
+	sort.Ints(intList)
+	sort.Float64s(float64List)
+	sort.Strings(stringList)
+
+	fmt.Println(intList)
+	fmt.Println(float64List)
+	fmt.Println(stringList)
+~~~
+
+
+
+作业：降序
+
+~~~go
+	intList := []int{2, 4, 5, 1, 0, 3}
+	float64List := []float64{4.2, 5.9, 12.2, 10.2, 3.1, 3.15098, 10.99, 1.222}
+	stringList := []string{"a", "c", "b", "z", "x", "d", "f", "i"}
+
+  //2、sort降序排序
+	sort.Sort(sort.Reverse(sort.IntSlice(intList)))
+	sort.Sort(sort.Reverse(sort.Float64Slice(float64List)))
+	sort.Sort(sort.Reverse(sort.StringSlice(stringList)))
+~~~
+
+
+
+自定义函数，实现切片升序，降序
+
+~~~go
+/**
+ * 切片的排序
+ */
+func sliceIntSortAsc(slice []int) {
+	for i := 0; i < len(slice); i++ { //拿到这一项 与后面的每一项作对比
+		for j := i + 1; j < len(slice); j++ {
+			if slice[i] < slice[j] {  //【改变一下符号就是降序了】
+				tempVal := slice[i]
+				slice[i] = slice[j]
+				slice[j] = tempVal
+			}
+		}
+	}
+}
+
+  //因为切片是引用类型，所以没有返回值也可以。
+  var slice = []int{3, 1, 2, 9, 11, 4, 5, 6}
+	sliceIntSortAsc(slice)
+	fmt.Println(slice)
+~~~
+
+
+
 ~~~go
 func main()  {
 	var a = make([]int, 5, 10) //定义了一个切片，长度是5，容量是10
-    //fmt.Println(a)   => [0 0 0 0 0]
+  fmt.Println(a)   // [0 0 0 0 0]
     
 	for i := 0; i < 10; i++ {
 		a = append(a, i) //再追加元素 0-9
 	}
 	fmt.Println(a) //[0 0 0 0 0 0 1 2 3 4 5 6 7 8 9]
-    //容量是动态扩容，打印出的容量数值是变化的
+  //容量是动态扩容，打印出的容量数值是变化的
     
-    //数组排序
-    var a = [...]int{1,9,3,0,2,7,4}
+  //数组排序
+  var a = [...]int{1,9,3,0,2,7,4}
 	sort.Ints(a[:])
 
 	fmt.Println(a)
@@ -2171,7 +2287,7 @@ func main() {
 	fmt.Println(*a)       // 0
 	fmt.Println(*b)       // false
     
-    *a = 100
+  *a = 100
 	*b = true
 	fmt.Printf("%v\n", *a) // 100
 	fmt.Printf("%v\n", *b) // true
@@ -2184,8 +2300,8 @@ func main() {
 //上面错误写法的解决办法
 func main() {
 	var a *int
-    fmt.Println(a)  //<nil>
-	a = new(int)
+  fmt.Println(a)  //<nil>
+	a  = new(int)
 	*a = 10
 	fmt.Println(*a)
 }
@@ -2225,11 +2341,11 @@ func main() {
 
 
 
-###### 2.5 map
+###### 2.5 Map
 
-Go语言中提供的映射关系容器为map，其内部使用散列表（hash）实现。
+Go语言中提供的映射关系容器为Map，其内部使用散列表（hash）实现。
 
-map是一种无序的基于key-value的数据结构，Go语言中的map是引用类型，必须初始化才能使用
+map是一种无序的基于key-value的数据结构，Go语言中的map是**引用类型**，必须初始化才能使用
 
 
 
@@ -2254,7 +2370,8 @@ func main() {
     //以上赋值是不成功的
 
     //正确例子
-    m1 := make(map[string]int, 10) //第二个参数"容量"可以不写，自动扩容；但是最好估算好容量，避免在程序运行期间再动态扩容，增加开销
+    m1 := make(map[string]int, 10) //第二个参数"容量"可以不写，自动扩容；
+    //但是最好估算好容量，避免在程序运行期间再动态扩容，增加开销
     m1["age1"] = 18
     m1["age2"] = 30
 }
@@ -2275,41 +2392,82 @@ make(map[KeyType]ValueType, [cap])
 
 **Map的使用**
 
-map基本使用：键值对出现
-
 ~~~go
 func main()  {
-	scoreMap := make(map[string]float32, 10)
-    
+  //方式一、make创建map类型数据
+	scoreMap := make(map[string]float32, 10) //10个容量
+  
+  //键值对出现
 	scoreMap["张三"] = 90.40
 	scoreMap["李明"] = 95.00
 	scoreMap["赵宁"] = 89.95
     
-	fmt.Printf("scoreMap Type：%T\n", scoreMap)
-	fmt.Println(scoreMap)
-	fmt.Println(scoreMap["赵宁"])
-}
-~~~
+	fmt.Printf("scoreMap Type：%T\n", scoreMap) //scoreMap Type：map[string]float32
+	fmt.Println(scoreMap)  											//map[张三:90.4 李明:95 赵宁:89.95]
+	fmt.Println(scoreMap["赵宁"]) 							 //89.95
+  
+  //方式二、map声明的时候填充元素
+  //声明 map变量
+	//var studentInfo map[string]string
+	//fmt.Println(studentInfo == nil, studentInfo) //true map[]
 
-输出结果：
+	//初始化
+	studentInfo := make(map[string]string)
+	studentInfo["username"] = "chenglh"
+	studentInfo["age"] = "18"
+	studentInfo["sex"] = "男"
+	fmt.Println(studentInfo)
 
-~~~go
-scoreMap Type：map[string]float32
-map[张三:90.4 李明:95 赵宁:89.95]
-89.95
-~~~
+	//map的 CURD操作
 
+	//增加
+	studentInfo["regtime"] = "2020-08-24 12:10:22"
+	fmt.Println(studentInfo)
 
+	//修改
+	studentInfo["username"] = "zhangsan"
+	fmt.Println(studentInfo)
 
-map也支持在声明的时候填充元素：
+	//删除
+	delete(studentInfo, "username")
+	fmt.Println(studentInfo)
 
-~~~go
-func main()  {
-    userInfo := map[string]string{
-        "username" : "chenglh",
-        "password" : "123456",
-    }
-    fmt.Println(userInfo)
+	//查询是否存在
+	val,ok := studentInfo["age"]
+	if !ok {
+		fmt.Println("当前key不存在")
+	} else {
+		fmt.Println(val)
+	}
+  
+  //如果直接查询不存在的key，会返回对应类型的零值。
+  
+  //map类型的遍历
+  //map遍历
+	for index,value := range studentInfo{
+		fmt.Println(index,":",value)
+	}
+  
+  //切片是引用类型
+	var userInfo1 = make(map[string]string)
+	userInfo1["name"] = "chenglh"
+	userInfo1["age"]  = "20"
+	userInfo2 := userInfo1
+  
+	userInfo2["age"] = "21"
+	fmt.Println(userInfo1, userInfo2) //map[age:21 name:chenglh] map[age:21 name:chenglh]
+  
+  // map[string]T 类型； []string切片
+	var userInfo3 = make(map[string][]string)
+	userInfo3["hobby"] = []string{
+		"php",
+		"java",
+		"c++",
+	}
+	userInfo3["sport"] = []string{
+		"zhuqiu",
+		"lanqiu",
+	}
 }
 ~~~
 
@@ -2319,30 +2477,6 @@ func main()  {
 
 ~~~go
 val,ok := map[key]
-~~~
-
-
-
-举个栗子：
-
-~~~go
-func main() {
-    userInfo := map[string]string{
-		"username" : "chenglh",
-		"password" : "123456",
-		"age" : "18",
-	}
-	fmt.Println(userInfo)
-    fmt.Println(userInfo["telephone"]) //如果不存在这个key拿到的对应值类型的零值，这里是""
-
-	//判断map中某个键是否存在
-	val,ok := userInfo["age"]
-	if ok {
-		fmt.Println("年龄是：" + val)
-	} else {
-		fmt.Println("没有当前字段")
-	}
-}
 ~~~
 
 
@@ -2362,8 +2496,8 @@ func main() {
 		fmt.Printf("姓名：%v 成绩：%v\n",index,value)
 	}
     
-    //如果只想要key的时候
-    for kk := range userInfo {
+  //如果只想要key的时候
+  for kk := range userInfo {
 		fmt.Println(kk)
 	}
 }
@@ -2388,7 +2522,7 @@ delete(map, key)
 
 ~~~go
 func main() {
-    scoreMap := make(map[string]int)
+  scoreMap := make(map[string]int)
 	scoreMap["zhangsan"] = 88
 	scoreMap["lisi"] = 79
 	scoreMap["wangwu"] = 90
@@ -2432,7 +2566,7 @@ func main()  {
 		scoreMap[key] = value
 	}
 	fmt.Println(scoreMap)
-    //map[No00:21 No01:52 No02:26 No03:57 No04:40 No05:1 No06:0 No07:37 No08:89 No09:29]
+  //map[No00:21 No01:52 No02:26 No03:57 No04:40 No05:1 No06:0 No07:37 No08:89 No09:29]
 
 	//取出map中的所有key存入切片keys
 	var keys  = make([]string, 0, 10)
@@ -2440,12 +2574,12 @@ func main()  {
 		keys = append(keys, key)
 	}
 	fmt.Println(keys)
-    //[No08 No09 No00 No07 No03 No04 No05 No06 No01 No02]
+  //[No08 No09 No00 No07 No03 No04 No05 No06 No01 No02]
 
 	//对切片进行排序
 	sort.Strings(keys)
 	fmt.Println(keys)
-    //[No00 No01 No02 No03 No04 No05 No06 No07 No08 No09] 排序后的结果
+  //[No00 No01 No02 No03 No04 No05 No06 No07 No08 No09] 排序后的结果
 
 	//按照排序后的key遍历map
 	for _, key := range keys {
@@ -2460,29 +2594,44 @@ func main()  {
 
 ~~~go
 func main() {
-    var mapSlice = make([]map[string]string, 3)
-	for index, value := range mapSlice {
-		fmt.Printf("index:%d value:%v\n", index, value)
-	}
+    //在切片里放一系列用户信息，即切片里放切片
+    var userInfo = make([]map[string]string, 3)
+	  for index, value := range userInfo {
+		    fmt.Printf("index:%d value:%v\n", index, value)
+	  }
     /** 打印结果：
-     * index:0 value:map[]
+     * index:0 value:map[]  也是 nil 值
      * index:1 value:map[]
      * index:2 value:map[]
-	 */
+	   */
     
     // 对切片中的map元素进行初始化
-	mapSlice[0] = make(map[string]string, 10)
-	mapSlice[0]["name"] = "chenglh"
-	mapSlice[0]["password"] = "123456"
-	mapSlice[0]["address"] = "广东"
-	for index, value := range mapSlice {
-		fmt.Printf("index:%d value:%v\n", index, value)
-	}
-    /** 打印结果：
-     * index:0 value:map[address:广东 name:chenglh password:123456]
-	 * index:1 value:map[]
-	 * index:2 value:map[]
-	 */
+    if userInfo[0] == nil {
+	      userInfo[0] = make(map[string]string, 10)
+	      userInfo[0]["name"] = "chenglh"
+	      userInfo[0]["password"] = "123456"
+	      userInfo[0]["address"] = "广东"
+	      for index, value := range userInfo[0] {
+		        fmt.Printf("index:%d value:%v\n", index, value)
+	      }
+    }
+
+    if userInfo[1] == nil {
+	      userInfo[1] = make(map[string]string, 10)
+	      userInfo[1]["name"] = "flp"
+	      userInfo[1]["password"] = "123123"
+	      userInfo[1]["address"] = "广东"
+	      for index, value := range userInfo[1] {
+		        fmt.Printf("index:%d value:%v\n", index, value)
+	      }
+    }
+    
+    //遍历
+    for _,val := range userInfo {
+		  for index,value := range val{
+			  fmt.Println(index,":",value)
+		  }
+	  }
 }
 ~~~
 
@@ -2493,24 +2642,79 @@ func main() {
 ~~~go
 func main() {
     var sliceMap = make(map[string][]string, 3)
-	fmt.Println(sliceMap)
+	  fmt.Println(sliceMap)
     //map[]
 
-	key := "中国"
-	value, ok := sliceMap[key]
-	if !ok {
-		value = make([]string, 0, 2)
-	}
-	value = append(value, "北京", "上海")
-	sliceMap[key] = value
-	fmt.Println(sliceMap)
+	  key := "中国"
+	  value, ok := sliceMap[key]
+	  if !ok {
+	  	value = make([]string, 0, 2)
+	  }
+	  value = append(value, "北京", "上海")
+	  sliceMap[key] = value
+	  fmt.Println(sliceMap)
     //map[中国:[北京 上海]]
 }
 ~~~
 
 
 
+作业：切片排序
+
+~~~go
+/**
+ * 切片中的签名排序
+ * 签名升序形式返回字符串, str1=val1&str2=val2&....
+ */
+func sliceSort(m map[string]string) string {
+	var signString string
+	
+	//1、把map的key放在切片里面
+	var keySlice []string
+	for key,_ := range m {
+		keySlice = append(keySlice, key)
+	}
+
+	//2、按照key进行升级排序
+	sort.Strings(keySlice)
+
+	//3、遍历keySlice切片
+	for _, val := range keySlice {
+		signString += fmt.Sprintf("%v=%v&", val, m[val])
+	}
+
+	return strings.Trim(signString, "&")
+}
+~~~
+
+作业：统计字符串中出现单词个数
+
+~~~go
+/**
+ * 统计字符串每个单词出现的次数
+ */
+func countWords(str string) map[string]int {
+	var cWords = make(map[string]int)
+	
+  //1、分割字符串
+	splitSlice := strings.Split(str, " ")
+
+	//2、遍历统计个数
+	for _, val := range splitSlice {
+		cWords[val] ++
+	}
+
+	return cWords
+}
+~~~
+
+
+
 ###### 2.6 函数
+
+Go语言中支持：函数、匿名函数和闭包。
+
+
 
 > 函数的定义
 
@@ -2522,17 +2726,12 @@ func 函数名(参数)(返回值) {
 
 
 
-定义一个求两个数之和：
+求两个数之和：
 
 ~~~go
 //有返回值
 func intSum(x int, y int) int {
-	return x + y
-}
-
-//没有传参和返回值
-func sayHello() {
-	fmt.Println("Hello 沙河")
+    return x + y
 }
 ~~~
 
@@ -2543,19 +2742,19 @@ func sayHello() {
 ~~~go
 //函数的参数中如果相邻变量的类型相同，则可以省略类型
 func intSum(x, y int) int {
-	return x + y
+    return x + y
 }
 ~~~
 
 
 
-> 可变参数
+> 可变参数 , 通常作为最后一个参数
 
 ~~~go
-func intSum2(x ...int) int {
-	fmt.Println(x) //x是一个切片
+func intSum2(x ...int) int { //参数：x 是一个切片
+	fmt.Println(x)
 	sum := 0
-	for _, v := range x {
+	for _, v := range x { //遍历
 		sum = sum + v
 	}
 	return sum
@@ -2591,6 +2790,8 @@ ret8 := intSum3(100, 10, 20, 30)
 fmt.Println(ret5, ret6, ret7, ret8) //100 110 130 160
 ~~~
 
+
+
 **返回值**
 
 > 多返回值，Go语言中函数支持多返回值，函数如果有多个返回值时必须用`()`将所有返回值包裹起来。
@@ -2603,6 +2804,8 @@ func calc(x, y int) (int, int) {
 }
 ~~~
 
+
+
 > 返回值命名，函数定义时可以给返回值命名，并在函数体中直接使用这些变量，最后通过`return`关键字返回。
 
 ~~~go
@@ -2613,41 +2816,304 @@ func calc(x, y int) (sum, sub int) { //使用命名方式返回，return 可以�
 }
 ~~~
 
+
+
 >返回值补充，当我们的一个函数返回值类型为slice时，nil可以看做是一个有效的slice，没必要显示返回一个长度为0的切片。
 
 ~~~go
 func someFunc(x string) []int {
 	if x == "" {
-		return nil // 没必要返回[]int{}
+	    return nil // 没必要返回[]int{}
 	}
 	...
 }
 ~~~
 
-**Go**语言中函数没有默认参数这个概念
+**Go**语言中函数没有默认参数这个概念，函数可以做为参数传递，也可以作为返回值传递
+
+> 函数也是一种类型
+
+~~~go
+type calcType func(int, int) int //表示定义一个calc的类型
+type myInt int
+func add(x , y int) int {
+    return x + y
+}
+
+//func calc(int, int, c func(int, int) int) int {
+func calc(int , int, c calcType) int {
+    return c(x , y)
+}
+
+//func calc(x int , y int, c calcType) int {
+//    c = func(aa , bb int) int {
+//				return aa + bb
+//    }
+//    return c(x, y)
+//}
+
+/**
+ * 调用方式 - 函数作为返回值传递
+ * var a = do("+)
+ * a(12, 4)
+ */
+func do(str string) calcType {
+	switch str {
+	case "+":
+		return Add
+	case "-":
+		return Sub
+	case "*":
+		return func(x, y int) int {
+			return x * y
+		}
+	case "/":
+		return func(x, y int) int {
+			return int(x / y)
+		}
+	default:
+		return nil
+	}
+}
+
+func main() {
+    var c calcType
+    c = add
+    fmt.Printf("c的类型：%T", c) //c的类型：main.calcType
+    fmt.Println(c(1 ,2)) //3
+  
+    var a = 10
+	  var b myInt = 10
+	  fmt.Printf("a的类型：%T,b的类型：%T\n", a, b) //a的类型：int,b的类型：main.myInt
+  
+    //调用
+    calc(1, 2, add)
+}
+~~~
 
 
 
-###### 2.7 nil值
+**匿名函数**
+
+> 匿名函数是没有名字的函数，一般在函数内部定义和使用，可保存到变量或直接使用。
+
+
+
+**闭包**
+
+1、闭包是指有权访问另一个函数作用域中的变量的函数
+
+2、创建闭包的常见的方式就是在一个函数内部创建另一个函数，通过另一个函数访问这个函数的局部变量
+
+注意：由于闭包里作用域返回的局部变量资源不会被立刻销毁回收，所以可能会占用更多的内存，过度使用会导致性能下降，建议在非常有必要的时候才使用。
+
+~~~go
+//闭包的写法，函数里面嵌套一个函数 最后返回里面的函数
+func adder() func() int {
+	var i = 10
+	return func() int {
+		return i + 1
+	}
+}
+~~~
+
+
+
+
+
+**函数作用域**
+
+> 全局变量
+
+全局变量是定义在函数外部的变量，它在程序整个运行周期内都有效。在函数中可以访问到全局变量。
+
+~~~go
+全局变量特点：
+1、常驻内存
+2、污染全局
+
+局部变量特点：
+1、不常驻内存
+2、不污染全局
+
+闭包：
+1、可以让一个变量常驻内存
+2、可以让一个变量不污染全局
+~~~
+
+
+
+> 局部变量
+
+ 函数内定义的变量无法在该函数外使用，如果局部变量和全局变量重名，优先访问局部变量。
+
+~~~go
+//定义全局变量num
+var num int64 = 10
+
+func testNum() {
+	num := 100
+	fmt.Printf("num=%d\n", num) // 函数中优先使用局部变量
+}
+~~~
+
+语句块定义的变量
+
+~~~go
+if x > 0 {
+		z := 100 //变量z只在if语句块生效
+		fmt.Println(z)
+}
+~~~
+
+
+
+###### 2.7 defer
+
+Go语言中的defer语句会将其后面跟随的语句进行延迟处理；在defer归属的函数即将返回时，将延迟处理的语句按deffer定义的逆序进行执行，即先被defer的语句最后被执行，最后定义的defer最先被执行。
+
+在Go语言的函数中`return`语句在底层并不是原子操作，它分为给返回值赋值和RET指令两步。
+
+而`defer`语句执行的时机就在返回值赋值操作后，RET指令执行前。
+
+~~~go
+func f1() int {
+	var a int
+	defer func() {
+		a++
+	}()
+	return a
+}
+func f2() (a int) {
+	defer func() {
+		a++
+	}()
+	return
+}
+func main()  {
+	fmt.Println(f1())  //匿名返回 得到的时 0
+	fmt.Println(f2())  //命名返回 得到的是 1
+	//命名的返回值是在 defer操作后的值
+}
+~~~
+
+
+
+具体如下图所示：
+
+<img src="Golang.assets/image-20200827142121429.png" alt="image-20200827142121429" style="zoom:50%;float:left;" />
+
+
+
+**常见面试题**
+
+~~~go
+func f1() int {
+	x := 5
+	defer func() {
+		x++
+	}()
+	return 5  //匿名返回，5
+}
+func f2() (x int) {
+	defer func() {
+		x++
+	}()
+	return 5 //命名返回，6
+}
+func f3() (y int) { //如果这里修改成 x 变量，返回值就是6了
+	x := 5
+	defer func() {
+		x++
+	}()
+	return x // 名字不一样，5
+}
+func f4() (x int) {
+	defer func(x int) {
+		fmt.Println("f4,x:", x)
+		x++
+	}(x) //这里的 x 默认值是0
+	return 5 // 返回 5
+}
+~~~
+
+**注意：defer注册要延迟执行的函数时，该函数所有的参数都需要确定其值。**
+
+~~~go
+func calc(index string, a, b int) int {
+	ret := a + b
+	fmt.Println(index, a, b, ret)
+	return ret
+}
+
+func main()  {
+	x := 1
+	y := 2
+	defer calc("AA", x, calc("A", x, y))
+	x = 10
+	defer calc("BB", x, calc("B", x, y))
+	y = 20
+
+	/**
+	一、注册顺序
+	defer calc("AA", x, calc("A", x, y))
+	defer calc("BB", x, calc("B", x, y))
+	二、执行顺序
+	1、defer calc("BB", x, calc("B", x, y))
+	2、defer calc("AA", x, calc("A", x, y))
+
+	//1、calc("A", x, y)  A 1 2 3 =》 defer calc("AA", 1, 3)
+	//2、calc("B", x, y)  B 10 2 12 => defer calc("BB", 10, 12)
+	*/
+}
+~~~
+
+
+
+###### 2.8 panic、recover
+
+Go语言中目前没有异常机制，但是使用 panic/recover模式来处理错误。panic可以在任何地方引发，但是recover只有在defer调用的函数中有效。
+
+程序遇到 panic 会程序终止；可以使用recover接收。
+
+~~~go
+func f2()  {
+	panic("程序异常")
+}
+
+func f3()  {
+	defer func() {
+		err := recover()
+		if err != nil {
+			fmt.Println(err)
+		}
+	}()
+	panic("程序异常终止")
+}
+~~~
+
+
+
+###### 2.9 nil值
 
 当声明了一个变量，但却没有赋值时，golang中会自动给变量赋值一个默认零值。
 
 ~~~go
-bool > false
+bool    > false
 numbers > 0
-string > ""
+string  > ""
 
-pointers > nil
-slices > nil
-maps > nil
-channels > nil
-functions > nil
+pointers   > nil
+slices     > nil
+maps       > nil
+channels   > nil
+functions  > nil
 interfaces > nil
 ~~~
 
 
 
-##### Day03 第三章
+##### 第三天课程
 
 ###### 3.1 复习
 
@@ -2732,7 +3198,7 @@ fmt.Println(s2==nil) //false 已经分配内存有内存地址 != nil
 
 切片：指针、长度、容量
 
-<img src="H:\笔记本\Golang.assets\image-20200718115108169.png" alt="image-20200718115108169" style="float:left;" />
+<img src="./Golang.assets/image-20200718115108169.png" alt="image-20200718115108169" style="float:left;" />
 
 切片的拷贝
 

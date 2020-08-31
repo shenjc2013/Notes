@@ -105,7 +105,7 @@ go get -u github.com/go-sql-driver/mysql
 
 src  >
 
-   \>  code.xiangmu.com
+   \>  code.xiangmu.com 项目目录
 
    \>  github.com
 
