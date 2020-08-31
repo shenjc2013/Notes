@@ -2228,12 +2228,12 @@ func main()  {
   s := "chenglh"
     
 	age := &n			// 取变量n的地址，将指针保存到age中
-  name := &s			// 取变量s的地址，将指针保存到name中
+  name := &s		// 取变量s的地址，将指针保存到name中
     
-  fmt.Println(age)		 // age变量的值是内存地址
-  fmt.Printf("%T\n", age)  // *int返回int类型的指针
-	fmt.Println(name)		 // 内存地址
-	fmt.Printf("%T\n", name) // *string返回是字符串类型的指针
+  fmt.Println(age)		 			// age变量的值是内存地址
+  fmt.Printf("%T\n", age)  	// *int返回int类型的指针
+	fmt.Println(name)		 			// 内存地址
+	fmt.Printf("%T\n", name) 	// *string返回是字符串类型的指针
 
 	//根据地址取值
 	fmt.Printf("%v\n", *age)
@@ -2250,7 +2250,7 @@ func main()  {
 func main() {
 	var a *int	// nil pointer，只是声明了一个指针变量a但是没有初始化,即没有开劈内存空间
 	*a = 100	// 空指针，找不到地址去赋值，编译没问题
-    //但是运行时会报错：runtime error: invalid memory address or nil pointer dereference
+  //但是运行时会报错：runtime error: invalid memory address or nil pointer dereference
 	fmt.Println(*a)
 
 	var b map[string]int // nil
