@@ -2202,6 +2202,8 @@ Go语言中的值类型（int、float、bool、string、array、struct）都有�
 
 只需要记住两个符号：`&`（取地址）和`*`（根据地址取值）
 
+指针就是地址；指针变量就是存储地址的变量。
+
 
 
 取变量指针的语法如下：
@@ -2223,6 +2225,10 @@ ptr := &v    // v的类型为T
 func main()  {
 	// 1. & 取地址
 	// 2. * 根据地址取值
+    
+    var a int = 10
+    var p *int = &a //*这里是类型
+    *p = 20 //*这里是运算符，//解引用，间接引用
 
 	n := 18
   s := "chenglh"
@@ -2260,6 +2266,14 @@ func main() {
 ~~~
 
 
+
+https://www.bilibili.com/video/BV1T5411x7Uf?p=2
+
+32位的操作系统，2的32次方，即4G内存空间。
+
+*p  解引用，间接引用。
+
+<img src="Golang.assets/image-20200831172615864.png" alt="image-20200831172615864" style="zoom:100%;float:left" />
 
 **Go语言中new()和make()，主要用来分配内存**
 
@@ -4072,3 +4086,4 @@ func main()  {
 {"name":"程立辉","age":19}
 main.person{Name:"程范", Age:18}
 ~~~
+
