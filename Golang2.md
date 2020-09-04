@@ -131,6 +131,61 @@ type 接口名 interface {
 
 **接口的实现**
 
+~~~go
+type Usber interface {
+    start()
+    stop()
+}
+//如果接口里面有方法的话，必须要通过结构体或自定义类型实现这个接口
+
+//手机
+type Phone struct {
+    Name string
+}
+func (p Phone) start() {
+    fmt.Println(p.Name, "启动")
+}
+func (p Phone) stop() {
+    fmt.Println(p.Name, "关机")
+}
+
+//照相机
+type Camera struct {
+    Name string
+}
+func (c Camera) start() {
+    fmt.Println(c.Name, "启动")
+}
+func (c Camera) stop() {
+    fmt.Println(c.Name, "关机")
+}
+func (c Camera) update() {
+    fmt.Println(c.Name, "更新")
+}
+
+func main() {
+    //结构体的使用
+    p := Phone {
+        Name:"华为手机",
+    }
+    p.start()
+    
+    //手机实现接口类型
+    var p1 Usber  //接口是一种类型
+    p1 = p	//表示手机实现的是接口
+    p1.start()
+    
+    //照相机
+    c := Camera{}
+    var c1 Usber = c
+    c1.start()
+    //c1.update() 错误，接口没有 run方法
+    c.update() 
+}
+~~~
+
+
+
 一个变量如果实现了接口中规定的所有方法，那么这个变量就实现了这个接口，可以称这个接口类型的变量
 
 ~~~go
