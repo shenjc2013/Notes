@@ -102,9 +102,17 @@ JSON序列化与反序列化
 
 ##### 5.3 接口(interface)
 
-> 接口是一种类型，是特殊的类型，它规定了变量有哪些方法
+###### 5.3.1 接口介绍
 
-**接口定义**
+**接口(interface)是一种类型，一种抽象的类型，即是特殊的类型，**它规定了变量有哪些方法。
+
+接口（interface）是一组函数method的集合，Golang中的接口不能包含任何变量。
+
+接口定义了一个对象的行为规范，只定义规范不实现。
+
+
+
+###### 5.3.2 接口定义
 
 ~~~go
 type 接口名 interface {
@@ -112,6 +120,14 @@ type 接口名 interface {
     方法名2(参数2...)(返回值2....)
 }
 ~~~
+
+**其中**
+
+- **接口名**：使用type将接口定义为自定义的类型名。Go语言的接口在命名时，一般会在单词后面添加er，如有写操作的接口叫Writer，有字符串功能的接口叫Stringer等，接口名最好突出该接口的类型含义。
+- **方法名**：当方法名首字母是大写且这个接口类型名首字母也是大写时，这个方法可以被接口所在的包（package）之外的代码访问。
+- **参数列表、返回值列表**：参数列表和返回值列表中的参数变量名是可以省略
+
+
 
 **接口的实现**
 
@@ -234,33 +250,41 @@ func main() {
 
 
 
-##### 5.4 包(package)
+##### 5.4 Go包(package)
+
+###### 5.4.1 Go包介绍
 
 > 包(package)是多个Go源码的集合，是一种高级的代码复用方案，go也为我们提供了很多内置包，如fmt、os、io等。
 
 
 
-**定义包**
+###### 5.4.2 定义包
 
 ~~~go
 package 包名
 ~~~
 
+注意：一个包下名可以有好多的 .go文件，但是go文件里的函数名不能重名。
 
 
-**可见性**
+
+###### 5.4.3 可见性
 
 如果想在一个包中引用另外一个包里的标识符(如变量、常量、类型、函数等)，该标识符必须是对外可见的(public)
 
-在go语言中只需要将标识符的首字母大写即可对外可见。
+在go语言中只需要将**标识符的首字母大写**即可对外可见。
+
+
+
+例子说明：
 
 ~~~go
 package pkg
 
 import "fmt"
 
-var a = 100 //首字母小写，包外不可见
-const Mode = 1 //包外可见，可用
+var a = 100 		//首字母小写，包外不可见
+const Mode = 1  //包外可见，可用
 
 type person struct { //包外不可用
     name string
@@ -271,7 +295,7 @@ func Sum(x, y int) int {//包外可用
 }
 
 func age() {//包外不可用
-    var Age = 18 //局部变量，函数外、包外不可用
+    var Age = 18 //局部变量，函数外、包外不可用，只能在当前函数内使用
     fmt.Println(Age)
 }
 ~~~
@@ -294,7 +318,7 @@ type Payer interface {
 
 
 
-**包的导入**
+###### 5.4.4 包的导入
 
 ~~~go
 import "包的路径"
@@ -327,7 +351,7 @@ import (
 
 
 
-**fmt包**
+**fmt包知识要点**
 
 ~~~go
 /** Print Println的区别 */
@@ -353,37 +377,38 @@ fmt.Printf(a)
 
 
 
-> Printf总结
+**Printf()函数总结**
 
 ~~~go
 func main()  {
-	num := 100
-	fmt.Printf("%T\n", num) //查看类型    int
-	fmt.Printf("%v\n", num) //万能输出值	 100
+		num := 100
+		fmt.Printf("%T\n", num) //查看类型    int
+		fmt.Printf("%v\n", num) //万能输出值	 100
   
-	fmt.Printf("%b\n", num) //二进制	  1100100
-	fmt.Printf("%o\n", num) //八进制	  144
-	fmt.Printf("%d\n", num) //十进制	  100
-	fmt.Printf("%x\n", num) //十六进制  64
+		fmt.Printf("%b\n", num) //二进制	  1100100
+		fmt.Printf("%o\n", num) //八进制	  144
+		fmt.Printf("%d\n", num) //十进制	  100
+		fmt.Printf("%x\n", num) //十六进制  64
     
-  number := 100.98
-  fmt.Printf("%T，%f\n", number, number) //%f输出10进制的浮点数,(这里float64，100.980000)
+  	number := 100.98
+  	fmt.Printf("%T，%f\n", number, number) //%f输出10进制的浮点数,(这里float64，100.980000)
+    fmt.Printf("%T，%.2f\n", number, number)//只保留两位小数点
 
-	name := "chenglh"
-	fmt.Printf("%s\n", name)  //字符串输出  chenglh
-	fmt.Printf("%v\n", name)  //万能输出值  chenglh
-	fmt.Printf("%#v\n", name) //"结果串"会自动加上双引号 "chenglh"
+		name := "chenglh"
+		fmt.Printf("%s\n", name)  //字符串输出  chenglh
+		fmt.Printf("%v\n", name)  //万能输出值  chenglh
+	  fmt.Printf("%#v\n", name) //"结果串"会自动加上双引号 "chenglh"
     
-  //%c 输出单个字符
-  n1 := '程'
-	n2 := 'A'
-	fmt.Printf("%c\n",n1) //如果不格式化，显示ASCII码
-	fmt.Printf("%c\n",n2)
+  	//%c 输出单个字符
+  	n1 := '程'
+		n2 := 'A'
+		fmt.Printf("%c\n",n1) //如果不格式化，显示ASCII码
+		fmt.Printf("%c\n",n2)
   
-  age := 18
-  nickname = "chenglh"
-  fmt.Printf("%T\n", &age)      // *int    返回int类型的指针
-	fmt.Printf("%T\n", &nickname) // *string 返回string类型的指针
+  	age := 18
+  	nickname = "chenglh"
+  	fmt.Printf("%T\n", &age)      // *int    返回int类型的指针
+		fmt.Printf("%T\n", &nickname) // *string 返回string类型的指针
 }
 ~~~
 
@@ -399,8 +424,8 @@ func main()  {
 // 只读方式打开文件
 file, err := os.Open("./main.go") //返回*File, err
 if err != nil {
-  fmt.Println("open file failed!, err:", err)
-  return
+    fmt.Println("open file failed!, err:", err)
+  	return
 }
 // 关闭文件
 file.Close()
@@ -422,26 +447,26 @@ func (f *File) Read(b []byte) (n int, err error)
 
 ~~~go
 func main()  {
-	file,err := os.Open("./main.go")
-	if err != nil {
-		fmt.Println("读取文件出错")
-	}
-	defer file.Close()
-
-  //循环读取文件
-	var content []byte
-	var tmp = make([]byte, 128)
-	for {
-		n, err := file.Read(tmp) //指定字节读取
-		if err == io.EOF {
-			fmt.Println("文件读完了")
-			break
-		}
+		file,err := os.Open("./main.go")
 		if err != nil {
-			fmt.Println("read file failed,err:", err)
-			return
+				fmt.Println("读取文件出错")
 		}
-		content = append(content, tmp[:n]...)
+		defer file.Close()
+
+  	//循环读取文件
+		var content []byte
+		var tmp = make([]byte, 128)
+		for {
+				n, err := file.Read(tmp) //指定字节读取
+				if err == io.EOF {
+						fmt.Println("文件读完了")
+						break
+				}
+				if err != nil {
+						fmt.Println("read file failed,err:", err)
+						return
+				}
+				content = append(content, tmp[:n]...)
 	}
 	fmt.Println(string(content))
 }
@@ -671,11 +696,256 @@ func main()  {
 
 
 
-###### 6.3 包(time)
+##### 6.3 Go Mod包管理
 
-time包提供了时间的显示和测量用的函数，日历的计算采用的是公历。
+包（package）是多个Go源码的集合，是一种高级的代码复用方案，Go语言为我们提供了很多内置包，如fmt、strconv、strings、sort、errors、time、encoding/json、os、io等。
 
-**日期时间**
+
+
+> Golang中的包可以分为三种：1、系统内置包 2、自定义包 3、第三方包
+
+
+
+###### 6.3.1 Go包管理工具go mod
+
+在Golang1.11版本之前如果我们要自定义包的话必须把项目放在GOPATH目录。
+
+Go1.11版本之后无需手动配置环境变量，使用go mod管理项目，也不需要非得把项目放到GOPATH指定目录下，你可以在你磁盘的任何位置新建一个项目，Go1.13以后可以彻底不要GOPATH了。 
+
+
+
+###### 6.3.2 go mod init 初始化项目
+
+实际项目开发中我们首先要在我们项目目录中用go mod命令生成一个go.mod文件管理我们项目的依赖。
+
+
+
+> 项目初始化
+
+~~~php
+# cd /User/chenglh/go/src/
+# mkdir www.chenglh.com				//创建项目
+# cd www.chenglh.com
+
+# go mod init www.chenglh.com	//初始化项目
+# ls -l
+go.mod
+~~~
+
+
+
+**golang开启mod后import报红解决**
+
+解决方法：创建项目的时候不要选择go mod
+
+<img src="Golang2.assets/image-20200903173327229.png" alt="image-20200903173327229" style="zoom:50%;float:left;" />
+
+
+
+解决方法：File > Preferences 勾选 Go Modules
+
+<img src="Golang2.assets/image-20200903173458040.png" alt="image-20200903173458040" style="zoom:50%;float:left;" />
+
+
+
+###### 6.3.3 引入其它项目的包
+
+**自定义包**
+
+~~~go
+package 包名
+~~~
+
+例子说明：
+
+~~~go
+//在www.chenglh.com/calc目录下创建 calc.go文件
+package calc
+
+func Add(x , y int) int { //全局变量
+	  return x + y
+}
+
+func Sub(x , y int) int {
+	  return x - y
+}
+~~~
+
+
+
+**引入包**
+
+~~~go
+//单行导入
+import 包名1
+import 包名2
+
+//多行导入
+import (
+		包名1
+  	包名2
+)
+~~~
+
+例子说明：
+
+~~~go
+package main
+
+import (
+	  "fmt"
+	  "www.chenglh.com/calc"
+)
+
+func main() {
+	  var x = 10
+	  var y = 2
+
+	  ret1 := calc.Add(x, y)
+	  ret2 := calc.Sub(x, y)
+	  fmt.Println(ret1, ret2)
+}
+~~~
+
+
+
+###### 6.3.4 自定义包别名
+
+~~~go
+import 别名 "包的路径"
+~~~
+
+可以单行或多行引入包：
+
+~~~go
+import c "www.chenglh.com/calc"
+
+//使用别名 c
+c.Add(10, 2)
+c.Sub(10, 2)
+~~~
+
+
+
+###### 6.3.5 匿名导入包
+
+如果只希望导入包，而不使用包内部的数据时，可以使用匿名导入包。
+
+~~~go
+import _ "包的路径"
+~~~
+
+
+
+###### 6.3.6  init()初始化函数
+
+> init()函数的介绍
+
+在Go语言程序执行时导入包语句会自动触发包内部init()函数的调用。
+需要注意的是：init()函数没有参数也没有返回值。init()函数在程序运行时自动被调用执行，不能在代码中主动调用它。
+
+
+
+**包初始化执行的顺序**  如下图所示：
+
+<img src="Golang2.assets/image-20200903111050571.png" alt="image-20200903111050571" style="zoom:35%;float:left" />
+
+
+
+> init()函数执行顺序
+
+Go语言包会从`main`包开始检查其导入的所有包，每个包中又可能导入了其他的包。Go编译器由此构建出一个树状的包引用关系，再根据引用顺序决定编译顺序，依次编译这些包的代码。
+
+
+
+在运行时，被最后导入的包会最先初始化并调用其`init()`函数， 如下图示：
+
+<img src="Golang2.assets/image-20200903111431504.png" alt="image-20200903111431504" style="zoom:45%;float:left;" />
+
+
+
+包管理搜索入口，类似composer
+
+~~~go
+https://pkg.go.dev
+~~~
+
+
+
+如下载精度修复包
+
+~~~go
+https://github.com/shopspring/decimal
+
+//下载包放在路径go/pkg/mod/github.com/shopspring
+~~~
+
+
+
+> 方法1：go get 包全名 （全局）
+
+~~~go
+go get github.com/shopspring/decimal
+~~~
+
+
+
+> 方法2：go mod download （全局）
+
+~~~go
+go mod download
+~~~
+
+实际操作
+
+~~~go
+//第一步：在main.go文件中引入第三方包
+//第二步：在控制台 > go mod download
+//       然后执行 > go run main.go
+//程序会自动下载包到全局文件夹下
+
+import "github.com/tidwall/gjson"
+
+func main() {
+		const json = `{"name":{"first":"Janet","last":"Prichard"},"age":47}`
+		value := gjson.Get(json, "name.last")
+		fmt.Println(value)
+}
+~~~
+
+
+
+> 方法3：go mod vendor 将依赖复制到当前项目的vendor（本项目）
+
+~~~go
+go mod vendor
+~~~
+
+把当前项目中所用到的第三方包从全局，复制到当前项目路径下。
+
+结合命令行**go run main.go**，会自动创建 vendor目录，完成拷贝。
+
+
+
+ **go mod常见命令**
+
+- go download    下载依赖的module到本地cache
+- go edit               编辑go.mod文件
+- go graph           打印模块依赖图
+- go init                在当前文件夹下初始化一个新的module，创建go.mod文件
+- tidy                    增加丢失的module，去掉未使用的module，**即整理go.mod文件**
+- vendor              将依赖复制到vendor下
+- verify                 校验依赖，检查下载的第三方库有没有本地修改，如果有修改，则会返回非0，否则校验成功
+
+
+
+##### 6.4 time时间包
+
+**time包提供了时间的显示和测量用的函数，日历的计算采用的是公历。**
+
+
+
+###### 6.4.1 日期时间对象
 
 ~~~go
 timeObj := time.Now() //时间对象
@@ -705,7 +975,7 @@ fmt.Println(date)
 
 
 
-**时间戳**
+###### 6.4.2 时间戳
 
 ~~~go
 //10位数的时间戳是以 秒   为单位；
@@ -719,7 +989,7 @@ unixNatime := timeObj.UnixNano() //纳秒时间戳
 
 
 
-**常用时间操作**
+###### 6.4.3 常用时间操作
 
 ~~~go
 //获取当前时间戳
@@ -744,11 +1014,28 @@ day    := time.Now().Day()
 hour   := time.Now().Hour()
 minute := time.Now().Minute()
 second := time.Now().Second()
+~~~
 
+
+
+###### 6.4.4 时间戳转日期
+
+~~~go
 //时间戳转换日期格式化
 var timestamp = 1598844373
 ret := time.Unix(int64(timestamp), 0).Format("2006-01-02 15:04:05")//可以单单格式化年/月/日/时/分/秒或其他组合
 
+// 时间戳转换年月日时分秒（一个参数是秒，另一个参数是毫秒）
+var timeObj = time.Unix(1598844373, 0)
+var timeStr = timeObj.Format("2006-01-02 15:04:05")
+fmt.Println(timeStr)
+~~~
+
+
+
+###### 6.4.5 日期转时间戳
+
+~~~go
 //日期格式化成时间戳
 date := "2020-08-31 13:33:42"
 temp := "2006-01-02 15:04:05"
@@ -758,7 +1045,7 @@ fmt.Println(timeObj.Unix())
 
 
 
-时间格式化例子
+###### 6.4.6 时间格式化例子
 
 ~~~go
 fmt.Println(time.Now().Format("2006-01-02 15:04:05"))// 24小时制
@@ -770,24 +1057,24 @@ fmt.Println(time.Now().Format("2006/01/02"))
 
 
 
-**时间包中常量**
+###### 6.4.7 时间包中常量
 
 ~~~go
 type Duration int64 //自定义类型
 
 const (
-	Nanosecond  Duration = 1 //类自定义 Duration = int64别名
-	Microsecond          = 1000 * Nanosecond
-	Millisecond          = 1000 * Microsecond
-	Second               = 1000 * Millisecond
-	Minute               = 60 * Second
-	Hour                 = 60 * Minute
+    Nanosecond  Duration = 1 //类自定义 Duration = int64别名
+		Microsecond          = 1000 * Nanosecond
+		Millisecond          = 1000 * Microsecond
+		Second               = 1000 * Millisecond
+		Minute               = 60 * Second
+		Hour                 = 60 * Minute
 )
 ~~~
 
 
 
-**时间操作函数**
+###### 6.4.8 时间操作函数
 
 > Add
 
@@ -830,7 +1117,7 @@ fmt.Println(time.Now().Before(a)) //true
 
 
 
-**定时器**
+###### 6.4.9 定时器
 
 ~~~go
   //方法一
@@ -839,24 +1126,34 @@ fmt.Println(time.Now().Before(a)) //true
 	//	fmt.Println("定时器",tt)
 	//}
 
-	//清理定时器
-	var timeNum = 5
-	var ticker = time.NewTicker(time.Second)
-	for tt := range ticker.C {
-		timeNum --
-		if timeNum < 0 {
-			ticker.Stop() //关闭定时器 ticker.Stop() 终止定时器
-			break
-		}
-		fmt.Println("执行任务：", tt)
-	}
-
 	//方法二
 	//for {
 	//	fmt.Println("计划任务")
 	//	time.Sleep(time.Second)
 	//}
 ~~~
+
+
+
+**终止定时器**
+
+~~~go
+//清理定时器
+var timeNum = 5
+var ticker = time.NewTicker(time.Second)
+for tt := range ticker.C {
+    timeNum --
+		if timeNum < 0 {
+				ticker.Stop() //关闭定时器 ticker.Stop() 终止定时器
+				break
+		}
+		fmt.Println("执行任务：", tt)
+}
+~~~
+
+
+
+##### 6.5 日志需求
 
 
 
@@ -882,12 +1179,6 @@ fmt.Println(timeObj)
 //编写程序统计一段代码的执行耗时时间，单位精确到微秒
 fmt.Println(timeObj.Sub(now))
 ~~~
-
-
-
-###### 6.4 日志需求
-
-
 
 
 
@@ -1234,11 +1525,11 @@ Go语言中一次创建十万左右的`goroutine`也是可以的
 
 - **G** 就是个goroutine，里面除了存放本goroutine信息外，还有与所在P的绑定等信息。
 - **P** 管理着一组goroutine队列，P里面会存储当前goroutine运行的上下文环境（函数指针，堆栈地址及地址边界），P会对自己管理的goroutine队列做一些调度（比如把占用CPU时间较长的goroutine暂停、运行后续的goroutine等等）当自己的队列消费完了就去全局队列里取，如果全局队列里也消费完了会去其他P的队列里抢任务。
-- **M（machine)**是Go运行时（runtime）对操作系统内核线程的虚拟， M与内核线程一般是一一映射的关系， 一个groutine最终是要放到M上执行的；
+- **M（machine)**是Go运行时（runtime）对操作系统内核线程的虚拟， M与内核线程一般是一一映射的关系，一个groutine最终是要放到M上执行的；
 
 
 
-**M（machine）**是Go运行时（runtime）对操作系统内核线程的虚拟， M与内核线程一般是一一映射的关系， 一个groutine最终是要放到M上执行的；
+**M（machine）**是Go运行时（runtime）对操作系统内核线程的虚拟， M与内核线程一般是一一映射的关系，一个groutine最终是要放到M上执行的；
 
 
 
