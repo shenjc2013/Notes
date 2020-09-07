@@ -2165,55 +2165,46 @@ func main() {
 
 
 
-我们可以通过将任务分配到不同的CPU逻辑核心上实现并行的效果，这里举个例子：
+我们可以通过**将任务分配到不同的CPU逻辑核心上实现并行的效果**，这里举个例子：
 
 ~~~go
-func a() {
-	for i := 1; i < 10; i++ {
+//需求：分别开 1个cpu / 2个cpu 来跑两个协程
+var wg sync.WaitGroup
+
+func test1() {
+	defer wg.Done()
+	for i := 1; i < 1000; i++ {
 		fmt.Println("A:", i)
 	}
 }
 
-func b() {
-	for i := 1; i < 10; i++ {
+func test2() {
+	defer wg.Done()
+	for i := 1; i < 1000; i++ {
 		fmt.Println("B:", i)
 	}
 }
 
 func main() {
-	runtime.GOMAXPROCS(1) //开一个cpu来跑
-	go a()
-	go b()
-	time.Sleep(time.Second)
+	wg.Add(2)
+    
+	//开一个cpu来跑
+	//结论：两个任务只有一个逻辑核心，此时是做完一个任务再做另一个任务。 
+	/*runtime.GOMAXPROCS(1)
+	go test1()
+	go test2()
+	wg.Wait()*/
+    
+    //开两个cpu来跑
+    //结论：将逻辑核心数设为2，此时两个任务并行执行，打印的结果会有交叉穿插
+    runtime.GOMAXPROCS(2)
+	go test1()
+	go test2()
+	wg.Wait()
 }
 ~~~
 
-两个任务只有一个逻辑核心，此时是做完一个任务再做另一个任务。 
-
-将逻辑核心数设为2，此时两个任务并行执行，代码如下。
-
-~~~go
-func a() {
-	for i := 1; i < 10; i++ {
-		fmt.Println("A:", i)
-	}
-}
-
-func b() {
-	for i := 1; i < 10; i++ {
-		fmt.Println("B:", i)
-	}
-}
-
-func main() {
-	runtime.GOMAXPROCS(2)
-	go a()
-	go b()
-	time.Sleep(time.Second)
-}
-~~~
-
-
+ 
 
 **任务需求**：统计出 1-12W中素数的值。
 
@@ -2236,7 +2227,7 @@ func main() {
 }
 ~~~
 
-
+统计程序运行时间：
 
 ~~~go
 //第二步：统计求素数的花费多长时间
@@ -2260,6 +2251,8 @@ func main() {
     //如果 使用 go run main.go 是编译+运行的时间
 }
 ~~~
+
+开启协程来运行任务
 
 ~~~go
 //第三步：开启协程统计使用的时间
@@ -2291,19 +2284,17 @@ func main() {
 	wg.Wait()
 	endTime := time.Now().Unix()
 
-	fmt.Println("统计计算所要的时间：",endTime-startTime)
+	fmt.Println("统计运行所要的时间：",endTime-startTime)
 }
 ~~~
 
 
 
+###### 7.6.4 channel简介
 
+单纯地将函数并发执行是没有意义的。函数与函数间需要**交换数据**才能体现并发执行函数的意义。
 
-###### 7.6.4 channel
-
-单纯地将函数并发执行是没有意义的。函数与函数间需要交换数据才能体现并发执行函数的意义。
-
-虽然可以使用共享内存进行数据交换，但是共享内存在不同的`goroutine`中容易发生竞态问题。
+虽然可以使用共享内存进行数据交换，但是共享内存在不同的**`goroutine`**中容易发生竞态问题。
 
 为了保证数据交换的正确性，必须使用互斥量对内存进行加锁，这种做法势必造成性能问题。
 
@@ -2311,15 +2302,17 @@ func main() {
 
 Go语言的并发模型是`CSP(Communicating Sequential Processes)`，提倡**通过通信共享内存**而不是**通过共享内存而实现通信**。
 
-`channel`是可以让一个`goroutine`发送特定值到另一个`goroutine`的通信机制。
+**`channel`是可以让一个`goroutine`发送特定值到另一个`goroutine`的通信机制。**
 
 
 
-Go 语言中的通道（channel）是一种**特殊的类型**。通道像一个传送带或者队列，总是遵循先入先出（First In First Out）的规则，保证收发数据的顺序。每一个通道都是一个具体类型的导管，也就是声明channel的时候需要为其指定元素类型。
+Go 语言中的通道（channel）是一种**特殊的类型**。通道像一个传送带或者队列，总是遵循先入先出（First In First Out）的规则，保证收发数据的顺序。每一个通道都是一个具体类型的管道，也就是声明channel的时候需要为其指定元素类型。
 
 
 
-> channel定义
+###### 7.6.5 channel定义
+
+channel是一种类型，一种**引用类型**。声明管道类型的格式如下：
 
 ~~~go
 var 变量 chan 元素类型
@@ -2327,12 +2320,17 @@ var 变量 chan 元素类型
 
 
 
-channel 是一种类型，也是引用类型。
+例子如下：
 
 ~~~go
-var ch1 chan int   // 声明一个传递整型的通道
-var ch2 chan bool  // 声明一个传递布尔型的通道
-var ch3 chan []int // 声明一个传递int切片的通道
+// 声明一个传递整型的通道
+var ch1 chan int
+
+// 声明一个传递布尔型的通道
+var ch2 chan bool
+
+// 声明一个传递int切片的通道
+var ch3 chan []int
 ~~~
 
 
@@ -2346,61 +2344,232 @@ fmt.Println(ch1) // <nil>
 
 
 
-> 创建channel
+引用类型
 
 ~~~go
-make(chan 元素类型, [缓冲大小]) //缓冲大小 选填
+//如何确定是引用类型
+
+
 ~~~
 
 
 
-创建channel
+###### 7.6.6 channel创建
+
+声明管道后，需要使用make函数初始化之后才能使用
 
 ~~~go
-ch1 := make(chan int)
-ch2 := make(chan bool)
-ch3 := make(chan []int)
+make(chan 元素类型, [容量]) //容量，即缓冲大小 选填
 ~~~
 
 
 
-> channel操作
-
-通道有发送（send）、接收(receive）和关闭（close）三种操作
-
-
-
-**发送 **
+例子如下：
 
 ~~~go
-ch1 <- 10 // 把10发送到ch1中
+// 创建一个能存储10个int类型的数据管道
+ch1 := make(chan int, 10)
+
+// 创建一个能存储4个bool类型的数据管道
+ch2 := make(chan bool, 4)
+
+// 创建一个能存储3个[]int切片类型的管道
+ch3 := make(chan []int, 3)
 ~~~
 
 
 
-**接收**
+###### 7.6.7 channel操作
+
+**通道有发送（send）、接收(receive）和关闭（close）三种操作。**
+
+发送与接收都是使用 **<-**
+
+**cap(管道名称)**      可以求通道总容量
+
+**len(管道名称) **     可以求通道中现有数据长度
+
+**fmt.Println(管道名称)**  得到的是一个内存地址
+
+
+
+通道的生命期：
 
 ~~~go
-x := <- ch1 // 从ch1中接收值并赋值给变量x
-<-ch1       // 从ch1中接收值，忽略结果
+// 第一步：定义一个ch变量的管道
+ch := make(chan int, 3)
+
+// 第二步：把10发送到ch中
+ch <- 10
+
+// 第三步：从ch中接收值并赋值给变量x
+x := <- ch
+// <- ch1  表示从ch中接收值，忽略结果
+
+// 第四步：关闭管道
+close(ch)
 ~~~
 
 
 
-**关闭**
+> 管道遍历数据
+
+当向管道中发送完数据时，我们可以通过close函数来关闭管道，**当管道被关闭时，再往该管道发送值会引发panic**，从该管道取值的操作会去完管道中的值，再然后取到的值一直都是对应类型的零值。那如何判断一个管道是否被关闭的呢？
+
+
+
+**1、for遍历**
 
 ~~~go
-close(ch1)
+//遍历管道中的数据
+
+func main() {
+	//创建管道
+	ch := make(chan int, 10)
+
+	//写入管道
+	for num := 0; num < 10; num++ {
+		ch <- num
+	}
+
+	//方法一：for 遍历管道
+    var length = len(ch) //必须要提前算艰长度，不能在for里动态计算 len(ch)，否则只能遍历一半结果
+	for num := 0; num < length; num++ {
+		fmt.Println("数值：", <- ch)
+	}
+	//close(ch)
+    
+    //如果写入管道 5个数字
+    //但是遍历管道 num=10 时会报错 fatal error: all goroutines are asleep - deadlock!
+    
+    fmt.Printf("地址:%v，容量：%v，长度：%v\n", ch, cap(ch), len(ch))
+    //地址:0xc0000b6000，容量：10，长度：5
+}
+~~~
+
+**说明通过for的循环方式，可以不关闭管道**
+
+
+
+**2、range遍历**
+
+~~~go
+//遍历管道中的数据
+
+func main() {
+	//创建管道
+	ch := make(chan int, 10)
+
+	//写入管道
+	for num := 0; num < 10; num++ {
+		ch <- num
+	}
+
+	//方法二：range
+	close(ch)
+	for val := range ch {
+		fmt.Println(val)
+	}
+
+	fmt.Printf("地址:%v，容量：%v，长度：%v\n", ch, cap(ch), len(ch))
+}
+
+//如果没有主动关闭 close(ch)会报以下错误信息：即管道中没有数据了，for range还在尝试读取数据
+//fatal error: all goroutines are asleep - deadlock!
 ~~~
 
 
 
-关闭后的通道有以下特点：
+**关闭后的通道有以下特点：**
 
 1. 对一个关闭的通道再发送值就会导致panic。
 2. 对一个关闭的通道进行接收会一直获取值直到通道为空。
 3. 对一个关闭的并且没有值的通道执行接收操作会得到对应类型的零值。
 4. 关闭一个已经关闭的通道会导致panic。
+
+
+
+> goroutine与channel
+
+
+
+需求1：定义两个方法，一个方法给管道里面写数据，一个给管道里面读取数据，要求同步进行。
+
+~~~go
+var wg sync.WaitGroup
+
+func writeChannel(ch chan int) {
+	defer wg.Done()
+	for iNum := 1; iNum <= 10; iNum++ {
+		ch <- iNum
+	}
+	close(ch)
+}
+
+func readChannel(ch chan int) {
+	defer wg.Done()
+	for val := range ch {
+		fmt.Println(val * val) //打印平方
+	}
+}
+
+func main() {
+	wg.Add(2)
+	var ch = make(chan int, 10)
+	go writeChannel(ch) //写入管道
+	go readChannel(ch)  //读取管道数据
+
+	wg.Wait()
+	fmt.Println("main主线程执行完成！")
+}
+~~~
+
+**管道是安全的，是一边写入，一边读取，当读取比较快的时候，会等待写入**
+
+
+
+需求2：实现 1~12w以内的素数打印输出。
+
+~~~go
+
+~~~
+
+
+
+
+
+**完整示例**
+
+~~~go
+//channel的定义、声明与使用
+
+func main() {
+	//定义并声明
+	ch := make(chan int, 5)
+
+	//放送值
+	ch <- 10
+	ch <- 15
+
+	//从通道取值
+	x := <- ch
+
+	fmt.Println(x)
+	fmt.Println(<-ch)
+    
+    //管道的值、容量、长度
+	fmt.Printf("地址：%v 容量：%v 长度：%v \n", ch, cap(ch), len(ch))
+    //地址：0xc000104000 容量：5 长度：0
+    
+    //管道的类型
+	fmt.Printf("%T \n", ch)
+    //chan int
+
+	close(ch)
+}
+~~~
+
+
 
 
 
@@ -2529,15 +2698,36 @@ func main()  {
 
 
 
-###### 7.6.5 单向通道
+###### 7.6. 单向通道
 
 在不同的任务函数中使用通道都会对其进行限制，比如限制通道在函数中只能发送或只能接收。
+
+> 默认情况下：通道都是可读可写
+
+
 
 Go语言中提供了**单向通道**来处理这种情况。
 
 ~~~go
-//单向通道
+// 定义一种可读可写的管道
+var ch = make(chan int, 2)
+ch <- 10
+<- ch
 
+// 管道声明为只写管道，只能够写入，不能读
+var ch2 = make(chan<- int, 2)
+ch2 <- 10
+
+// 声明一个只读管道
+var ch3 = make(<-chan int, 2)
+<- ch3
+~~~
+
+
+
+需求1：实现单向通道，只读和只写
+
+~~~go
 //只能发送进通道
 func counter(count chan<- int)  {
 	for iNum := 1; iNum <= 100; iNum++ {
@@ -2584,7 +2774,7 @@ func main()  {
 
 
 
-###### 7.6.6 worker pool
+###### 7.6. worker pool
 
 **Worker pool  即是goroutine池**，在工作中我们通常会使用可以指定启动的goroutine数量–`worker pool`模式，控制`goroutine`的数量，防止`goroutine`泄漏和暴涨。
 
@@ -2633,7 +2823,7 @@ func main() {
 
 
 
-###### 7.6.7 select
+###### 7.6. select
 
 select 多路复用
 
