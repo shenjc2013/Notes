@@ -102,6 +102,8 @@ JSON序列化与反序列化
 
 ##### 5.3 接口(interface)
 
+
+
 ###### 5.3.1 接口介绍
 
 **接口(interface)是一种类型，一种抽象的类型，即是特殊的类型，**它规定了变量有哪些方法。
@@ -118,6 +120,7 @@ JSON序列化与反序列化
 type 接口名 interface {
     方法名1(参数1...)(返回值1....)
     方法名2(参数2...)(返回值2....)
+    ......
 }
 ~~~
 
@@ -129,16 +132,25 @@ type 接口名 interface {
 
 
 
-**接口的实现**
+###### 5.3.3 接口的实现
+
+
+
+举例：实现一个Usber接口
 
 ~~~go
-type Usber interface {
+type Usber interface { //加上 er 表示是接口类型
     start()
     stop()
 }
-//如果接口里面有方法的话，必须要通过结构体或自定义类型实现这个接口
+~~~
 
-//手机
+
+
+如果接口里面有方法的话，必须要通过**结构体或自定义类型实现**这个接口。
+
+~~~go
+//手机结构体, 手机要实现usb接口，必须要实现usb接口中所有的方法
 type Phone struct {
     Name string
 }
@@ -149,7 +161,7 @@ func (p Phone) stop() {
     fmt.Println(p.Name, "关机")
 }
 
-//照相机
+//照相机结构体
 type Camera struct {
     Name string
 }
@@ -162,31 +174,501 @@ func (c Camera) stop() {
 func (c Camera) update() {
     fmt.Println(c.Name, "更新")
 }
+~~~
 
+一个变量如果实现了接口中规定的所有方法，那么这个变量就实现了这个接口，可以称这个接口类型的变量。
+
+即如下例子：**接口的实例化**
+
+~~~go
 func main() {
-    //结构体的使用
-    p := Phone {
-        Name:"华为手机",
-    }
-    p.start()
-    
-    //手机实现接口类型
-    var p1 Usber  //接口是一种类型
-    p1 = p	//表示手机实现的是接口
-    p1.start()
-    
-    //照相机
-    c := Camera{}
-    var c1 Usber = c
-    c1.start()
-    //c1.update() 错误，接口没有 run方法
-    c.update() 
+		//普通结构体的实现
+		p1 := Phone{
+				Name: "华为手机",
+		}
+		p1.start()
+		p1.stop()
+  	p1.update() //结构体中的方法函数
+
+		p2 := Phone{
+				Name: "苹果手机",
+		}
+		var p Usber = p2  //表示手机实现了Usber的方法
+		p.start()
+		p.stop()
+		//p.update() //错误用法，p.update undefined (type Usber has no field or method update)
+		//这样是实现不了的，只能通过  p2.update()实现
+		p2.update()	//结构体中的方法函数，非接口函数
 }
 ~~~
 
 
 
-一个变量如果实现了接口中规定的所有方法，那么这个变量就实现了这个接口，可以称这个接口类型的变量
+电脑结构体实现Usber接口类
+
+~~~go
+//定义电脑的结构体
+type Computer struct {}
+
+//电脑实现接口类型
+func (c Computer) work(usber Usber) {//参数必须是 接口类型，如果这个参数 没有实现到接口所有方法，会报错
+		usber.start()
+		usber.stop()
+}
+
+func main() {
+  	var computer = Computer{}
+    phone := Phone{
+				Name: "苹果手机",
+		}
+  	computer.work(phone)
+}
+~~~
+
+
+
+###### 5.3.4 空接口定义
+
+Golang中接口可以不定义任何方法，没有定义任何方法的接口就是空接口。空接口表示没有任何约束，因此任何类型变量都可以实现空接口。
+
+空接口在实际项目中用的非常多，用空接口可以表示任意数据类型。
+
+定义格式：
+
+~~~go
+type 接口名字  interface{}
+
+//空接口，表示没有任何约束 任意的类型都可以实现空接口
+~~~
+
+
+
+任意类型实现空接口
+
+~~~go
+type A interface{}
+
+func main() {
+		//测试任何类型都可以实现空接口
+		var a A
+  
+    //var b interface{}  【定义在函数里的空接口】
+
+		//string
+		var Name = "chenglh"
+		a = Name
+		fmt.Printf("字符串的值：%v ,类型：%T\n", a, a)
+  	//字符串的值：chenglh ,类型：string
+
+		//int
+		var num = 10
+		a = num
+		fmt.Printf("整型的值：%v ,类型：%T\n", a, a)
+  	//整型的值：10 ,类型：int
+
+		//bool
+		var flag bool = true
+		a = flag
+		fmt.Printf("bool的值：%v ,类型：%T\n", a, a)
+  	//bool的值：true ,类型：bool
+}
+~~~
+
+
+
+###### 5.3.5 空接口的使用
+
+**1、空接口作为函数的参数**
+
+~~~go
+func show( a interface{} ) {
+    //fmt.Printf("type:%T value:%v\n" ,a ,a)
+}
+
+show(20)
+show("this string")
+show([]int{1,2,3}) //切片
+~~~
+
+
+
+**2、map的值实现空接口**
+
+使用空接口实现可以保存任意值的字典。
+
+~~~go
+//空接口作为 map值
+var student = make(map[string]interface{})
+
+student["name"]    = "chenglh"
+student["age"]     = 19
+student["married"] = false
+~~~
+
+
+
+**3、切片实现空接口**
+
+之前slice切片只能声明一种类型的值
+
+~~~go
+var slice = []interface{}{"chenglh", 18, true, 8.98}
+~~~
+
+举个例子：
+
+~~~go
+//空接口实现切片任意类型
+var city = []string{"上海","北京","广州"}
+fmt.Printf("type:%T  value:%#v\n", city, city)
+
+var info = []interface{}{"广东", true, 20}
+fmt.Printf("type:%T  value:%#v\n", info, info)
+~~~
+
+
+
+###### 5.3.6 类型断言
+
+一个接口的值（简称接口值）是由一个具体类型和具体类型的值两部分组成的。这两部分分别称为接口的动态类型和动态值。
+
+如果我们想要判断空接口中值的类型，那么这个时候就可以使用类型断言，其语法格式：
+
+~~~go
+x.(T)
+~~~
+
+其中：
+
+- X：表示类型为interface{}的变量
+- T：表示断言x可能是的类型
+
+该语法返回两个参数，第一个参数是x转化为T类型后的变量，第二个值是一个布尔值，若为true则表示断言成功，false则表示断言失败
+
+~~~go
+func main() {
+    var a interface{}
+    a = "chenglh"
+    val, ok := a.(string)
+    if ok {
+		fmt.Println("a就是字符串")
+	} else {
+		fmt.Println(val,"断言失败")
+	}
+}
+~~~
+
+
+
+**实现功能**：定义一个函数，判断传入不同的类型参数进行对应的操作处理
+
+~~~go
+func print1(x interface{}) {
+	if _,ok := x.(string); ok {
+		fmt.Println("传入的是字符串参数")
+	} else if _,ok := x.(int); ok {
+		fmt.Println("传入的是整型参数")
+	} else if _,ok := x.(float64); ok {
+		fmt.Println("传入的是浮点型参数")
+	} else if _,ok := x.(bool); ok {
+		fmt.Println("传入的是布尔型参数")
+	} else {
+		fmt.Println("找不到类型")
+	}
+}
+
+func print2(x interface{}) {
+	switch x.(type) {
+		case string:
+			fmt.Println("传入的是字符串参数")
+		case int:
+			fmt.Println("传入的是整型参数")
+		case float64:
+			fmt.Println("传入的是浮点型参数")
+		case bool:
+			fmt.Println("传入的是布尔型参数")
+		default:
+			fmt.Println("找不到类型")
+	}
+}
+
+func main() {
+	//需求：定义一个函数，判断传入不同类型的参数进行相对应的操作
+
+	//方法一：if ... else if ...
+	print1("chenglh")
+	print1(120)
+	print1(true)
+	print1(12.9)
+
+	//方法二：switch x.(type)结合使用
+	print2("chenglh")
+	print2(120)
+	print2(true)
+	print2(12.9)
+}
+~~~
+
+
+
+**实现结构体断言**
+
+~~~go
+//结构体类型断言
+
+//Usb接口
+type Usber interface {
+	start()
+	stop()
+}
+
+//电脑结构体
+type Computer struct {}
+
+//电脑实现Usb接口
+func (c Computer) work(usber Usber) {
+	//在这里断言，是手机还是照相机
+	if _,ok := usber.(Phone); ok {
+		fmt.Println("请打开手机电源键")
+		usber.start()
+	} else if _,ok := usber.(Camera); ok {
+		fmt.Println("请打开照相机电源键")
+		usber.stop()
+	}
+
+	//usber.start()
+	//usber.stop()
+}
+
+//手机
+type Phone struct {
+	Name string
+}
+func (p Phone) start() {
+	fmt.Println(p.Name, " 已经启动")
+}
+func (p Phone) stop() {
+	fmt.Println(p.Name, " 正在关机")
+}
+
+//照相机
+type Camera struct {
+	Name string
+}
+func (c Camera) start() {
+	fmt.Println(c.Name, " 已经启动")
+}
+func (c Camera) stop() {
+	fmt.Println(c.Name, " 正在关机")
+}
+
+func main() {
+	//需求：电脑的usb接口，断言是：iphone 还是 照相机 接入实现
+	var phone = Phone{
+		Name: "华为手机",
+	}
+	var computer Computer
+	computer.work(phone) //华为手机  已经启动
+
+	var camera = Camera{
+		Name: "佳能相机",
+	}
+	computer.work(camera)//佳能相机  正在关机
+}
+~~~
+
+
+
+###### 5.3.7 方法与接收者
+
+如果结构体中的**方法是值接收者**，那么实例化后的结构体**值类型**和结构体**指针类型**都可以赋值给接口变量。
+
+**值接收者与指针类型接收者区别：**
+
+~~~go
+//如果结构体中的方法是值接收者，那么实例化后的结构体"值类型"和结构体"指针类型"都可以赋值给接口变量。
+
+type Usber interface {
+	start()
+	stop()
+}
+
+//值接收者，参数可以值接收者也可以指针类型
+type Phone struct {
+	Name string
+}
+func (p Phone) start() {
+	fmt.Println(p.Name, " 正在开机")
+}
+func (p Phone) stop() {
+	fmt.Println(p.Name, " 正在关机")
+}
+
+//指针接收者
+type Cameric struct {
+	Name string
+}
+func (c *Cameric) start() {
+	fmt.Println(c.Name, " 正在开机")
+}
+func (c *Cameric) stop() {
+	fmt.Println(c.Name, " 正在关机")
+}
+
+func main() {
+    //var p = Phone{  //值接收者中的方法参数，1、可以为值类型
+	var p = &Phone{   //也可以2、指针类型
+		Name: "华为手机",
+	}
+	var p1 Usber = p
+	p1.start()
+	p1.stop()
+
+	var c = &Cameric{ //如果是指针类型接收者，必须要传递指针类型，否则编译错误
+		Name: "佳能相机",
+	}
+	var p2 Usber = c
+	p2.start()
+	p2.stop()
+}
+~~~
+
+
+
+###### 5.3.8 结构体实现多接口
+
+~~~go
+//结构体实现多个接口
+
+//需求：实现结构体1中的set方法 和 实现结构体2中的 get方法
+
+type Aminaler1 interface {
+	SetName(string)
+}
+type Aminaler2 interface {
+	GetName() string
+}
+
+type Dog struct {
+	Name string
+}
+
+func (d *Dog) SetName(name string) {
+	d.Name = name
+}
+func (d Dog) GetName() string {
+	return d.Name
+}
+
+func main()  {
+	var d = &Dog{
+		Name: "",
+	}
+	var dog1 Aminaler1 = d
+	var dog2 Aminaler2 = d
+	dog1.SetName("花花")
+	fmt.Println(dog2.GetName())
+}
+~~~
+
+
+
+###### 5.3.9 嵌套接口
+
+~~~go
+//嵌套接口
+type A interface {
+	SetName(string)
+}
+type B interface {
+	GetName()string
+}
+type Aminaler interface { //嵌套两个接口
+	A
+	B
+}
+
+type Dog struct {
+	Name string
+}
+func (d *Dog) SetName(name string) {
+	d.Name = name
+}
+func (d Dog) GetName() string {
+	return d.Name
+}
+
+func main() {
+	var dog = &Dog{
+		Name: "",
+	}
+	var d1 Aminaler = dog
+	d1.SetName("阿奇")
+	ret := d1.GetName()
+	fmt.Println(ret)
+}
+~~~
+
+
+
+###### 5.3.10 空接口与断言细节
+
+前情提要
+
+~~~go
+type Address struct {
+	Province string
+	City	 string
+	Dist	 string
+}
+
+func main() {
+	var address = Address{
+		Province: "广东省",
+		City: "广州市",
+		Dist: "天河区",
+	}
+	var hobby = []string{"吃饭","睡觉","游戏"}
+	fmt.Println(address.Province) //广东省
+	fmt.Println(hobby[2]) //游戏
+
+	var userInfo = make(map[string]interface{})
+	userInfo["userName"] = "chenglh"
+	userInfo["age"] = 19
+	userInfo["hobby"] = []string{"吃饭","睡觉","游戏"}
+	userInfo["address"] = address
+
+	fmt.Printf("%#v\n",userInfo)
+	//以下的写法在空接口中是编译出错的
+	//fmt.Println(userInfo["hobby"][2]) //type interface {} does not support indexing
+	//fmt.Println(userInfo["address"].Province) //type interface {} is interface with no methods
+}
+~~~
+
+
+
+解决办法
+
+~~~go
+	//使用空接口与类型断言
+	var userInfo = make(map[string]interface{})
+	userInfo["userName"] = "chenglh"
+	userInfo["age"] = 19
+	userInfo["hobby"] = []string{"吃饭","睡觉","游戏"}
+	userInfo["address"] = address
+
+	//类型断言
+	if hobbyVal,ok := userInfo["hobby"].([]string);ok {
+		fmt.Println(hobbyVal[0], hobbyVal[1], hobbyVal[2])
+	}
+	if addressVal,ok := userInfo["address"].(Address);ok {
+		fmt.Println(addressVal.Province, addressVal.City)
+	}
+~~~
+
+
+
+其他知识：
 
 ~~~go
 type animal interface{
@@ -336,24 +818,20 @@ package 包名
 例子说明：
 
 ~~~go
-package pkg
-
-import "fmt"
-
-var a = 100 		//首字母小写，包外不可见
-const Mode = 1  //包外可见，可用
+var a = 100 //首字母小写，包外不可见
+const Mode = 1 //包外可见，可用
 
 type person struct { //包外不可用
-    name string
+	name string
 }
 
 func Sum(x, y int) int {//包外可用
-    return x + y
+	return x + y
 }
 
 func age() {//包外不可用
-    var Age = 18 //局部变量，函数外、包外不可用，只能在当前函数内使用
-    fmt.Println(Age)
+	var Age = 18 //局部变量，函数外、包外不可用，只能在当前函数内使用
+	fmt.Println(Age)
 }
 ~~~
 
@@ -363,13 +841,13 @@ func age() {//包外不可用
 
 ~~~go
 type Student struct {
-	  Name  string //可在包外访问的方法
-	  class string //仅限包内访问的字段
+	Name  string //可在包外访问的方法
+	class string //仅限包内访问的字段
 }
 
 type Payer interface {
-	  init() //仅限包内访问的方法
-	  Pay()  //可在包外访问的方法
+	init() //仅限包内访问的方法
+	Pay()  //可在包外访问的方法
 }
 ~~~
 
@@ -1120,12 +1598,12 @@ fmt.Println(time.Now().Format("2006/01/02"))
 type Duration int64 //自定义类型
 
 const (
-    Nanosecond  Duration = 1 //类自定义 Duration = int64别名
-		Microsecond          = 1000 * Nanosecond
-		Millisecond          = 1000 * Microsecond
-		Second               = 1000 * Millisecond
-		Minute               = 60 * Second
-		Hour                 = 60 * Minute
+	Nanosecond  Duration = 1 //类自定义 Duration = int64别名
+	Microsecond			 = 1000 * Nanosecond
+	Millisecond			 = 1000 * Microsecond
+	Second				 = 1000 * Millisecond
+	Minute				 = 60 * Second
+	Hour				 = 60 * Minute
 )
 ~~~
 
@@ -1177,17 +1655,17 @@ fmt.Println(time.Now().Before(a)) //true
 ###### 6.4.9 定时器
 
 ~~~go
-  //方法一
-	//var ticker = time.NewTicker(time.Second)
-	//for tt := range ticker.C {
-	//	fmt.Println("定时器",tt)
-	//}
+//方法一
+//var ticker = time.NewTicker(time.Second)
+//for tt := range ticker.C {
+//	fmt.Println("定时器",tt)
+//}
 
-	//方法二
-	//for {
-	//	fmt.Println("计划任务")
-	//	time.Sleep(time.Second)
-	//}
+//方法二
+//for {
+//	fmt.Println("计划任务")
+//	time.Sleep(time.Second)
+//}
 ~~~
 
 
@@ -1199,12 +1677,12 @@ fmt.Println(time.Now().Before(a)) //true
 var timeNum = 5
 var ticker = time.NewTicker(time.Second)
 for tt := range ticker.C {
-    timeNum --
-		if timeNum < 0 {
-				ticker.Stop() //关闭定时器 ticker.Stop() 终止定时器
-				break
-		}
-		fmt.Println("执行任务：", tt)
+	timeNum --
+	if timeNum < 0 {
+		ticker.Stop() //关闭定时器 ticker.Stop() 终止定时器
+		break
+	}
+	fmt.Println("执行任务：", tt)
 }
 ~~~
 
@@ -1441,15 +1919,51 @@ s4 := strconv.FormatUint(2, 16) //2
 
 ###### 7.6.1 并发与并行
 
-并发：同一时间段内执行多个任务(同两个人聊天)
+**并发**：同一时间段内执行多个任务(同两个人聊天)
 
-并行：同一时刻执行多个任务 （两个人一起进门）
+**并行**：同一时刻执行多个任务 （两个人一起进门）
+
+
+
+> 进程
+
+进程（Process）就是程序在操作系统中的一次执行过程，是系统进行资源分配和调度的基本单位，进程是一个动态概念，是程序在执行过程中分配和管理资源的基本单位，每一个进程都有一个自己的地址空间。
+一个进程至少有5种基本状态，它们是：**初始态，执行态，等待状态，就绪状态，终止状态**。
+
+
+
+> 线程
+
+线程是**进程的一个执行实例**，是程序执行的最小单元，它是比进程更小的能独立运行的基本单位
+一个进程可以创建多个线程，同一个进程中多个线程可以并发执行 ，一个线程要运行的话，至少有一个进程
+
+
+
+> 协程
+
+可以理解为**用户级线程**，这是对内核透明的，也就是系统并不知道有协程的存在，是完全由用户自己的程序进行调度的。
+
+Golang的一大特色就是从语言层面原生持协程，在函数或者方法前面加go关键字就可创建一个协程。可以说Golang中的协程就是goroutine。
+
+
+
+**Golang中的多协程有点类似于Java中的多线程**
+
+Golang中每个goroutine（协程）默认占用内存远比Java、C的线程少。
+
+
+
+**Golang中协程（goroutine）以及主线程**
+golang中的主线程：（可以理解为线程/也可以理解为进程），在一个Golang程序的主线程上可以起多个协程。
+Golang中多协程可以实现并行或者并发。
+
+<img src="Golang2.assets/image-20200906161300314.png" alt="image-20200906161300314" style="zoom:50%;float:left;" />
 
 
 
 ###### 7.6.2 goroutine
 
-> Go语言的并发通过goroutine实现
+**Go语言的并发通过goroutine实现**
 
 - goroutine类似于线程，属于用户态的线程，我们可以根据需要创建成千上万个goroutine并发工作
 - goroutine是由Go语言的运行时（runtime）调度完成，而线程是由操作系统调度完成
@@ -1468,29 +1982,63 @@ Go语言之所以被称为现代化的编程语言，就是因为它在语言层
 **串行执行**
 
 ~~~go
-func hello() {
-	fmt.Println("Hello Goroutine!")
+//串行执行
+func test()  {
+	for Num := 0; Num < 10; Num++ {
+		fmt.Println("this is test ", Num)
+		time.Sleep(time.Millisecond * 100)
+	}
 }
+
 func main() {
-	hello()
+	test()
+
+	//需求：在主线程上每隔100ms执行打印一串字符
+	for Num := 0; Num < 10; Num++ {
+		fmt.Println("this is main", Num)
+		time.Sleep(time.Millisecond * 100)
+	}
+
 	fmt.Println("main goroutine done!")
 }
 ~~~
 
 
 
-**启用单个goroutine**
+> **启用单个goroutine**
 
 一个`goroutine`必定对应一个函数，可以创建多个`goroutine`去执行相同的函数。
 
 ~~~go
 func main() {
-	go hello() //启动另外一个goroutine去执行hello函数
+	go test() //启动另外一个goroutine去执行test函数
 	fmt.Println("main goroutine done!") //只打印这一行结果
   //time.Sleep(time.Second)
 }
 //当main()函数返回的时候该goroutine就结束了，所有在main()函数中启动的goroutine会一同结束，
 /** 使用简单粗暴的方式 time.Sleep()等一等hello()函数执行 */
+~~~
+
+
+
+**引出的问题**
+
+Goroutine 在主线程执行完就退出，而并非等待协程执行时再一起退出。
+
+test()函数如果 time.Sleep(time.Millisecond * 200) 或更长时间时会明显看到打印的结果不完整。
+
+
+
+解决办法
+
+~~~go
+var wg sync.WaitGroup
+
+wg.Add(iNum int)
+
+defer wg.Done()
+
+wg.Wait()
 ~~~
 
 
@@ -1511,12 +2059,12 @@ func main()  {
 
 //匿名函数
 for i := 0; i < 10; i++ {
-   //go func() {
-   //   fmt.Println(i) 因为是使用协程调用函数，for遍历太快了，这里的i与预想中的i++不一样
-   //}()
-		go func(i int) {
-			fmt.Println(i)
-		}(i)
+	//go func() {
+	//   fmt.Println(i) 因为是使用协程调用函数，for遍历太快了，这里的i与预想中的i++不一样
+	//}()
+	go func(i int) {
+		fmt.Println(i)
+	}(i)
 }
 ~~~
 
@@ -1542,7 +2090,7 @@ func main()  {
 
 
 
-**启动多个groutine**
+> **启动多个groutine**
 
 ~~~go
 var wg sync.WaitGroup
@@ -1602,7 +2150,18 @@ Go运行时的调度器使用`GOMAXPROCS`参数来确定需要使用多少个OS�
 
 Go语言中可以通过`runtime.GOMAXPROCS()`函数设置当前程序并发时占用的CPU逻辑核心数。
 
-Go1.5版本之前，默认使用的是单核心执行。Go1.5版本之后，默认使用全部的CPU逻辑核心数。
+Go1.5版本之前，默认使用的是单核心执行。**Go1.5版本之后，默认使用全部的CPU逻辑核心数。**
+
+~~~go
+func main() {
+	//默认是占满 cpu 的核数
+	npmCpu := runtime.NumCPU()
+	fmt.Println("cpu的个数", npmCpu)
+
+	//设置允许使用的cpu数量
+	runtime.GOMAXPROCS(runtime.NumCPU() - 1)
+}
+~~~
 
 
 
@@ -1653,6 +2212,90 @@ func main() {
 	time.Sleep(time.Second)
 }
 ~~~
+
+
+
+**任务需求**：统计出 1-12W中素数的值。
+
+~~~go
+//第一步：实现求素数
+func main() {
+	//测试案例 2 - 20
+	for iNum := 2; iNum <= 20; iNum++ {
+		var flag = true
+		for i := 2; i < iNum; i++ {
+			if iNum%i == 0 {
+				flag = false
+				break
+			}
+		}
+		if flag {
+			fmt.Println(iNum," 是素数")
+		}
+	}
+}
+~~~
+
+
+
+~~~go
+//第二步：统计求素数的花费多长时间
+func main() {
+	startTime := time.Now().Unix()
+	for iNum := 2; iNum <= 120000; iNum++ {
+		var flag = true
+		for i := 2; i < iNum; i++ {
+			if iNum%i == 0 {
+				flag = false
+				break
+			}
+		}
+		if flag {
+			fmt.Println(iNum," 是素数")
+		}
+	}
+	endTime := time.Now().Unix()
+
+	fmt.Println("统计计算所要的时间：",endTime-startTime)
+    //如果 使用 go run main.go 是编译+运行的时间
+}
+~~~
+
+~~~go
+//第三步：开启协程统计使用的时间
+var wg sync.WaitGroup
+
+func isPrime(page, limit int)  {
+	var startNum = (page - 1) * limit + 1 //开始数量
+	var stopNum  = page * limit //结束数量
+
+	for iNum := startNum; iNum <= stopNum; iNum++ {
+		//var flag = true
+		for i := 2; i < iNum; i++ {
+			if iNum%i == 0 {
+				//flag = false
+				break
+			}
+		}
+	}
+	defer wg.Done()
+}
+
+func main() {
+	//开启 4个协程来执行判断
+	startTime := time.Now().Unix()
+	for i := 1; i <= 4; i++ {
+		wg.Add(1)
+		go isPrime(i, 30000)
+	}
+	wg.Wait()
+	endTime := time.Now().Unix()
+
+	fmt.Println("统计计算所要的时间：",endTime-startTime)
+}
+~~~
+
+
 
 
 
