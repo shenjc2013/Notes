@@ -2391,6 +2391,14 @@ ch3 := make(chan []int, 3)
 
 **fmt.Println(管道名称)**  得到的是一个内存地址
 
+管道遍历
+
+管道与goroutine
+
+无缓冲管道
+
+有缓冲管道
+
 
 
 通道的生命期：
@@ -2412,7 +2420,7 @@ close(ch)
 
 
 
-> 管道遍历数据
+> **管道遍历数据**
 
 当向管道中发送完数据时，我们可以通过close函数来关闭管道，**当管道被关闭时，再往该管道发送值会引发panic**，从该管道取值的操作会去完管道中的值，再然后取到的值一直都是对应类型的零值。那如何判断一个管道是否被关闭的呢？
 
@@ -2480,16 +2488,7 @@ func main() {
 
 
 
-**关闭后的通道有以下特点：**
-
-1. 对一个关闭的通道再发送值就会导致panic。
-2. 对一个关闭的通道进行接收会一直获取值直到通道为空。
-3. 对一个关闭的并且没有值的通道执行接收操作会得到对应类型的零值。
-4. 关闭一个已经关闭的通道会导致panic。
-
-
-
-> goroutine与channel
+> **goroutine与channel**
 
 
 
@@ -2531,10 +2530,87 @@ func main() {
 需求2：实现 1~12w以内的素数打印输出。
 
 ~~~go
+//需求2：实现 1~12w以内的素数打印输出
 
+var wg sync.WaitGroup
+
+//把 1-12W 写入通道
+func putNum(intChan chan int) {
+	defer wg.Done()
+	for iNum := 2; iNum <= 1200; iNum++ {
+		intChan <- iNum
+	}
+	close(intChan)
+}
+
+//判断是否是素数
+func isPrime(intChan chan int, primeChan chan int, exitChan chan bool)  {
+	for val := range intChan {
+		var flag = true
+		for iNum := 2; iNum < val; iNum++ {
+			if val%iNum == 0 {
+				flag = false
+				break
+			}
+		}
+		if flag {
+			primeChan <- val
+		}
+	}
+
+	exitChan <- true
+	defer wg.Done()
+}
+
+//打印素数
+func printPrime(primeChan chan int) {
+	for val := range primeChan {
+		fmt.Println(val)
+	}
+	wg.Done()
+}
+
+func main() {
+	// 写入数字
+	var intChan = make(chan int, 1000)
+
+	// 存放素数
+	var primeChan = make(chan int, 1000)
+
+	// 存放primeChan退出状态
+	var exitChan = make(chan bool, 16) //开16/10个协程来判断素数
+
+	wg.Add(1)
+
+	//第一步：开启 1-12W 写入数字
+	go putNum(intChan)
+
+	//第二步：开启16个协程来计算素数
+	for iNum := 0; iNum < 16; iNum++ {
+		wg.Add(1)
+		go isPrime(intChan, primeChan, exitChan)
+	}
+
+	//第三步：开启打印素数协程
+	wg.Add(1)
+	go printPrime(primeChan)
+
+	//第四步：关闭存放素数的通道
+	wg.Add(1)
+	go func() {
+		for i := 0; i < 16; i++ {
+			// 如果 exitChan 没有完成16次遍历，将会等待
+			<- exitChan
+		}
+		// 关闭primeChan
+		close(primeChan)
+		wg.Done()
+	}()
+
+	wg.Wait()
+	fmt.Println("主线程执行完毕")
+}
 ~~~
-
-
 
 
 
@@ -2571,21 +2647,21 @@ func main() {
 
 
 
+> **无缓冲的通道**
 
-
-> 无缓冲的通道
-
-无缓冲的通道又称为阻塞的通道。
+无缓冲的通道又称为**阻塞的通道**。
 
 ~~~go
-func main(){
-  ch := make(chan int)
-  ch <- 10
-  fmt.Println("发送成功")
+func main() {
+	ch := make(chan int) //make的第二个参数值为 0
+	ch <- 10  //代码会阻塞在ch <- 10这一行代码形成死锁
+	fmt.Println("发送成功")
+    
+    //上面这段代码能够通过编译，但是执行的时候会出现以下错误：
 }
 ~~~
 
-上面这段代码能够通过编译，但是执行的时候会出现以下错误：
+控制台错误信息：
 
 ~~~go
 fatal error: all goroutines are asleep - deadlock!
@@ -2606,32 +2682,35 @@ exit status 2
 
 
 
-一种方法是启用一个goroutine去接收值，例如：
+**解决办法一**：启用一个goroutine去接收值，代码如下：
 
 ~~~go
 func recv(c chan int) {
-	ret := <-c
-	fmt.Println("接收成功", ret)
+	for {
+		ret := <-c
+		fmt.Println("接收成功", ret)
+	}
 }
 func main() {
 	ch := make(chan int)
 	go recv(ch) // 启用goroutine从通道接收值
 	ch <- 10
+	ch <- 20
+	ch <- 30
+	time.Sleep(time.Second * 2) //注意需要程序卡顿一下
 	fmt.Println("发送成功")
 }
 ~~~
 
-
-
-使用无缓冲通道进行通信将导致发送和接收的goroutine同步化。因此，无缓冲通道也被称为同步通道。
+使用无缓冲通道进行通信将导致发送和接收的goroutine同步化。因此，**无缓冲通道也被称为同步通道**。
 
 
 
-> 有缓冲的通道
+> **有缓冲的通道**
 
-另一种方法是创建有缓冲区的通道。
+**解决办法二：**创建有缓冲区的通道。
 
-我们可以在使用make函数初始化通道的时候为其指定通道的容量，例如：
+我们可以在使用make函数初始化通道的时候为其指定通道的**容量**，例如：
 
 ~~~go
 func main() {
@@ -2645,13 +2724,20 @@ func main() {
 
 只有容量满了就装不下了，就阻塞了，等到协程取走一个就能往里面放一个。
 
-使用内置的`len`函数获取通道内元素的数量，使用`cap`函数获取通道的容量。
+**使用内置`cap`函数获取通道的容量，`len`函数获取通道内元素的数量。**
 
 
 
-> For range  从通道循环取值
+**关闭后的通道有以下特点：**
 
-当向通道中发送完数据时，我们可以通过`close`函数来关闭通道。
+1. 对一个关闭的通道再发送值就会导致panic。
+2. 对一个关闭的通道进行接收操作，会一直获取值直到通道为空。
+3. 对一个关闭的并且没有值的通道执行接收操作会得到对应类型的零值。
+4. 关闭一个已经关闭的通道会导致panic。
+
+
+
+当向通道中发送完数据时，我们可以通过`close(ch)`函数来关闭通道。
 
 当通道被关闭时，再往该通道发送值会引发`panic`，从该通道取值的操作会先取完通道中的值，再然后取到的值一直都是对应类型的零值。
 
@@ -2659,46 +2745,49 @@ func main() {
 //channel练习
 //关闭通道，for range也退出循环
 
-func main()  {
-	ch1 := make(chan int)
-	ch2 := make(chan int)
+var wg sync.WaitGroup
+func main() {
+	ch1 := make(chan int, 100)
+	ch2 := make(chan int, 100)
 
-	//开启goroutine将 0- 100发送到ch1中
+	wg.Add(2)
 	go func() {
 		for iNum := 1; iNum <= 100; iNum++ {
 			ch1 <- iNum
 		}
 		close(ch1)
+		defer wg.Done()
 	}()
 
-	//开启goroutine从ch1中接收者，并将该值的平方发送到ch2中
-	go func() {
-		for {
-      //方法1：判断该通道是否被关闭
-			ret,ok := <- ch1 //通道关闭后再取值时，ok=false
-			if !ok {
-				break
-			}
-			ch2 <- ret * ret
+	go func(ch1 chan int, ch2 chan int) {
+		for val := range ch1 {
+			ch2 <- val * val
 		}
 		close(ch2)
-	}()
+		defer wg.Done()
+	}(ch1, ch2)
 
-  //方法2：判断该通道是否被关闭
-	//遍历ch2中接收的值
-	for result := range ch2 {
-		fmt.Println(result)
+	wg.Wait()
+
+	for vv := range ch2{
+		fmt.Println(vv)
 	}
+
+	//for {
+	//	if vv,ok := <- ch2; ok {
+	//		fmt.Println(vv)
+	//	} else {
+	//		break
+	//	}
+	//}
 }
 ~~~
 
-
-
-以上有两种方式在接收值的时候判断该通道是否被关闭，不过我们通常使用的是`for range`的方式。使用`for range`遍历通道，当通道被关闭的时候就会退出`for range`。
+使用`for range`遍历通道，当通道被关闭的时候就会退出`for range`。
 
 
 
-###### 7.6. 单向通道
+###### 7.6.8 单向通道
 
 在不同的任务函数中使用通道都会对其进行限制，比如限制通道在函数中只能发送或只能接收。
 
@@ -2725,11 +2814,12 @@ var ch3 = make(<-chan int, 2)
 
 
 
-需求1：实现单向通道，只读和只写
+需求1：实现单向通道，**只读**和**只写**
 
 ~~~go
-//只能发送进通道
+//只能写入count通道
 func counter(count chan<- int)  {
+    defer wg.Done()
 	for iNum := 1; iNum <= 100; iNum++ {
 		count <- iNum
 	}
@@ -2738,8 +2828,9 @@ func counter(count chan<- int)  {
 
 //只能从count通道中取值
 func squarer(square chan<- int, count <-chan int)  {
-	for i := range count {
-		square <- i * i
+    defer wg.Done()
+	for i := range count { //只读
+		square <- i * i //写入
 	}
 	close(square)
 }
@@ -2751,11 +2842,13 @@ func printer(out <- chan int)  {
 }
 
 func main()  {
+    wg.Add(2)
 	ch1 := make(chan int)
 	ch2 := make(chan int)
 	go counter(ch1)
 	go squarer(ch2, ch1)
 	printer(ch2)
+    wg.Wait()
 }
 ~~~
 
@@ -2764,7 +2857,7 @@ func main()  {
 
 
 
-> 通道异常
+###### 7.6.9 通道异常panic
 
 <img src="Golang2.assets/image-20200821133857394.png" alt="image-20200821133857394" style="zoom:50%;float:left;" />
 
@@ -2772,9 +2865,102 @@ func main()  {
 
 关闭已经关闭的`channel`也会引发`panic`。
 
+**程序捕获异常**
+
+~~~go
+// 捕获异常
+defer func() {
+    if err := recover(); err != nil {
+        fmt.Println("errTest发生错误")
+    }
+}()
+~~~
 
 
-###### 7.6. worker pool
+
+例子如下：
+
+~~~go
+//Goroutine Recover解决协程中出现的Panic
+
+func sayHello()  {
+	fmt.Println("hello")
+}
+func errTest()  {
+	// 捕获异常
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Println("errTest发生错误", err)
+		}
+	}()
+	var myMap map[int]string
+	myMap[0] = "10"
+}
+func main() {
+	go sayHello()
+	go errTest()
+
+	time.Sleep(time.Second*2)
+}
+~~~
+
+
+
+###### 7.6.10 select多路复用
+
+在某些场景下我们需要同时从多个通道接收数据。通道在接收数据时，如果没有数据可以接收将会发生阻塞。
+
+~~~go
+//以下代码，运行性能会差很多
+for {
+	// 尝试从ch1接收值
+	data, ok := <-ch1
+	// 尝试从ch2接收值
+	data, ok := <-ch2
+	…
+}
+~~~
+
+**可以使select优化效率**
+
+~~~go
+func main() {
+	intChan := make(chan int, 10)
+	intChan <- 10
+	intChan <- 12
+	intChan <- 13
+
+	stringChan := make(chan string, 10)
+	stringChan <- "cheng"
+	stringChan <- "li"
+	stringChan <- "hui"
+
+	// 每次循环的时候，会随机中一个chan中读取，其中for是死循环
+	for {
+		select {
+            case v:= <- intChan:
+                fmt.Println("从initChan中读取数据：", v)
+            case v:= <- stringChan:
+                fmt.Println("从stringChan中读取数据：", v)
+            default:
+                fmt.Println("所有的数据获取完毕")
+                return //这里退出循环
+		}
+	}
+}
+~~~
+
+**使用select来获取数据的时候，不需要关闭chan，不然会出现问题。**
+
+使用`select`语句能提高代码的可读性。
+
+- 可处理一个或多个channel的发送/接收操作。
+- 如果多个case同时满足，select会随机选择一个。
+- 对于没有case的select{}会一直等待，可用于阻塞main函数。
+
+
+
+###### 7.6.11 worker pool
 
 **Worker pool  即是goroutine池**，在工作中我们通常会使用可以指定启动的goroutine数量–`worker pool`模式，控制`goroutine`的数量，防止`goroutine`泄漏和暴涨。
 
@@ -2823,68 +3009,15 @@ func main() {
 
 
 
-###### 7.6. select
-
-select 多路复用
-
-在某些场景下我们需要同时从多个通道接收数据。通道在接收数据时，如果没有数据可以接收将会发生阻塞。你也许会写出如下代码使用遍历的方式来实现：
-
-~~~go
-for{
-    // 尝试从ch1接收值
-    data, ok := <-ch1
-    // 尝试从ch2接收值
-    data, ok := <-ch2
-    …
-}
-~~~
-
-可以使select优化效率。
-
-~~~go
-select{
-    case <-ch1:
-        ...
-    case data := <-ch2:
-        ...
-    case ch3<-data:
-        ...
-    default:
-        默认操作
-}
-~~~
-
-举个例子：
-
-~~~go
-func main() {
-	ch := make(chan int, 1)
-	for i := 0; i < 10; i++ {
-		select {
-		case x := <-ch:
-			fmt.Println(x)
-		case ch <- i:
-		}
-	}
-}
-//打印出来的是：0 2 4 6 8
-~~~
-
-使用`select`语句能提高代码的可读性。
-
-- 可处理一个或多个channel的发送/接收操作。
-- 如果多个case同时满足，select会随机选择一个。
-- 对于没有case的select{}会一直等待，可用于阻塞main函数。
-
-
-
 ##### 7.7 并发安全与锁
 
-引出：有时候在Go代码中可能会存在多个`goroutine`同时操作一个资源（临界区），这种情况会发生`竞态问题`（数据竞态）。
+并发环境下进行操作，就会出现并发访问的问题。即有时候在Go代码中可能会存在多个`goroutine`同时操作一个资源（临界区），这种情况会发生`竞态问题`（数据竞态）。
 
-如多个 goroutine操作全局变量时，会出现问题
+如多个 goroutine操作全局变量时，会引发问题
 
 ~~~go
+//多协程 操作全局变量 引出问题
+
 var x int64
 var wg sync.WaitGroup
 
@@ -2894,21 +3027,40 @@ func add() {
 	}
 	wg.Done()
 }
+
 func main() {
 	wg.Add(2)
 	go add()
 	go add()
 	wg.Wait()
-    fmt.Println(x) //每次执行的结果都不一样，add()共同去获取变量x
+	fmt.Println(x)  //协程会发生同时拿到x值，进行自增，只发生一次的修改。
 }
 ~~~
+
+在windows系统下：
 
 
 
 ###### 7.7.1 互斥锁
 
-互斥锁是一种常用的控制共享资源访问的方法，它能够保证同时只有一个goroutine可以访问共享资源。
-Go语言中使用sync包的Mutex类型来实现互斥锁。
+**互斥锁**是传统并发编程中对共享资源进行访问控制的主要手段，它由标准库sync中的Mutex结构体类型表示。
+
+sync.Mutex类型只有两个公开的指针方法，Lock和Unlock。Lock锁定当前的共享资源，Unlock 进行解锁
+
+使用格式：
+
+~~~go
+// 定义一个锁
+var mutex sync.Mutex
+
+// 加锁
+mutex.Lock()
+
+// 解锁
+mutex.Unlock()
+~~~
+
+
 
 ~~~go
 var x = 0

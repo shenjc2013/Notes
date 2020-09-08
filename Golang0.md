@@ -3110,6 +3110,16 @@ func f3()  {
 	}()
 	panic("程序异常终止")
 }
+
+func f4(a, b int) int {
+	defer func() {
+		error := recover()
+		if error != nil {
+			fmt.Println("error:",error)
+		}
+	}()
+	return a/b
+}
 ~~~
 
 
