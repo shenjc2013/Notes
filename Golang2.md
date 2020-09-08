@@ -3039,6 +3039,21 @@ func main() {
 
 在windows系统下：
 
+~~~go
+> go build -race main.go
+> main.exe
+==================
+WARNING: DATA RACE
+Read at 0x000000638ea8 by goroutine 8:
+  main.add()
+      G:/Go/src/07sync01/main.go:17 +0x4e
+
+Previous write at 0x000000638ea8 by goroutine 7:
+.....
+~~~
+
+
+
 
 
 ###### 7.7.1 互斥锁
