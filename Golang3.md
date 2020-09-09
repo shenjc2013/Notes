@@ -50,6 +50,10 @@ Go语言中的**变量**是分为两部分的：
 
 reflect包提供了**`reflect.TypeOf`** 和 **`reflect.ValueOf`**两个函数来获取任意对象的**类型**和**值**。
 
+
+
+在`reflect`包中定义的Kind类型如下：
+
 ~~~go
 type Kind uint
 const (
@@ -85,7 +89,7 @@ const (
 
 
 
-> reflect.TypeOf 
+> reflect.TypeOf   通过反射获取类型
 
 ~~~go
 //反射获取任意变量的类型
@@ -117,6 +121,7 @@ func main() {
 	h := 100				//类型：*int   类型名称： 类型种类：ptr
 	i := [3]int{1,2,3}		//类型：[3]int 类型名称： 类型种类：array
 	j := []int{11,22,33}	//类型：[]int  类型名称： 类型种类：slice
+    //Go语言的反射中像数组、切片、Map、指针等类型的变量，它们的.Name()都是返回空。
 	reflectFn(a)
 	reflectFn(b)
 	reflectFn(c)
@@ -132,7 +137,7 @@ func main() {
 
 
 
-> reflect.ValueOf 方法使用
+> reflect.ValueOf  通过反射获取值
 
 ~~~go
 func reflectVal(x interface{}) {
@@ -173,6 +178,26 @@ func main() {
 	reflectVal(num)
 }
 ~~~
+
+
+
+常见`reflect.Value`类型提供的获取原始值的方法如下：
+
+| 方法                     | 说明                                                         |
+| :----------------------- | :----------------------------------------------------------- |
+| Interface() interface {} | 将值以 interface{} 类型返回，可以通过类型断言转换为指定类型  |
+| Int() int64              | 将值以 int 类型返回，所有有符号整型均可以此方式返回          |
+| Uint() uint64            | 将值以 uint 类型返回，所有无符号整型均可以此方式返回         |
+| Float() float64          | 将值以双精度（float64）类型返回，所有浮点数（float32、float64）均可以此方式返回 |
+| Bool() bool              | 将值以 bool 类型返回                                         |
+| Bytes() []bytes          | 将值以字节数组 []bytes 类型返回                              |
+| String() string          | 将值以字符串类型返回                                         |
+
+
+
+> 通过反射设置变量的值
+
+
 
 
 
