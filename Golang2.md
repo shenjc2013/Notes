@@ -3013,7 +3013,7 @@ func main() {
 
 并发环境下进行操作，就会出现并发访问的问题。即有时候在Go代码中可能会存在多个`goroutine`同时操作一个资源（临界区），这种情况会发生`竞态问题`（数据竞态）。
 
-如多个 goroutine操作全局变量时，会引发问题
+如多个 goroutine操作全局变量时，会引发问题。
 
 ~~~go
 //多协程 操作全局变量 引出问题
@@ -3037,7 +3037,7 @@ func main() {
 }
 ~~~
 
-在windows系统下：
+**在windows系统下**：
 
 ~~~go
 > go build -race main.go
@@ -3054,15 +3054,15 @@ Previous write at 0x000000638ea8 by goroutine 7:
 
 
 
-
-
 ###### 7.7.1 互斥锁
 
 **互斥锁**是传统并发编程中对共享资源进行访问控制的主要手段，它由标准库sync中的Mutex结构体类型表示。
 
-sync.Mutex类型只有两个公开的指针方法，Lock和Unlock。Lock锁定当前的共享资源，Unlock 进行解锁
+sync.Mutex类型只有两个公开的指针方法，Lock 和 Unlock。Lock锁定当前的共享资源，Unlock 进行解锁。
 
-使用格式：
+
+
+**使用格式**
 
 ~~~go
 // 定义一个锁
@@ -3077,28 +3077,30 @@ mutex.Unlock()
 
 
 
+**互斥锁使用**
+
 ~~~go
 var x = 0
 var wg sync.WaitGroup
-var lock sync.Mutex
+var mutex sync.Mutex
 
-//互斥锁
-
-func Sum()  {
-	for i := 0; i < 5000 ; i++  {
-		lock.Lock()   //加锁
-		x += 1
-		lock.Unlock() //解锁
+func Sum() {
+	for iNum := 0; iNum < 5000; iNum++ {
+		mutex.Lock()
+		x = x + 1
+		mutex.Unlock()
 	}
 	wg.Done()
 }
-
-func main()  {
+func main() {
 	wg.Add(2)
+
 	go Sum()
 	go Sum()
+
 	wg.Wait()
-	fmt.Println(x)
+	fmt.Println("x := ", x) //10000
+	fmt.Println("main主线程完成")
 }
 ~~~
 
@@ -3111,11 +3113,13 @@ func main()  {
 
 互斥锁是完全互斥的，但是有很多实际的场景下是读多写少的，当我们并发的去读取一个资源不涉及资源修改的时候是没有必要加锁的，这种场景下使用读写锁是更好的一种选择。
 
+
+
 > 读写锁在Go语言中使用`sync`包中的`RWMutex`类型。
 
 读写锁分为两种：读锁和写锁。
-当一个goroutine获取**读锁**之后，其他的goroutine如果是`获取读锁会继续获得锁`，如果是获取写锁就会等待；
-当一个goroutine获取**写锁**之后，其他的goroutine无论是`获取读锁还是写锁都会等待`。
+当一个goroutine获取**读锁**之后，其他的goroutine如果是**获取读锁会继续获得锁，如果是获取写锁就会等待**；
+当一个goroutine获取**写锁**之后，其他的goroutine无论是**获取读锁还是写锁都会等待**。
 
 
 
