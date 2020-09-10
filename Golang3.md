@@ -1,5 +1,3 @@
-Golang3
-
 #### 第七天课程
 
 ###### 7.1 复习
@@ -160,7 +158,7 @@ func reflectVal(x interface{}) {
 	v := reflect.ValueOf(x)
 	kind := v.Kind()
 	switch kind {
-		case reflect.Int:
+		case reflect.Int://常量值
 			fmt.Printf("int类型的原始值%v\n ", v.Int()+10)
 		case reflect.Float32:
 			fmt.Printf("float32类型的原始值%v\n ", v.Float()+10.32)
@@ -197,7 +195,250 @@ func main() {
 
 > 通过反射设置变量的值
 
+想要在函数中通过反射修改变量的值，需要注意函数参数传递的是值拷贝，必须传递变量地址才能修改变量值。而反射中使用专有的`Elem()`方法来获取指针对应的值。
 
+
+
+设置值：v.Elem().SetXxx()
+
+~~~go
+//修改值
+
+//【变量值传递类型，修改的是副本值】
+func reflectSetVal1(x interface{}) {
+	//这里会报错
+	//panic: reflect: reflect.flag.mustBeAssignable using unaddressable value
+	//v := reflect.ValueOf(x)
+	//if v.Kind() == reflect.Int {
+	//	v.SetInt(2000)
+	//}
+}
+
+func reflectSetVal2(x interface{}) {
+	v := reflect.ValueOf(x)
+	//fmt.Println(v.Elem().Kind(), v.Kind()) // int  ptr
+	//if v.Elem().Kind() == reflect.Int {
+	//	v.Elem().SetInt(2345)
+	//}
+	switch v.Elem().Kind() {
+		case reflect.Int:
+			v.Elem().SetInt(2345)
+		case reflect.String:
+			v.Elem().SetString("golang study")
+		case reflect.Float64:
+			v.Elem().SetFloat(123.456)
+		default:
+			fmt.Println("未添加的类型")
+	}
+}
+
+func main() {
+	var a = 100
+	//reflectSetVal1(a)
+	reflectSetVal2(&a)
+	fmt.Println(a)
+
+	var b = "hello golang"
+	reflectSetVal2(&b)
+	fmt.Println(b)
+
+	var c float64 = 123.555
+	reflectSetVal2(&c)
+	fmt.Println(c)
+}
+~~~
+
+
+
+###### 7.3.3 结构体反射属性和值
+
+
+
+reflect.Type中与获取结构体成员相关的的方法如下表所示。
+
+| 方法                                        | 说明                                      |
+| ------------------------------------------- | ----------------------------------------- |
+| Field(i int)StructField                     | 根据索引，返回索引对应的结构体字段的信息  |
+| NumField() int                              | 返回结构体成员**字段数量**                |
+| FieldByName(name string)(StructField, bool) | 根据给定字符串返回字符串的结构体字段信息  |
+| FieldByIndex(index []int)StructField        | 多层成员访问时，根据[] int 提供的每个结构 |
+
+
+
+> 获取结构体中的属性
+
+~~~go
+//结构体反射
+
+//定义学生结构体
+type Student struct {
+	Name string `json:"name" init:"testvv"`
+	Age  int      `json:"age"`
+	Score float32 `json:"score"`
+}
+
+//结构体反射
+func PrintStructField(s interface{})  {
+	t := reflect.TypeOf(s)
+	// 判断传递过来的是否是结构体
+	if t.Kind() != reflect.Struct && t.Elem().Kind() != reflect.Struct {
+		fmt.Println("请传入结构体类型!")
+		return
+	}
+
+	//第一种方法：通过索引去查找
+	// 通过类型变量里面的Field可以获取结构体的字段
+	field0 := t.Field(0) // 获取第0个字段
+	fmt.Printf("%#v\n", field0)
+	fmt.Println("字段名称:", field0.Name)
+	fmt.Println("字段类型:", field0.Type)
+	fmt.Println("字段Tag:", field0.Tag.Get("json"))
+    fmt.Println("字段Tag:", field0.Tag.Get("init"))
+
+	//field1 := t.Field(1) // 获取第1个字段
+	//fmt.Printf("%#v\n", field1)
+	//fmt.Println("字段名称:", field1.Name)
+	//fmt.Println("字段类型:", field1.Type)
+	//fmt.Println("字段Tag:", field1.Tag.Get("json"))
+
+	//第二种方法：通过名字查找
+	// 通过类型变量里面的FieldByName可以获取结构体的字段中
+	field1, ok := t.FieldByName("Age")
+	if ok {
+		fmt.Println("字段名称:", field1.Name)
+		fmt.Println("字段类型:", field1.Type)
+		fmt.Println("字段Tag:", field1.Tag)
+	}
+
+	// 通过类型变量里面的NumField获取该结构体有几个字段
+	var fieldCount = t.NumField()
+	fmt.Println("结构体有：", fieldCount, " 个属性")
+
+	// 获取结构体属性对应的值
+	v := reflect.ValueOf(s)
+	nameValue := v.FieldByName("Name")
+	fmt.Println("nameValue:", nameValue)
+    fmt.Println("ScoreVal", v.FieldByName("Score"))
+}
+func main() {
+	var studentInfo = Student{
+		Name: "chenglh",
+		Age: 20,
+		Score: 634.01,
+	}
+	//fmt.Printf("studentInfo %#v\n", studentInfo)
+	//studentInfo main.Student{Name:"chenglh", Age:20, Score:634.01}
+	PrintStructField(studentInfo)
+}
+~~~
+
+
+
+> 知识总结
+
+```go
+//获取结构体中的字段名称，类型，tag标签，结构体的字段数量 
+//  t := reflect.TypeOf(s)
+//    方法一：t.Field(0).Name/t.Field(0).Type/t.Field(0).Tag.Get("json")
+//    方法二：field1,_ = t.FieldByName("Age")断言，field1.Name/field1.Type/field1.Tag.Get("json")
+//获取结构体中的字段的值。 
+//   v := reflect.ValueOf(s)
+//       v.FieldByName("Name")
+//       v.FieldByName("Score")
+```
+
+
+
+###### 7.3.4 结构体反射方法及调用
+
+【这里的代码调试不成功】
+
+~~~go
+package main
+
+import (
+	"fmt"
+	"reflect"
+)
+
+//结构体反射
+//反射获取结构体中 方法及调用
+
+//定义学生结构体
+type Student struct {
+	Name string   `json:"name"`
+	Age  int      `json:"age"`
+	Score int     `json:"score"`
+}
+
+func (s *Student)SetInfo(name string, age int, score int) {
+	s.Name = name
+	s.Age = age
+	s.Score = score
+	return
+}
+
+func (s Student)GetInfo()string {
+	var str = fmt.Sprintf("姓名：%v 年龄：%v 成绩：%v", s.Name, s.Age, s.Score)
+	return str
+}
+
+func (s Student)PrintStudent() {
+	fmt.Println("打印学生")
+}
+
+// 打印执行方法
+func PrintStructFn(s interface{}) {
+	t := reflect.TypeOf(s)
+	// 判断传递过来的是否是结构体
+	if t.Kind() != reflect.Struct && t.Elem().Kind() != reflect.Struct {
+		fmt.Println("请传入结构体类型!")
+		return
+	}
+	// 通过类型变量里面的Method，可以获取结构体的方法
+	method0 := t.Method(0)
+	// 获取第一个方法， 这个是和ACSII相关
+	fmt.Println(method0.Name)
+
+	// 通过类型变量获取这个结构体有多少方法
+	methodCount := t.NumMethod()
+	fmt.Println("结构体拥有的方法个数：", methodCount)
+
+	// 通过值变量 执行方法（注意需要使用值变量，并且要注意参数）
+	v := reflect.ValueOf(s)
+	// 通过值变量来获取参数
+	v.MethodByName("GetInfo").Call(nil)
+
+	//【执行失败】【执行失败】【执行失败】
+	// 手动传参
+	var params []reflect.Value
+	params = append(params, reflect.ValueOf("张三"))
+	params = append(params, reflect.ValueOf(23))
+	params = append(params, reflect.ValueOf(99))
+	// 执行setInfo方法
+	v.MethodByName("SetInfo").Call(params)
+
+	// 通过值变量来获取参数
+	v.MethodByName("PrintStudent").Call(nil)
+}
+
+func main() {
+	var studentInfo = Student{
+		Name: "chenglh",
+		Age: 20,
+		Score: 98,
+	}
+	PrintStructFn(studentInfo)
+}
+~~~
+
+
+
+反射是一个强大并富有表现力的工具，能让我们写出更灵活的代码。但是反射不应该被滥用，原因有以下三个。
+
+1. 基于反射的代码是极其脆弱的，反射中的类型错误会在真正运行的时候才会引发panic，那很可能是在代码写完的很长时间之后。
+2. 大量使用反射的代码通常难以理解。
+3. 反射的性能低下，基于反射实现的代码通常比正常代码运行速度慢一到两个数量级。
 
 
 
