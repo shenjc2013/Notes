@@ -658,10 +658,10 @@ func main() {
 	userInfo["address"] = address
 
 	//类型断言
-	if hobbyVal,ok := userInfo["hobby"].([]string);ok {
+	if hobbyVal,ok := userInfo["hobby"].([]string); ok {
 		fmt.Println(hobbyVal[0], hobbyVal[1], hobbyVal[2])
 	}
-	if addressVal,ok := userInfo["address"].(Address);ok {
+	if addressVal,ok := userInfo["address"].(Address); ok {
 		fmt.Println(addressVal.Province, addressVal.City)
 	}
 ~~~
@@ -951,24 +951,28 @@ func main()  {
 
 ##### 5.5 文件操作
 
-###### 5.5.1 文件读操作
+###### 5.5.1 文件打开关闭
 
-> 打开与关闭文件 os.Open() 和 file.Close()
+> os.Open() 和 file.Close()
 
 ~~~go
-// 只读方式打开文件
-file, err := os.Open("./main.go") //返回*File, err
-if err != nil {
-    fmt.Println("open file failed!, err:", err)
-  	return
+func main() {
+	//打开文件
+	file,err := os.Open("./main.go") //*file,err
+	if err != nil {
+		fmt.Println("open file failed!, err:", err)
+		return
+	}
+	//关闭文件
+	file.Close()
 }
-// 关闭文件
-file.Close()
 ~~~
 
 
 
-> 读取文件 file.Read()
+###### 5.5.2 按指定字节读取文件
+
+>  file.Read()
 
 ~~~go
 func (f *File) Read(b []byte) (n int, err error)
@@ -976,75 +980,81 @@ func (f *File) Read(b []byte) (n int, err error)
 
 函数接收一个字节切片，返回读取的字节数和可能的具体错误，读到文件末尾会返回 `0` 和 `io.EOF`
 
-
-
-**指定字节读取文件**
-
 ~~~go
-func main()  {
-		file,err := os.Open("./main.go")
-		if err != nil {
-				fmt.Println("读取文件出错")
-		}
-		defer file.Close()
-
-  	//循环读取文件
-		var content []byte
-		var tmp = make([]byte, 128)
-		for {
-				n, err := file.Read(tmp) //指定字节读取
-				if err == io.EOF {
-						fmt.Println("文件读完了")
-						break
-				}
-				if err != nil {
-						fmt.Println("read file failed,err:", err)
-						return
-				}
-				content = append(content, tmp[:n]...)
-	}
-	fmt.Println(string(content))
-}
-~~~
-
-
-
-**一行行读取文件 **
-
-~~~go
-//bufio读取文件
-//bufio是在file的基础上封装了一层API，支持更多的功能。
-
-func main()  {
-	file, err := os.Open("./main.go")
+func main() {
+	file,err := os.Open("./main.go")
 	if err != nil {
-		fmt.Println("open file failed, err:", err)
+		fmt.Println("打开文件错误")
 		return
 	}
 	defer file.Close()
 
-	var contents []byte
-	reader := bufio.NewReader(file)
+	var fileContext []byte
+	var tmpStr = make([]byte, 128)
 	for {
-		line, err := reader.ReadString('\n') //注意是字符
-		if err == io.EOF {//读到文件末了
-			if err == io.EOF {
-				if len(line) != 0 {
-					contents = append(contents, line[:]...)
-				}
-				fmt.Println("文件读完了")
-				break
-			}
+		n,err := file.Read(tmpStr) //按字节读取内容
+		if err == io.EOF {
+			break
 		}
 		if err != nil {
-			fmt.Println("文件读取出错")
+			fmt.Println("读取文件错误")
+			return
 		}
-		contents = append(contents, line[:]...)
+		fileContext = append(fileContext, tmpStr[:n]...)
 	}
 
-	fmt.Println(string(contents[:]))
+	fmt.Println(string(fileContext))
 }
 ~~~
+
+
+
+###### 5.5.3 按行读取文件
+
+> bufio读取文件
+
+~~~go
+reader := bufio.NewReader(file)
+line, err := reader.ReadString('\n') //注意是字符
+~~~
+
+代码如下：
+
+~~~go
+//一行行读取文件
+
+func main() {
+	file,err := os.Open("./main.go")
+	if err != nil {
+		fmt.Println("打开文件出错")
+		return
+	}
+	defer file.Close()
+
+	var fileContext []byte
+	reader := bufio.NewReader(file)
+	for {
+		line, err := reader.ReadString('\n') // 注意是字符
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			fmt.Println("文件读取错误")
+			return
+		}
+		fileContext = append(fileContext,line[:]...)
+	}
+	fmt.Println(string(fileContext))
+}
+~~~
+
+
+
+###### 5.5.4 整个读取文件
+
+> ioutil.ReadFile()
+
+
 
 
 
