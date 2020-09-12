@@ -2324,27 +2324,34 @@ func main() {
 
 
 
-**make()的函数签名**
+make()的函数签名：
 
 ```go
 func make(t Type, size ...IntegerType) Type
 ```
 
-`var b map[string]int`只是声明变量b是一个map类型的变量，需要使用make函数进行初始化操作之后，才能对其进行键值对赋值：
+举个栗子：
 
 ~~~go
 func main() {
+	//Slice类型
+	var slice = make([]int, 4, 8)
+	fmt.Println(slice)
+
+	//Map类型
 	var b map[string]int
 	b = make(map[string]int, 10)
-
-	b["沙河娜扎"] = 100
+	b["score"] = 100
 	fmt.Println(b)
+
+	//Chan类型
+	var ch = make(chan int, 10)
 }
 ~~~
 
 
 
-> new与make的区别
+###### 2.4.3 new与make的区别
 
 1. 二者都是用来做内存分配的。
 2. make只用于slice、map以及channel的初始化，返回的还是这三个引用类型本身；
@@ -2360,7 +2367,7 @@ map是一种无序的基于key-value的数据结构，Go语言中的map是**引�
 
 
 
-> map定义
+###### 2.5.1 map定义
 
 ~~~go
 map[KeyType]ValueType
@@ -2369,58 +2376,67 @@ map[KeyType]ValueType
 - KeyType    ：表示键的类型
 - ValueType：表示键对应的值的类型
 
-举例说明
+
+
+###### 2.5.2 map初始化
+
+> 方法一：make()分配内存
 
 ```go
 func main() {
-    //以下编译是没有问题，但是运行时会出问题
-    var m1 map[string]int
-    fmt.Println(m1 == nil) //还没有初始化，没有在内存中开辟空间
-    m1["age1"] = 18
-    m1["age2"] = 30
-    //以上赋值是不成功的
+	//以上赋值是不成功的
+	defer func() {
+		err := recover()
+		if err != nil {
+			fmt.Println(err) //assignment to entry in nil map
+		}
+	}()
+	////以下编译是没有问题，但是运行时会出问题
+	//var m1 map[string]int
+	//fmt.Println(m1 == nil) //还没有初始化，没有在内存中开辟空间
+	//m1["zhangsan"] = 65
+	//m1["lisi"] = 59
+	//fmt.Println(m1) //这里会抛出异常
 
-    //正确例子
-    m1 := make(map[string]int, 10) //第二个参数"容量"可以不写，自动扩容；
-    //但是最好估算好容量，避免在程序运行期间再动态扩容，增加开销
-    m1["age1"] = 18
-    m1["age2"] = 30
+	//正确例子
+	m1 := make(map[string]int, 10) //参数"容量"可选，自动扩容；最好估算好容量，避免在程序运行期间再动态扩容，增加开销
+	m1["zhangsan"] = 65
+	m1["lisi"] = 59
+	fmt.Println(m1) //map[lisi:59 zhangsan:65]
 }
 ```
 
 
 
-> map类型初始化分配内存，【默认初始值为nil，需要使用make()函数来分配内存】
-
-语法如下：
+> map类型声明并初始化
 
 ```go
-make(map[KeyType]ValueType, [cap])
-//其中cap表示map的容量，该参数虽然不是必须的，但是我们应该在初始化map的时候就为其指定一个合适的容量
+func main() {
+	userInfo := map[string]string {
+		"username": "chenglh",
+		"password": "123456",
+	}
+	fmt.Println(userInfo)//map[password:123456 username:chenglh]
+}
 ```
 
 
 
-**Map的使用**
+完整例子：
 
 ~~~go
 func main()  {
-  //方式一、make创建map类型数据
+	//方式一、make创建map类型数据
 	scoreMap := make(map[string]float32, 10) //10个容量
-  
-  //键值对出现
+
+	//键值对出现
 	scoreMap["张三"] = 90.40
 	scoreMap["李明"] = 95.00
 	scoreMap["赵宁"] = 89.95
-    
+
 	fmt.Printf("scoreMap Type：%T\n", scoreMap) //scoreMap Type：map[string]float32
-	fmt.Println(scoreMap)  											//map[张三:90.4 李明:95 赵宁:89.95]
-	fmt.Println(scoreMap["赵宁"]) 							 //89.95
-  
-  //方式二、map声明的时候填充元素
-  //声明 map变量
-	//var studentInfo map[string]string
-	//fmt.Println(studentInfo == nil, studentInfo) //true map[]
+	fmt.Println(scoreMap)  						//map[张三:90.4 李明:95 赵宁:89.95]
+	fmt.Println(scoreMap["赵宁"]) 			   //89.95
 
 	//初始化
 	studentInfo := make(map[string]string)
@@ -2428,11 +2444,121 @@ func main()  {
 	studentInfo["age"] = "18"
 	studentInfo["sex"] = "男"
 	fmt.Println(studentInfo)
+    
+    //方式二、map声明的时候填充元素
+	var studentInfo = map[string]string {
+		"username": "chenglh",
+		"password": "123456",
+	}
+}
+~~~
 
-	//map的 CURD操作
+
+
+###### 2.5.3 判断某个键是否存在
+
+格式如下:
+
+~~~go
+val,ok := map[key]
+~~~
+
+~~~go
+func main() {
+	scoreMap := make(map[string]int)
+	scoreMap["张三"] = 90
+	scoreMap["小明"] = 100
+	// 如果key存在ok为true,v为对应的值；不存在ok为false,v为值类型的零值
+	v, ok := scoreMap["张三"]
+	if ok {
+		fmt.Println(v)
+	} else {
+		fmt.Println("查无此人")
+	}
+}
+~~~
+
+
+
+###### 2.5.4 Map遍历
+
+Go语言中使用 **for range **遍历
+
+~~~go
+func main() {
+	scoreMap := make(map[string]int, 10)
+	scoreMap["zhangsan"] = 88
+	scoreMap["lisi"] 	 = 79
+	scoreMap["wangwu"] 	 = 90
+
+	for index,value := range scoreMap{ //如果只遍历一个参数，即为 key
+		fmt.Printf("姓名：%v 成绩：%v\n",index,value)
+	}
+}
+~~~
+
+**注意：** 遍历map时的元素顺序与添加键值对的顺序无关，【每次的结果可能不一样】
+
+
+
+**按指定顺序遍历  **可用于签名算法
+
+~~~go
+//需求：生成一列学生编号，和学生成绩随机Map；然后按照学生号升序排序。
+//Map是无序散列的容器
+
+~~~
+
+
+
+###### 2.5.5 删除Map某键值对
+
+`delete()`函数的格式如下：
+
+~~~go
+delete(map, key)
+~~~
+
+- map：表示要删除键值对的map
+- key  ：表示要删除的键值对的键
+
+
+
+举个例子：
+
+~~~go
+func main() {
+	scoreMap := make(map[string]int)
+	scoreMap["zhangsan"] = 88
+	scoreMap["lisi"] 	 = 79
+	scoreMap["wangwu"] 	 = 90
+
+	delete(scoreMap, "lisi")
+	delete(scoreMap, "zhaoying") //删除不存在的key，什么也不干的
+	fmt.Println(scoreMap)
+}
+
+//查看文档：
+> go doc builtin.delete
+ If m is nil or there is no such element, delete is a no-op.
+
+//https://studygolang.com/pkgdoc
+~~~
+
+
+
+完整代码：
+
+~~~go
+func main()  {
+	//Map的 CURD 操作
+	var studentInfo = map[string]string {
+		"username" : "lisi",
+		"password" : "123456",
+	}
 
 	//增加
-	studentInfo["regtime"] = "2020-08-24 12:10:22"
+	studentInfo["regtime"] = time.Now().Format("2006-01-02 15:04:05")
 	fmt.Println(studentInfo)
 
 	//修改
@@ -2450,199 +2576,98 @@ func main()  {
 	} else {
 		fmt.Println(val)
 	}
-  
-  //如果直接查询不存在的key，会返回对应类型的零值。
-  
-  //map类型的遍历
-  //map遍历
-	for index,value := range studentInfo{
-		fmt.Println(index,":",value)
-	}
-  
-  //切片是引用类型
-	var userInfo1 = make(map[string]string)
-	userInfo1["name"] = "chenglh"
-	userInfo1["age"]  = "20"
-	userInfo2 := userInfo1
-  
-	userInfo2["age"] = "21"
-	fmt.Println(userInfo1, userInfo2) //map[age:21 name:chenglh] map[age:21 name:chenglh]
-  
-  // map[string]T 类型； []string切片
-	var userInfo3 = make(map[string][]string)
-	userInfo3["hobby"] = []string{
-		"php",
-		"java",
-		"c++",
-	}
-	userInfo3["sport"] = []string{
-		"zhuqiu",
-		"lanqiu",
-	}
 }
 ~~~
 
 
 
-**判断map中某个键是否存在**
+**按照指定顺序遍历Map**
 
 ~~~go
-val,ok := map[key]
+//需求：生成一列学生编号，和学生成绩随机Map；然后按照学生号升序排序及打印对应其成绩。
+//Map是无序散列的容器
+
+func sortMap(student map[string]int) {
+	var userInfo = make([]map[string]string, 10) //Map的切片
+	//切片存储学号
+	var slice = make([]string, 0, 10)
+	for key,_ := range student {
+		slice = append(slice,key)
+	}
+
+	//第二步：升级排序学号
+	sort.Strings(slice)
+	for key,val := range slice {
+		//fmt.Println("学号：",val, "成绩：", student[val])
+		if userInfo[key] == nil {
+			userInfo[key] = make(map[string]string, 2)
+			userInfo[key]["学号"] = val
+			userInfo[key]["成绩"] = strconv.Itoa(student[val])
+		}
+	}
+	fmt.Println(userInfo)
+}
+
+func main() {
+    //生成随机种子
+	rand.Seed(time.Now().UnixNano())
+
+	var StudentInfo = make(map[string]int, 45)
+
+	//第一步生成学号 和 随机成绩
+	for iNum := 1; iNum <= 10; iNum++ {
+		var studentNo = fmt.Sprintf("No202012%02d", iNum)
+		StudentInfo[studentNo] = rand.Intn(100)//生成0-99的随机整数
+	}
+
+	sortMap(StudentInfo)
+}
 ~~~
 
 
 
-**Map遍历**
-
-Go语言中使用for range遍历map。
+###### 2.5.6 元素为map类型的切片
 
 ~~~go
 func main() {
-	scoreMap := make(map[string]int, 10)
-	scoreMap["zhangsan"] = 88
-	scoreMap["lisi"] = 79
-	scoreMap["wangwu"] = 90
-    
-	for index,value := range scoreMap{
-		fmt.Printf("姓名：%v 成绩：%v\n",index,value)
+	//在切片里放一系列用户信息，即切片里放切片
+	var userInfo = make([]map[string]string, 3)
+	for index, value := range userInfo {
+		fmt.Printf("index:%d value:%v\n", index, value)
 	}
-    
-  //如果只想要key的时候
-  for kk := range userInfo {
-		fmt.Println(kk)
+	/** 打印结果：
+	 * index:0 value:map[]  也是 nil 值
+	 * index:1 value:map[]
+	 * index:2 value:map[]
+	 */
+
+	// 对切片中的map元素进行初始化
+	if userInfo[0] == nil {
+		userInfo[0] = make(map[string]string, 10)
+		userInfo[0]["name"] = "chenglh"
+		userInfo[0]["password"] = "123456"
+		userInfo[0]["address"] = "广东"
+		for index, value := range userInfo[0] {
+			fmt.Printf("index:%d value:%v\n", index, value)
+		}
 	}
-}
-~~~
 
-**注意：** 遍历map时的元素顺序与添加键值对的顺序无关，【每次的结果可能不一样】
-
-
-
-**delete()函数删除键值对**
-
-~~~go
-delete(map, key)
-~~~
-
-- map：表示要删除键值对的map
-- key  ：表示要删除的键值对的键
-
-
-
-举个例子：
-
-~~~go
-func main() {
-  scoreMap := make(map[string]int)
-	scoreMap["zhangsan"] = 88
-	scoreMap["lisi"] = 79
-	scoreMap["wangwu"] = 90
-    
-	delete(scoreMap, "lisi")
-	delete(scoreMap, "wangliu") //删除不存在的key，什么也不干的
-	fmt.Println(scoreMap)
-}
-
-//查看文档：
->go doc builtin.delete
- If m is nil or there is no such element, delete is a no-op.
-
-//https://studygolang.com/pkgdoc
-~~~
-
-
-
-**按照指定顺序遍历map**
-
-~~~go
-package main
-import (
-	"fmt"
-	"math/rand"
-	"sort"
-	"time"
-)
-
-func main()  {
-	//初始化随机数种子
-	rand.Seed(time.Now().UnixNano()) //时间，加上纳秒
-
-	//创建map
-	var scoreMap  = make(map[string]int, 20)
-
-	//遍历填充值
-	for i := 0; i < 10; i++ {
-		key := fmt.Sprintf("stu%04d", i) //生成stu开头的学号字符串
-		value := rand.Intn(100) //生成0-99的随机整数
-		scoreMap[key] = value
+	if userInfo[1] == nil {
+		userInfo[1] = make(map[string]string, 10)
+		userInfo[1]["name"] = "flp"
+		userInfo[1]["password"] = "123123"
+		userInfo[1]["address"] = "广东"
+		for index, value := range userInfo[1] {
+			fmt.Printf("index:%d value:%v\n", index, value)
+		}
 	}
-	fmt.Println(scoreMap)
-  //map[No00:21 No01:52 No02:26 No03:57 No04:40 No05:1 No06:0 No07:37 No08:89 No09:29]
 
-	//取出map中的所有key存入切片keys
-	var keys  = make([]string, 0, 10)
-	for key := range scoreMap {
-		keys = append(keys, key)
+	//遍历
+	for _,val := range userInfo {
+		for index,value := range val{
+			fmt.Println(index,":",value)
+		}
 	}
-	fmt.Println(keys)
-  //[No08 No09 No00 No07 No03 No04 No05 No06 No01 No02]
-
-	//对切片进行排序
-	sort.Strings(keys)
-	fmt.Println(keys)
-  //[No00 No01 No02 No03 No04 No05 No06 No07 No08 No09] 排序后的结果
-
-	//按照排序后的key遍历map
-	for _, key := range keys {
-		fmt.Printf("%v：%v\n", key, scoreMap[key])
-	}
-}
-~~~
-
-
-
-**元素为map类型的切片**
-
-~~~go
-func main() {
-    //在切片里放一系列用户信息，即切片里放切片
-    var userInfo = make([]map[string]string, 3)
-	  for index, value := range userInfo {
-		    fmt.Printf("index:%d value:%v\n", index, value)
-	  }
-    /** 打印结果：
-     * index:0 value:map[]  也是 nil 值
-     * index:1 value:map[]
-     * index:2 value:map[]
-	   */
-    
-    // 对切片中的map元素进行初始化
-    if userInfo[0] == nil {
-	      userInfo[0] = make(map[string]string, 10)
-	      userInfo[0]["name"] = "chenglh"
-	      userInfo[0]["password"] = "123456"
-	      userInfo[0]["address"] = "广东"
-	      for index, value := range userInfo[0] {
-		        fmt.Printf("index:%d value:%v\n", index, value)
-	      }
-    }
-
-    if userInfo[1] == nil {
-	      userInfo[1] = make(map[string]string, 10)
-	      userInfo[1]["name"] = "flp"
-	      userInfo[1]["password"] = "123123"
-	      userInfo[1]["address"] = "广东"
-	      for index, value := range userInfo[1] {
-		        fmt.Printf("index:%d value:%v\n", index, value)
-	      }
-    }
-    
-    //遍历
-    for _,val := range userInfo {
-		  for index,value := range val{
-			  fmt.Println(index,":",value)
-		  }
-	  }
 }
 ~~~
 
@@ -2652,19 +2677,19 @@ func main() {
 
 ~~~go
 func main() {
-    var sliceMap = make(map[string][]string, 3)
-	  fmt.Println(sliceMap)
-    //map[]
+	var sliceMap = make(map[string][]string, 3)
+	fmt.Println(sliceMap)
+	//map[]
 
-	  key := "中国"
-	  value, ok := sliceMap[key]
-	  if !ok {
-	  	value = make([]string, 0, 2)
-	  }
-	  value = append(value, "北京", "上海")
-	  sliceMap[key] = value
-	  fmt.Println(sliceMap)
-    //map[中国:[北京 上海]]
+	key := "中国"
+	value, ok := sliceMap[key]
+	if !ok {
+		value = make([]string, 0, 2)
+	}
+	value = append(value, "北京", "上海")
+	sliceMap[key] = value
+	fmt.Println(sliceMap)
+	//map[中国:[北京 上海]]
 }
 ~~~
 
@@ -2679,7 +2704,7 @@ func main() {
  */
 func sliceSort(m map[string]string) string {
 	var signString string
-	
+
 	//1、把map的key放在切片里面
 	var keySlice []string
 	for key,_ := range m {
@@ -2706,8 +2731,8 @@ func sliceSort(m map[string]string) string {
  */
 func countWords(str string) map[string]int {
 	var cWords = make(map[string]int)
-	
-  //1、分割字符串
+
+	//1、分割字符串
 	splitSlice := strings.Split(str, " ")
 
 	//2、遍历统计个数
@@ -2727,7 +2752,9 @@ Go语言中支持：函数、匿名函数和闭包。
 
 
 
-> 函数的定义
+###### 2.6.1 函数定义
+
+Go语言中定义函数使用`func`关键字，具体格式如下：
 
 ~~~go
 func 函数名(参数)(返回值) {
@@ -2737,23 +2764,25 @@ func 函数名(参数)(返回值) {
 
 
 
-求两个数之和：
+定义函数，实现两数之和：
 
 ~~~go
 //有返回值
 func intSum(x int, y int) int {
-    return x + y
+	return x + y
 }
 ~~~
 
 
+
+###### 2.6.2 函数参数
 
 > 类型简写
 
 ~~~go
 //函数的参数中如果相邻变量的类型相同，则可以省略类型
 func intSum(x, y int) int {
-    return x + y
+	return x + y
 }
 ~~~
 
@@ -2765,7 +2794,7 @@ func intSum(x, y int) int {
 func intSum2(x ...int) int { //参数：x 是一个切片
 	fmt.Println(x)
 	sum := 0
-	for _, v := range x { //遍历
+	for _, v := range x { //遍历切片
 		sum = sum + v
 	}
 	return sum
@@ -2803,12 +2832,14 @@ fmt.Println(ret5, ret6, ret7, ret8) //100 110 130 160
 
 
 
-**返回值**
+###### 2.6.3 返回值
 
-> 多返回值，Go语言中函数支持多返回值，函数如果有多个返回值时必须用`()`将所有返回值包裹起来。
+> 多返回值
+
+Go语言中函数支持多返回值，函数如果有多个返回值时必须用`()`将所有返回值包裹起来。
 
 ~~~go
-func calc(x, y int) (int, int) {
+func Calc(x, y int) (int, int) {
 	sum := x + y
 	sub := x - y
 	return sum, sub
@@ -2817,7 +2848,9 @@ func calc(x, y int) (int, int) {
 
 
 
-> 返回值命名，函数定义时可以给返回值命名，并在函数体中直接使用这些变量，最后通过`return`关键字返回。
+> 返回值命名
+
+函数定义时可以给返回值命名，并在函数体中直接使用这些变量，最后通过`return`关键字返回。
 
 ~~~go
 func calc(x, y int) (sum, sub int) { //使用命名方式返回，return 可以不写
@@ -2829,7 +2862,9 @@ func calc(x, y int) (sum, sub int) { //使用命名方式返回，return 可以�
 
 
 
->返回值补充，当我们的一个函数返回值类型为slice时，nil可以看做是一个有效的slice，没必要显示返回一个长度为0的切片。
+>返回值补充
+
+当我们的一个函数返回值类型为slice时，nil可以看做是一个有效的slice，没必要显示返回一个长度为0的切片。
 
 ~~~go
 func someFunc(x string) []int {
@@ -2840,75 +2875,195 @@ func someFunc(x string) []int {
 }
 ~~~
 
-**Go**语言中函数没有默认参数这个概念，函数可以做为参数传递，也可以作为返回值传递
+**Go**语言中函数没有默认参数这个概念，函数可以做为参数传递，也可以作为返回值传递。
 
-> 函数也是一种类型
+
+
+###### 2.6.4 变量作用域
+
+> 全局变量
+
+全局变量是定义在函数外部的变量，它在程序整个运行周期内都有效。 在函数中可以访问到全局变量。
 
 ~~~go
-type calcType func(int, int) int //表示定义一个calc的类型
-type myInt int
-func add(x , y int) int {
-    return x + y
+//定义全局变量num
+var num int64 = 10
+
+func testGlobalVar() {
+	fmt.Printf("num=%d\n", num) //函数中可以访问全局变量num
 }
-
-//func calc(int, int, c func(int, int) int) int {
-func calc(int , int, c calcType) int {
-    return c(x , y)
-}
-
-//func calc(x int , y int, c calcType) int {
-//    c = func(aa , bb int) int {
-//				return aa + bb
-//    }
-//    return c(x, y)
-//}
-
-/**
- * 调用方式 - 函数作为返回值传递
- * var a = do("+)
- * a(12, 4)
- */
-func do(str string) calcType {
-	switch str {
-	case "+":
-		return Add
-	case "-":
-		return Sub
-	case "*":
-		return func(x, y int) int {
-			return x * y
-		}
-	case "/":
-		return func(x, y int) int {
-			return int(x / y)
-		}
-	default:
-		return nil
-	}
-}
-
 func main() {
-    var c calcType
-    c = add
-    fmt.Printf("c的类型：%T", c) //c的类型：main.calcType
-    fmt.Println(c(1 ,2)) //3
-  
-    var a = 10
-	  var b myInt = 10
-	  fmt.Printf("a的类型：%T,b的类型：%T\n", a, b) //a的类型：int,b的类型：main.myInt
-  
-    //调用
-    calc(1, 2, add)
+	testGlobalVar() //num=10
 }
 ~~~
 
 
 
-**匿名函数**
+> 局部变量
 
-> 匿名函数是没有名字的函数，一般在函数内部定义和使用，可保存到变量或直接使用。
+1、函数内定义的变量无法在该函数外使用。2、局部变量与全局变量重名，函数内优先访问局部变量。
+
+~~~go
+//定义全局变量num
+var num int64 = 10
+
+func testNum() {
+	num := 100
+	str := "hello"
+	fmt.Printf("num=%d\n", num) // 函数中优先使用局部变量
+    fmt.Printf(str)
+}
+func main() {
+	testNum() // num=100
+}
+~~~
 
 
+
+语句块定义的变量，通常我们会在if条件判断、for循环、switch语句上使用这种定义变量的方式。
+
+~~~go
+for iNum := 0; iNum <= 10; iNum++ {
+	//iNum
+}
+
+if val,ok := mapStudent["zhangsan"]; ok {
+	//val ; ok
+}
+~~~
+
+
+
+###### 2.6.5 函数类型与变量
+
+> 定义函数类型
+
+具体格式：
+
+~~~go
+type 函数名称 func(参数...) (返回值...)
+~~~
+
+举个栗子：
+
+~~~go
+type calculation func(int, int) int
+
+func add(x, y int) int {
+	return x + y
+}
+
+func sub(x, y int) int {
+	return x - y
+}
+
+var c calculation
+c = add
+~~~
+
+
+
+> 函数类型的变量
+
+~~~go
+func main() {
+	var c calculation               // 声明一个calculation类型的变量c
+	c = add                         // 把add赋值给c
+	fmt.Printf("type of c:%T\n", c) // type of c:main.calculation
+	fmt.Println(c(1, 2))            // 像调用add一样调用c
+
+	f := add                        // 将函数add赋值给变量f1
+	fmt.Printf("type of f:%T\n", f) // type of f:func(int, int) int
+	fmt.Println(f(10, 20))          // 像调用add一样调用f
+}
+~~~
+
+
+
+###### 2.6.6 高阶函数
+
+> 函数作为参数
+
+~~~go
+//定义计算函数类型
+//var calculation func(int, int) int
+
+func add(x, y int) int {
+	return x + y
+}
+func calc(x, y int, op func(int, int) int) int {
+	return op(x, y)
+}
+//可以简写为
+//func calc(x, y, op calculation) int{
+//	return op(x, y)
+//}
+func main() {
+	ret2 := calc(10, 20, add)
+	fmt.Println(ret2) //30
+}
+~~~
+
+
+
+> 函数作为返回值
+
+~~~go
+func do(s string) (func(int, int) int, error) {
+	switch s {
+        case "+":
+            return add, nil
+        case "-":
+            return sub, nil
+		case "*":
+			return func(x, y int) int {
+				return x * y
+			},nil
+		case "/":
+			return func(x, y int) int {
+				return int(x / y)
+			},nil
+        default:
+            err := errors.New("无法识别的操作符")
+            return nil, err
+	}
+}
+~~~
+
+
+
+###### 2.6.7 匿名函数
+
+匿名函数就是没有函数名的函数，定义格式如下：
+
+```go
+func(参数) (返回值) {
+	函数体
+}
+```
+
+匿名函数因为没有函数名，所以没办法像普通函数那样调用，所以匿名函数需要保存到某个变量或者作为立即执行函数。
+
+~~~go
+func main() {
+	// 将匿名函数保存到变量
+	add := func(x, y int) {
+		fmt.Println(x + y)
+	}
+	add(10, 20) // 通过变量调用匿名函数
+
+	//自执行函数：匿名函数定义完加()直接执行
+	func(x, y int) {
+		fmt.Println(x + y)
+	} (10, 20)
+}
+~~~
+
+匿名函数多用于实现回调函数和闭包。
+
+
+
+###### 2.6.8 闭包函数
 
 **闭包**
 
@@ -2918,25 +3073,122 @@ func main() {
 
 注意：由于闭包里作用域返回的局部变量资源不会被立刻销毁回收，所以可能会占用更多的内存，过度使用会导致性能下降，建议在非常有必要的时候才使用。
 
+闭包 = 函数+引用环境
+
 ~~~go
-//闭包的写法，函数里面嵌套一个函数 最后返回里面的函数
-func adder() func() int {
-	var i = 10
-	return func() int {
-		return i + 1
+func adder() func(int) int {
+	var x int
+	return func(y int) int {
+		x += y
+		return x
 	}
+}
+func a() func() {
+	name := "chenglh"
+	return func() {
+		fmt.Println("hello,", name)//往上一层查找变量，即外层变量引用，闭包 = 函数+引用环境
+	}
+}
+func main() {
+	f := a()
+	f()
+	var f = adder()
+	fmt.Println(f(10)) //10
+	fmt.Println(f(20)) //30
+	fmt.Println(f(30)) //60
+
+	f1 := adder()
+	fmt.Println(f1(40)) //40
+	fmt.Println(f1(50)) //90
+}
+~~~
+
+变量`f`是一个函数并且它引用了其外部作用域中的`x`变量，此时`f`就是一个闭包。 在`f`的生命周期内，变量`x`也一直有效。 
+
+闭包进阶示例1：
+
+~~~go
+func adder2(x int) func(int) int {
+	return func(y int) int {
+		x += y
+		return x
+	}
+}
+func main() {
+	var f = adder2(10)
+	fmt.Println(f(10)) //20
+	fmt.Println(f(20)) //40
+	fmt.Println(f(30)) //70
+
+	f1 := adder2(20)
+	fmt.Println(f1(40)) //60
+	fmt.Println(f1(50)) //110
+}
+~~~
+
+闭包进阶示例2：
+
+~~~go
+func makeSuffixFunc(suffix string) func(string) string {
+	return func(name string) string {
+		if !strings.HasSuffix(name, suffix) {
+			return name + suffix
+		}
+		return name
+	}
+}
+
+func main() {
+	jpgFunc := makeSuffixFunc(".jpg")
+	txtFunc := makeSuffixFunc(".txt")
+	fmt.Println(jpgFunc("test")) //test.jpg
+	fmt.Println(txtFunc("test")) //test.txt
+}
+~~~
+
+闭包进阶示例3：
+
+~~~go
+func calc(base int) (func(int) int, func(int) int) {
+	add := func(i int) int {
+		base += i
+		return base
+	}
+
+	sub := func(i int) int {
+		base -= i //  base 往上一层找即等于 base += i
+		return base
+	}
+	return add, sub
+}
+
+func main() {
+	x, y := calc(100)
+	ret1 := x(200) // base = 100 + 200
+	fmt.Println(ret1)
+	ret2 := y(100) // base = 300 - 100
+	fmt.Println(ret2)
 }
 ~~~
 
 
 
+###### 2.6.9 内置函数
 
 
-**函数作用域**
 
-> 全局变量
+| 内置函数       | 介绍                                                         |
+| -------------- | ------------------------------------------------------------ |
+| close          | 主要用来关闭channel                                          |
+| len            | 用来求长度，如string、array、slice、map、channel             |
+| new            | 用来分配内存，主要是用于分配值类型，如int、struct。返回的是指针 |
+| make           | 用来分配内存，主要是用于分配引用类型，如chann、map、slice    |
+| append         | 用来追回元素到数组、slice中                                  |
+| panic和recover | 用来做错误处理                                               |
 
-全局变量是定义在函数外部的变量，它在程序整个运行周期内都有效。在函数中可以访问到全局变量。
+
+
+###### 2.6.10 知识总结
 
 ~~~go
 全局变量特点：
@@ -2954,36 +3206,39 @@ func adder() func() int {
 
 
 
-> 局部变量
+##### 2.7 defer语句
 
- 函数内定义的变量无法在该函数外使用，如果局部变量和全局变量重名，优先访问局部变量。
+###### 2.7.1 defer执行机制
+
+Go语言中的defer语句会将其后面跟随的语句进行延迟处理；
+
+在defer归属的函数即将返回时，将延迟处理的语句按deffer定义的**逆序进行执行**，即先被defer的语句最后被执行，最后定义的defer最先被执行。
 
 ~~~go
-//定义全局变量num
-var num int64 = 10
-
-func testNum() {
-	num := 100
-	fmt.Printf("num=%d\n", num) // 函数中优先使用局部变量
+func main() {
+	fmt.Println("start")
+	defer fmt.Println(1)
+	defer fmt.Println(2)
+	defer fmt.Println(3)
+	fmt.Println("end")
 }
 ~~~
 
-语句块定义的变量
+输出结果：
 
-~~~go
-if x > 0 {
-		z := 100 //变量z只在if语句块生效
-		fmt.Println(z)
-}
-~~~
+```go
+start
+end
+3
+2
+1
+```
 
 
 
-##### 2.7 defer
+###### 2.7.2 defer执行时机
 
-Go语言中的defer语句会将其后面跟随的语句进行延迟处理；在defer归属的函数即将返回时，将延迟处理的语句按deffer定义的逆序进行执行，即先被defer的语句最后被执行，最后定义的defer最先被执行。
-
-在Go语言的函数中`return`语句在底层并不是原子操作，它分为给返回值赋值和RET指令两步。
+在Go语言的函数中`return`语句在底层并不是原子操作，它分为给**返回值赋值和RET指令两步**。
 
 而`defer`语句执行的时机就在返回值赋值操作后，RET指令执行前。
 
@@ -3016,7 +3271,7 @@ func main()  {
 
 
 
-**常见面试题**
+###### 2.7.3 常见面试题
 
 ~~~go
 func f1() int {
@@ -3120,9 +3375,9 @@ func f4(a, b int) int {
 当声明了一个变量，但却没有赋值时，golang中会自动给变量赋值一个默认零值。
 
 ~~~go
-bool    > false
-numbers > 0
-string  > ""
+bool		> false
+numbers		> 0
+string		> ""
 
 pointers   > nil
 slices     > nil
