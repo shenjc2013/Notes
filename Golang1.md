@@ -1119,35 +1119,80 @@ func main() {
 
 
 
-###### 4.3.14 结构体与JSON序列化
+###### 4.3.15 结构体字段可见性
+
+结构体中字段大写开头表示可公开访问，小写表示私有（仅在定义当前结构体的包中可访问）。
+
+函数或变量，结构体及属性首字符大写，即可在其他包中访问，表示公有属性。
+
+
+
+###### 4.3.16 结构体与JSON序列化
 
 Golang中的序列化和反序列化主要通过"encoding/json"包中的 **json.Marshal()** 和 **json.Unmarshal()**
 
 ~~~go
+//需求：把班级中的学生序列化与反序列化
 
+//Class 班级
+type Class struct {
+	Title string
+	Student []*Student
+}
 
-func main()  {
-		var student1 = Student{
-				Id			: 12001,
-				Gender	: "男",
-				Name		: "张小三",
-				Sno			: "No12001",
+//Student 学生
+type Student struct {
+	Id     int
+	Gender string
+	Name   string
+	No  string
+}
+
+func writeLog(str string) {
+	file,err := os.OpenFile("log.txt",os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0666)
+	if err != nil {
+		fmt.Println("open file failed, err:", err)
+		return
+	}
+	defer file.Close()
+
+	file.Write([]byte(str))
+}
+
+func main() {
+	var c = &Class{
+		Title: "一年级一班",
+		Student: make([]*Student, 0, 200),
+	}
+	//往班级中添加学生
+	for iNum := 1; iNum <= 45; iNum++ {
+		stu := &Student{
+			Id: iNum,
+			No: fmt.Sprintf("No%02d", iNum),
+			Name: fmt.Sprintf("stu%02d",iNum),
+			Gender: "男",
 		}
+		c.Student = append(c.Student, stu)
+	}
+	//json序列化
+	data ,err := json.Marshal(c)
+	if err != nil {
+		fmt.Println("json marshal failed")
+		return
+	}
+    //在控制台界面输出的字符串有点问题，就直接写文件了
+	writeLog(string(data))
 
-		//结构体转换成json（返回的是byte类型的切片）
-		studentByte,_ := json.Marshal(student1) //直接是屏蔽了错误信息。
-		fmt.Println(string(studentByte))
-    //{"id":12001,"gender":"男","name":"张小三","sno":"No12001"}
-  
-  	//字符串转成结构体，即反序列化
-		var studentStr = `{"id":12002,"gender":"女","name":"赵四五","sno":"No12002"}`
-		var student2 Student
-		err := json.Unmarshal([]byte(studentStr), &student2)//转换成切片
-		if err != nil {
-				fmt.Println("格式化失败")
-		}
-		fmt.Printf("%#v\n",student2)
-    //main.Student{Id:12002, Gender:"女", Name:"赵四五", Sno:"No12002"}
+	//反序列化
+	str := `{"Title":"一年级一班","Student":[{"Id":1,"Gender":"男","Name":"stu01","No":"No01"},{"Id":2,"Gender":"男","Name":"stu02","No":"No02"},{"Id":3,"Gender":"男","Name":"stu03","No":"No03"},{"Id":4,"Gender":"男","Name":"stu04","No":"No04"},{"Id":5,"Gender":"男","Name":"stu05","No":"No05"}]}`
+	c1 := &Class{}
+	err = json.Unmarshal([]byte(str), c1)
+	if err != nil {
+		fmt.Println("json unmarshal failed!")
+		return
+	}
+	fmt.Printf("%v\n", c1)
+	//【这里得到的结果是指针类型，还没有解决办法】
 }
 ~~~
 
@@ -1157,66 +1202,7 @@ func main()  {
 
 
 
-###### 4.3.15 嵌套结构体与JSON转换
-
-~~~go
-//嵌套结构体与json的互相转换
-
-//班级结构体
-type Class struct {
-		ClassName string
-		Students  []Student
-}
-
-//学生结构体
-type Student struct {
-		Id 			int64
-		Gender 	string
-		Name 		string
-}
-
-func main() {
-	var class = Class{
-			ClassName: "1年级1班",
-			Students: make([]Student, 0),
-	}
-	for iNum := 1; iNum <= 5; iNum++ {
-			s := Student{
-					Id: int64(iNum),
-					Gender: "男",
-					Name: fmt.Sprintf("stu%v", iNum),
-			}
-			class.Students = append(class.Students, s) //切片追加
-	}
-	//fmt.Printf("%#v\n", class)
-
-  //结构体序列化
-	str,_ := json.Marshal(class)
-	fmt.Println(string(str))
-  //{"ClassName":"1年级1班","Students":[{"Id":1,"Gender":"男","Name":"stu1"},{"Id":2,"Gender":"男","Name":"stu2"},{"Id":3,"Gender":"男","Name":"stu3"},{"Id":4,"Gender":"男","Nam4"},{"Id":5,"Gender":"男","Name":"stu5"}]}
-
-    //json数据反序列化成结构体
-		ret := string(str)
-		var class2 = &Class{
-				ClassName: "",
-				Students: make([]Student, 0),
-		}
-		err := json.Unmarshal([]byte(ret), class2)
-		if err != nil {
-				fmt.Println(err)
-		}
-		fmt.Printf("%#v\n", class2)
-    //&main.Class{ClassName:"1年级1班", Students:[]main.Student{main.Student{Id:1, Gender:"男", Name:"stu1"}, main.Student{Id:2, Gender:"男", Name:"stu2"}, main.Student{Id:3, Gend", Name:"stu3"}, main.Student{Id:4, Gender:"男", Name:"stu4"}, main.Student{Id:5, Gender:"男", Name:"stu5"}}}
-}
-~~~
-
-
-
-
-
-
-
-###### 4.3.xxxx 任意类型添加方法
+###### 4.3.17 任意类型添加方法
 
 在Go语言中，接收者的类型可以是任何类型，不仅仅是结构体，任何类型都可以拥有方法。 
 
@@ -1228,27 +1214,25 @@ type MyInt int
 
 //SayHello 为MyInt添加一个SayHello的方法
 func (m MyInt) SayHello() {
-		fmt.Println("Hello, 我是一个int。")
+	fmt.Println("Hello, 我是一个int。")
 }
 func main() {
-	  var m1 MyInt
-	  m1.SayHello() //Hello, 我是一个int。
-	  m1 = 100
-	  fmt.Printf("%#v  %T\n", m1, m1) //100  main.MyInt
+	var m1 MyInt
+	m1.SayHello() //Hello, 我是一个int。
+	m1 = 100
+	fmt.Printf("%#v  %T\n", m1, m1) //100  main.MyInt
 }
 ~~~
 
 
+
+###### 4.3.18 其他知识点
 
 结构体的字段类型可以是：基本数据类型，也可以是切片、Map 以及结构体；
 
 如果结构体的字段类似是：指针、slice、和 map 的零值都是nil，即还没有分配空间；
 
 如果需要使用这样的字段，需要先make，才能使用。
-
-
-
-
 
 ~~~go
 /**
@@ -1258,32 +1242,32 @@ func main() {
 */
 
 type Person struct {
-		Name 		string
-		age  		int
-		hobby 	[]string
-		Detail 	map[string]string
+	Name   string
+	age    int
+	hobby  []string
+	Detail map[string]string
 }
 
 func main()  {
-		var person Person
-		person.Name = "chenglh"
-		person.age  = 21
+	var person Person
+	person.Name = "chenglh"
+	person.age  = 21
 
-		//切片申请空间
-		person.hobby = make([]string, 3, 3)
-		person.hobby[0] = "学习"
-		person.hobby[1] = "运动"
-		person.hobby[2] = "看报"
+	//切片申请空间
+	person.hobby = make([]string, 3, 3)
+	person.hobby[0] = "学习"
+	person.hobby[1] = "运动"
+	person.hobby[2] = "看报"
 
-		//map申请空间
-		person.Detail = make(map[string]string)
-		person.Detail["address"] = "广东省广州市天河区"
-		person.Detail["phone"]   = "13678917765"
+	//map申请空间
+	person.Detail = make(map[string]string)
+	person.Detail["address"] = "广东省广州市天河区"
+	person.Detail["phone"]   = "13678917765"
 
-		fmt.Printf("%#v\n", person)
-    // main.Person{Name:"chenglh", age:21, 
-    // hobby:[]string{"学习", "运动", "看报"}, 
-    // Detail:map[string]string{"address":"广东省广州市天河区", "phone":"13678917765"}}
+	fmt.Printf("%#v\n", person)
+	// main.Person{Name:"chenglh", age:21, 
+	// hobby:[]string{"学习", "运动", "看报"}, 
+	// Detail:map[string]string{"address":"广东省广州市天河区", "phone":"13678917765"}}
 }
 ~~~
 

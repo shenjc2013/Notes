@@ -106,9 +106,9 @@ JSON序列化与反序列化
 
 ###### 5.3.1 接口介绍
 
-**接口(interface)是一种类型，一种抽象的类型，即是特殊的类型，**它规定了变量有哪些方法。
+接口(interface)是**一种类型，一种抽象的类型，即是特殊的类型，**它**规定了变量有哪些方法**。
 
-接口（interface）是一组函数method的集合，Golang中的接口不能包含任何变量。
+接口（interface）是一组函数method的集合，Golang中的接口**不能包含任何变量**。
 
 接口定义了一个对象的行为规范，只定义规范不实现。
 
@@ -118,9 +118,9 @@ JSON序列化与反序列化
 
 ~~~go
 type 接口名 interface {
-    方法名1(参数1...)(返回值1....)
-    方法名2(参数2...)(返回值2....)
-    ......
+	方法名1(参数1...)(返回值1....)
+	方法名2(参数2...)(返回值2....)
+	...
 }
 ~~~
 
@@ -134,14 +134,12 @@ type 接口名 interface {
 
 ###### 5.3.3 接口的实现
 
-
-
 举例：实现一个Usber接口
 
 ~~~go
 type Usber interface { //加上 er 表示是接口类型
-    start()
-    stop()
+	start()
+	stop()
 }
 ~~~
 
@@ -152,27 +150,27 @@ type Usber interface { //加上 er 表示是接口类型
 ~~~go
 //手机结构体, 手机要实现usb接口，必须要实现usb接口中所有的方法
 type Phone struct {
-    Name string
+	Name string
 }
 func (p Phone) start() {
-    fmt.Println(p.Name, "启动")
+	fmt.Println(p.Name, "启动")
 }
 func (p Phone) stop() {
-    fmt.Println(p.Name, "关机")
+	fmt.Println(p.Name, "关机")
 }
 
 //照相机结构体
 type Camera struct {
-    Name string
+	Name string
 }
 func (c Camera) start() {
-    fmt.Println(c.Name, "启动")
+	fmt.Println(c.Name, "启动")
 }
 func (c Camera) stop() {
-    fmt.Println(c.Name, "关机")
+	fmt.Println(c.Name, "关机")
 }
 func (c Camera) update() {
-    fmt.Println(c.Name, "更新")
+	fmt.Println(c.Name, "更新")
 }
 ~~~
 
@@ -182,23 +180,23 @@ func (c Camera) update() {
 
 ~~~go
 func main() {
-		//普通结构体的实现
-		p1 := Phone{
-				Name: "华为手机",
-		}
-		p1.start()
-		p1.stop()
-  	p1.update() //结构体中的方法函数
+	//普通结构体的实现
+	p1 := Phone{
+		Name: "华为手机",
+	}
+	p1.start()
+	p1.stop()
+	p1.update() //这里是直接调用结构体中的方法函数
 
-		p2 := Phone{
-				Name: "苹果手机",
-		}
-		var p Usber = p2  //表示手机实现了Usber的方法
-		p.start()
-		p.stop()
-		//p.update() //错误用法，p.update undefined (type Usber has no field or method update)
-		//这样是实现不了的，只能通过  p2.update()实现
-		p2.update()	//结构体中的方法函数，非接口函数
+	p2 := Phone{
+		Name: "苹果手机",
+	}
+	var p Usber = p2  //表示p是一个Usber接口类型的变量，需要实现调用Usber里面的方法
+	p.start()
+	p.stop()
+	//p.update() //错误用法，p.update undefined (type Usber has no field or method update)
+	//这样是实现不了的，只能通过  p2.update()实现
+	p2.update()	//结构体中的方法函数，非接口函数
 }
 ~~~
 
@@ -212,16 +210,16 @@ type Computer struct {}
 
 //电脑实现接口类型
 func (c Computer) work(usber Usber) {//参数必须是 接口类型，如果这个参数 没有实现到接口所有方法，会报错
-		usber.start()
-		usber.stop()
+	usber.start()
+	usber.stop()
 }
 
 func main() {
-  	var computer = Computer{}
-    phone := Phone{
-				Name: "苹果手机",
-		}
-  	computer.work(phone)
+	var computer = Computer{}
+	phone := Phone{
+		Name: "苹果手机",
+	}
+	computer.work(phone)
 }
 ~~~
 
@@ -229,7 +227,9 @@ func main() {
 
 ###### 5.3.4 空接口定义
 
-Golang中接口可以不定义任何方法，没有定义任何方法的接口就是空接口。空接口表示没有任何约束，因此任何类型变量都可以实现空接口。
+Golang中接口可以不定义任何方法，没有定义任何方法的接口就是空接口。
+
+空接口表示没有任何约束，因此任何类型变量都可以实现空接口。
 
 空接口在实际项目中用的非常多，用空接口可以表示任意数据类型。
 
@@ -246,31 +246,29 @@ type 接口名字  interface{}
 任意类型实现空接口
 
 ~~~go
-type A interface{}
-
 func main() {
-		//测试任何类型都可以实现空接口
-		var a A
-  
-    //var b interface{}  【定义在函数里的空接口】
+	//测试任何类型都可以实现空接口
+	var a A
 
-		//string
-		var Name = "chenglh"
-		a = Name
-		fmt.Printf("字符串的值：%v ,类型：%T\n", a, a)
-  	//字符串的值：chenglh ,类型：string
+	//var b interface{}  【定义在函数里的空接口】
 
-		//int
-		var num = 10
-		a = num
-		fmt.Printf("整型的值：%v ,类型：%T\n", a, a)
-  	//整型的值：10 ,类型：int
+	//string
+	var Name = "chenglh"
+	a = Name
+	fmt.Printf("字符串的值：%v ,类型：%T\n", a, a)
+	//字符串的值：chenglh ,类型：string
 
-		//bool
-		var flag bool = true
-		a = flag
-		fmt.Printf("bool的值：%v ,类型：%T\n", a, a)
-  	//bool的值：true ,类型：bool
+	//int
+	var num = 10
+	a = num
+	fmt.Printf("整型的值：%v ,类型：%T\n", a, a)
+	//整型的值：10 ,类型：int
+
+	//bool
+	var flag bool = true
+	a = flag
+	fmt.Printf("bool的值：%v ,类型：%T\n", a, a)
+	//bool的值：true ,类型：bool
 }
 ~~~
 
@@ -282,7 +280,7 @@ func main() {
 
 ~~~go
 func show( a interface{} ) {
-    //fmt.Printf("type:%T value:%v\n" ,a ,a)
+	//fmt.Printf("type:%T value:%v\n" ,a ,a)
 }
 
 show(20)
@@ -300,8 +298,8 @@ show([]int{1,2,3}) //切片
 //空接口作为 map值
 var student = make(map[string]interface{})
 
-student["name"]    = "chenglh"
-student["age"]     = 19
+student["name"] = "chenglh"
+student["age"] = 19
 student["married"] = false
 ~~~
 
@@ -616,6 +614,8 @@ func main() {
 前情提要
 
 ~~~go
+//嵌套结构体中数据取值。
+
 type Address struct {
 	Province string
 	City	 string
@@ -668,126 +668,76 @@ func main() {
 
 
 
-其他知识：
+###### 5.3.11 接口值与接口类型
+
+空接口可以存储任意类型的值，那我们如何获取其存储的具体数据呢？
+
+一个接口的值（简称接口值）是由`一个具体类型`和`具体类型的值`两部分组成的。这两部分分别称为接口的**`动态类型`和`动态值`**。
+
+这样就可以**实现了接口保存不同的类型数据。**
+
+<img src="Golang.assets/image-20200913104620360.png" alt="image-20200913104620360" style="zoom:60%;float:left;" />
 
 ~~~go
+//动物类的接口
 type animal interface{
-    move()
-    eat(string) //eat(food string)
+	move()
+	eat(string) //eat(food string) 严格要传参数
 }
+
+//猫的结构体与方法
 type cat struct {
-    name string
-    feet int8
+	name string
+	feet int8
 }
 func (c cat)move() { fmt.Println("走猫步！") }
 func (c cat)eat(food string) { fmt.Printf("猫吃%s！\n", food) }
 
+//鸡的结构体与方法
 type chicken struct {
-    feet int8
+	feet int8
 }
 func (c chicken)move() { fmt.Println("鸡动！") }
 func (c chicken)eat(food string) { fmt.Printf("鸡吃饲料！\n", food) }
 
 func main() {
-    var a1 animal //定义一个animal接口类型的变量
-    
-    bc := cat{//定义一个cat类型的变量bc
-        name:"淘气"
-        feet:4
-    }
-    a1 = bc  //接口变量分为：类型和值两部分
-    fmt.Println(a1)
-    fmt.Printf("%T", a1)
-    a1.eat("小黄鱼")
-    
-    kfc := chicken{
-        feet:2,
-    }
-    a1 = kfc
-    fmt.Printf("%T", a1)
-}
-~~~
+	var a1 animal //定义一个animal接口类型的变量a1
 
-<img src="./Golang2.assets/image-20200804162045881.png" alt="image-20200804162045881" style="zoom:50%;float:left" />
+	bc := cat{//定义一个cat类型的变量bc
+		name:"淘气",
+		feet:4,
+	}
+	a1 = bc  //接口变量分为：类型和值两部分
+	fmt.Println(a1)	//{淘气 4}
+	fmt.Printf("%T\n", a1) //main.cat
+	a1.eat("小黄鱼")	//猫吃小黄鱼！
 
-
-
-举个例子
-
-~~~go
-type cat struct {}
-type dog struct {}
-
-func (c cat)speak() { fmt.Println("喵喵喵~") }
-func (d dog)speak() { fmt.Println("汪汪汪~") }
-
-func hitta(x) {//传参：x dog 或 x cat；x需要具体类型
-    x.speak() //挨打了就要叫
-}
-func main() {
-    var c1 cat
-    var d1 dog
-    hitta(c1)
-    hitta(d1)
+	kfc := chicken{
+		feet:2,
+	}
+	a1 = kfc
+	fmt.Printf("%T\n", a1) //main.chicken
 }
 ~~~
 
 
 
-改造代码
+分解如下案例：
 
-~~~go
-type speaker interface{
-    speak() //只要实现了speak方法的变量都是speaker类型
-}
-type cat struct {}
-type dog struct {}
-func (c cat)speak() { fmt.Println("喵喵喵~") }
-func (d dog)speak() { fmt.Println("汪汪汪~") }
+```go
+var w io.Writer
+w = os.Stdout
+w = new(bytes.Buffer)
+w = nil
+```
 
-func hitta(x speaker) {
-    x.speak() //挨打了就要叫
-}
-func main() {
-    var c1 cat
-    var d1 dog
-    hitta(c1)
-    hitta(d1)
-}
-~~~
-
-
-
-再举例子
-
-~~~go
-type car interace{
-    run()
-}
-type falali struct {
-    brand string
-}
-type baoshijie struct {
-    brand string
-}
-func (f falali)run() { fmt.Printf("%s速度70迈~\n", f.brand) }
-func (b baoshijie)run() { fmt.Printf("%s速度100迈~\n", b.brand) }
-
-func drive(c car) {
-    c.run()
-}
-func main() {
-    var f1 = falali{brand:"法拉利",}
-    var b1 = baoshijie(brand:"保时捷",)
-    drive(f1)
-    drive(b1)
-}
-//不同数据库，实现连接和增删查改等操作
-~~~
+<img src="./Golang.assets/image-20200804162045881.png" alt="image-20200804162045881" style="zoom:50%;float:left" />
 
 
 
 ##### 5.4 Go包(package)
+
+Go中的包有内置包，自定义包，第三方包。
 
 
 
@@ -879,8 +829,8 @@ import "包2"
 
 ~~~go
 import (
-    "包1"
-    "包2"
+	"包1"
+	"包2"
 )
 ~~~
 
@@ -916,34 +866,34 @@ fmt.Printf(a)
 
 ~~~go
 func main()  {
-		num := 100
-		fmt.Printf("%T\n", num) //查看类型    int
-		fmt.Printf("%v\n", num) //万能输出值	 100
-  
-		fmt.Printf("%b\n", num) //二进制	  1100100
-		fmt.Printf("%o\n", num) //八进制	  144
-		fmt.Printf("%d\n", num) //十进制	  100
-		fmt.Printf("%x\n", num) //十六进制  64
-    
-  	number := 100.98
-  	fmt.Printf("%T，%f\n", number, number) //%f输出10进制的浮点数,(这里float64，100.980000)
-    fmt.Printf("%T，%.2f\n", number, number)//只保留两位小数点
+	num := 100
+	fmt.Printf("%T\n", num) //查看类型    int
+	fmt.Printf("%v\n", num) //万能输出值	 100
 
-		name := "chenglh"
-		fmt.Printf("%s\n", name)  //字符串输出  chenglh
-		fmt.Printf("%v\n", name)  //万能输出值  chenglh
-	  fmt.Printf("%#v\n", name) //"结果串"会自动加上双引号 "chenglh"
-    
-  	//%c 输出单个字符
-  	n1 := '程'
-		n2 := 'A'
-		fmt.Printf("%c\n",n1) //如果不格式化，显示ASCII码
-		fmt.Printf("%c\n",n2)
-  
-  	age := 18
-  	nickname = "chenglh"
-  	fmt.Printf("%T\n", &age)      // *int    返回int类型的指针
-		fmt.Printf("%T\n", &nickname) // *string 返回string类型的指针
+	fmt.Printf("%b\n", num) //二进制	  1100100
+	fmt.Printf("%o\n", num) //八进制	  144
+	fmt.Printf("%d\n", num) //十进制	  100
+	fmt.Printf("%x\n", num) //十六进制  64
+
+	number := 100.98
+	fmt.Printf("%T，%f\n", number, number) //%f输出10进制的浮点数,(这里float64，100.980000)
+	fmt.Printf("%T，%.2f\n", number, number)//只保留两位小数点
+
+	name := "chenglh"
+	fmt.Printf("%s\n", name)  //字符串输出  chenglh
+	fmt.Printf("%v\n", name)  //万能输出值  chenglh
+	fmt.Printf("%#v\n", name) //"结果串"会自动加上双引号 "chenglh"
+
+	//%c 输出单个字符
+	n1 := '程'
+	n2 := 'A'
+	fmt.Printf("%c\n",n1) //如果不格式化，显示ASCII码
+	fmt.Printf("%c\n",n2)
+
+	age := 18
+	nickname = "chenglh"
+	fmt.Printf("%T\n", &age)      // *int    返回int类型的指针
+	fmt.Printf("%T\n", &nickname) // *string 返回string类型的指针
 }
 ~~~
 
@@ -953,7 +903,7 @@ func main()  {
 
 ###### 5.5.1 文件打开关闭
 
-> os.Open() 和 file.Close()
+> os.Open()只读方式打开文件 和 file.Close()
 
 ~~~go
 func main() {
@@ -977,6 +927,20 @@ func main() {
 ~~~go
 func (f *File) Read(b []byte) (n int, err error)
 ~~~
+
+伪代码：
+
+~~~
+一、读取文件(方法一)，按字符读取文件
+
+1、只读方式打开文件 file,err := os.Open()
+
+2、读取文件 file.Read()
+
+3、关闭文件流 defer file.Close()
+~~~
+
+
 
 函数接收一个字节切片，返回读取的字节数和可能的具体错误，读到文件末尾会返回 `0` 和 `io.EOF`
 
@@ -1015,8 +979,25 @@ func main() {
 
 ~~~go
 reader := bufio.NewReader(file)
+
 line, err := reader.ReadString('\n') //注意是字符
 ~~~
+
+伪代码：
+
+~~~go
+二、读取文件(方法2)  bufio按行读取文件
+
+1、只读方式打开方式 file,err := os.Open()
+
+2、创建reader对象 reader := bufio.NewReader(file)
+
+3、ReadString读取文件 line,err := reader.ReadString('\n')
+
+4、关闭文件流 defer file.Close()
+~~~
+
+
 
 代码如下：
 
@@ -1050,17 +1031,22 @@ func main() {
 
 
 
-###### 5.5.4 整个读取文件
+###### 5.5.4 整个文件读取
 
 > ioutil.ReadFile()
 
-
-
-
-
-**ioutil读取整个文件**
-
 `io/ioutil`包的`ReadFile`方法能够读取完整的文件，只需要将文件名作为参数传入。
+
+伪代码：
+
+~~~go
+三、读取文件(方法3) ioutil读取文件
+打开、关闭文件的方法都是封装好的，只需要一句话就可以读取
+
+ioutil.ReadFile("./main.go")
+~~~
+
+举个栗子：
 
 ~~~go
 func main()  {
@@ -1075,15 +1061,19 @@ func main()  {
 
 
 
-###### 5.5.2 文件写操作
+###### 5.5.5 文件写操作
 
-定义格式：
+os.Open() 是只读方式打开文件。os.OpenFile() 是读写文件打开文件。定义格式：
 
 ~~~go
 func OpenFile(name string, flag int, perm FileMode) (*File, error) {
 	...
 }
-//参数1：文件名；参数2：打开文件的模式；参数3：文件权限 一个八进制数。r（读）04，w（写）02，x（执行）01。
+/**
+参数1：文件名
+参数2：打开文件的模式
+参数3：文件权限 一个八进制数。r（读）04，w（写）02，x（执行）01
+*/
 ~~~
 
 
@@ -1101,7 +1091,22 @@ func OpenFile(name string, flag int, perm FileMode) (*File, error) {
 
 
 
-> Write、WriteString
+###### 5.5.6 Write与WriteString
+
+伪代码：
+
+~~~go
+一、写入文件(方法一)
+1、打开文件 file,err := os.OpenFile("./test.txt", os.O_CREATE|os.O_RDWR, 0666)
+
+2、写入文件
+	file.Write([]byte(str)) //写入字节切片数据
+	file.WriteString("直接写入的字符串") //写入字符串
+
+3、关闭文件流 file.Close()
+~~~
+
+案例代码：
 
 ~~~go
 func main()  {
@@ -1120,7 +1125,25 @@ func main()  {
 
 
 
-> Bufio.NewWriter
+###### 5.5.7 Bufio.NewWriter
+
+伪代码：
+
+~~~go
+一、写入文件(方法二)
+1、打开文件 file,err := os.OpenFile("./test.txt", os.O_CREATE|os.O_RDWR, 0666)
+
+2、创建writer对象，writer := bufio.NewWriter(file)
+
+
+3、将数据写入缓存：writer.WriteString("直接写入的字符串\r\n")
+
+4、将缓存中的内容写入文件 writer.Flush()
+
+5、关闭文件流 file.Close()
+~~~
+
+案例写法：
 
 ~~~go
 func main()  {
@@ -1132,7 +1155,8 @@ func main()  {
 
 	writer := bufio.NewWriter(file)
 	for i := 0; i < 10; i++ {
-		writer.WriteString(fmt.Sprintf("this is line:%d\n", i))//将数据写入缓存
+        //或使用 strconv.Itoa(i)
+		writer.WriteString(fmt.Sprintf("this is line:%d\r\n", i))//将数据写入缓存
 	}
 	writer.Flush()//刷新缓冲区
 }
@@ -1140,7 +1164,18 @@ func main()  {
 
 
 
-> Ioutil.WriteFile
+###### 5.5.8 Ioutil.WriteFile
+
+伪代码：
+
+~~~go
+一、写入文件(方法三) ioutil写入文件
+
+str := "hello golang"
+err := ioutil.WriteFile("./test.log", []byte(str), 0666)
+~~~
+
+案例写法：
 
 ~~~go
 func main()  {
@@ -1162,7 +1197,62 @@ func main()  {
 
 
 
-###### 5.5.3 复制文件
+###### 5.5.9 复制文件
+
+复制文件
+
+
+
+> 方法一：读取与写入
+
+~~~go
+//方法一：
+inputTxt, err := ioutil.ReadFile(srcFileName)
+	
+err = ioutil.WriteFile(dstFileName, inputTxt, 0644)
+~~~
+
+~~~go
+func copyFile(dstFileName string, srcFileName string) (err error) {
+	byteStr, err := ioutil.ReadFile(srcFileName)
+	if err != nil {
+		return err
+	}
+
+	err2 := ioutil.WriteFile(dstFileName, byteStr, 0777)
+	if err2 != nil {
+		return err2
+	}
+
+	return nil
+}
+
+func main() {
+	copyFile("main.bak", "main.go")
+}
+~~~
+
+
+
+> 方法二：流写入
+
+~~~go
+//方法二：文件流写入到切片
+source, _ := os.Open(srcFileName)
+destination, _ := os.OpenFile(dstFileName, os.O_CREATE|os.O_WRONLY, 0666)
+n, err := soruce.Read(buf)
+destination.Write(buf[:n])
+~~~
+
+~~~go
+
+~~~
+
+
+
+###### 5.5.10 io.Copy
+
+借助`io.Copy()`实现一个拷贝文件函数。
 
 ~~~go
 // 自定义 CopyFile 拷贝文件函数
