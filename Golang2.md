@@ -1674,7 +1674,7 @@ fmt.Println(timeStr)
 //日期格式化成时间戳
 date := "2020-08-31 13:33:42"
 temp := "2006-01-02 15:04:05"
-timeObj,_ := time.ParseInLocation(temp, date, time.Local) //temp与date的格式必须要一致,可以直接年月日
+timeObj,_ := time.ParseInLocation(temp, date, time.Local) //按指定时区格式化，temp与date的格式必须要一致,可以直接年月日
 fmt.Println(timeObj.Unix())
 ~~~
 
@@ -1788,9 +1788,212 @@ for tt := range ticker.C {
 
 
 
-##### 6.5 日志需求
+###### 6.4.10 指定时区
+
+~~~go
+func main() {
+	//按指定时区解析时间
+	timeLoc, err := time.LoadLocation("Asia/Shanghai")
+	if err != nil {
+		fmt.Println("load loc failed, err:%v\n", err)
+		return
+	}
+	timeObj,err := time.ParseInLocation("2006-01-02 15:04:05", "2020-09-14 15:30:23", timeLoc)
+	if err != nil {
+		fmt.Println("parse time failed, err:%v\n", err)
+		return
+	}
+	fmt.Println(timeObj) //2020-09-14 15:30:23 +0800 CST
+}
+~~~
 
 
+
+##### 6.5 日志库
+
+###### 6.5.1 使用Logger
+
+Go语言内置的`log`包实现了简单的日志服务。
+
+~~~go
+func main() {
+	log.Println("这是一条很普通的日志。")
+	log.Printf("这是一条%s日志。\n", "格式化的")
+	log.Fatalln("这是一条会触发fatal的日志。") //会执行退出程序操作，不会执行到下面一行代码
+	log.Panicln("这是一条会触发panic的日志。") //输出错误信息后，也会终止程序操作
+}
+~~~
+
+输出结果：
+
+~~~go
+2020/09/14 14:34:18 这是一条很普通的日志。
+2020/09/14 14:34:18 这是一条格式化的日志。
+2020/09/14 14:34:18 这是一条会触发fatal的日志。
+exit status 1
+~~~
+
+logger会打印每条日志信息的日期、时间，默认输出到系统的标准错误。Fatal系列函数会在写入日志信息后调用os.Exit(1)。Panic系列函数会在写入日志信息后panic。
+
+
+
+以上代码是错误信息输出在终端，修改为错误信息输出到文件格式：
+
+~~~go
+func main() {
+	fileObj, err := os.OpenFile("./xx.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		fmt.Printf("open file failed, err:%v\n", err)
+		return
+	}
+	log.SetOutput(fileObj)//os.Stdout 屏幕终端输出信息；这里是往文件里写日志
+
+	log.Println("这是一条很普通的日志。")
+	log.Printf("这是一条%s日志。\n", "格式化的")
+}
+~~~
+
+
+
+###### 6.5.2 配置Logger
+
+（1）支持往不同的地方输出日志：终端、File、Kafaka等
+
+（2）日志级别：
+
+1. Debug
+2. Trace
+3. Info
+4. Warning
+5. Error
+6. Fatal
+
+（3）日志要支持开关控制
+
+（4）日志要有时间、行号、文件名、日志级别、日志信息
+
+（5）日志文件切割
+
+
+
+日志管理包
+
+~~~go
+// vi /Logger/Console.go
+
+package ConsoleLogger
+
+import (
+	"errors"
+	"fmt"
+	"strings"
+	"time"
+)
+
+//往终端写日志信息
+
+type LogLevel uint16
+
+const (
+	NUKNOWN	LogLevel = iota
+	DEBUG
+	TRACE
+	INFO
+	WARNING
+	ERROR
+	FATAL
+)
+
+// ConsoleLogger 日志结构体
+type ConsoleLogger struct {
+	Level LogLevel
+}
+
+// NewConsoleLogger 构造函数
+func NewConsoleLogger(levelStr string) ConsoleLogger  {
+	level, err := parseLogLevel(levelStr)
+	if err != nil {
+		panic(err)
+	}
+	return ConsoleLogger{
+		Level:level,
+	}
+}
+
+func (c ConsoleLogger) Debug(msg string) {
+	if c.enable(DEBUG) {
+		fmt.Printf("[%s] [DEBUG] %s\n",time.Now().Format("2006-01-02 15:04:05"), msg)
+	}
+}
+
+func (c ConsoleLogger) Info(msg string) {
+	if c.enable(INFO) {
+		fmt.Printf("[%s] [INFO] %s\n", time.Now().Format("2006-01-02 15:04:05"), msg)
+	}
+}
+
+func (c ConsoleLogger) Warning(msg string) {
+	if c.enable(WARNING) {
+		fmt.Printf("[%s] [WARNING] %s\n", time.Now().Format("2006-01-02 15:04:05"), msg)
+	}
+}
+
+func (c ConsoleLogger) Error(msg string) {
+	if c.enable(ERROR) {
+		fmt.Printf("[%s] [ERROR] %s\n", time.Now().Format("2006-01-02 15:04:05"), msg)
+	}
+}
+
+func (c ConsoleLogger) Fatal(msg string) {
+	if c.enable(FATAL) {
+		fmt.Printf("[%s] [FATAL] %s\n", time.Now().Format("2006-01-02 15:04:05"), msg)
+	}
+}
+
+func parseLogLevel(s string) (LogLevel, error) {
+	switch strings.ToLower(s) {
+		case "debug":
+			return DEBUG,nil
+		case "trace":
+			return TRACE,nil
+		case "info":
+			return DEBUG,nil
+		case "warning":
+			return WARNING,nil
+		case "error":
+			return ERROR,nil
+		default:
+			return NUKNOWN,errors.New("日志级别错误")
+	}
+}
+
+func (c ConsoleLogger) enable (level LogLevel) bool {
+	return level >= c.Level
+}
+~~~
+
+
+
+日志调用：
+
+~~~go
+func main() {
+	log := ConsoleLogger.NewConsoleLogger("WARNING")
+	for {
+		log.Debug("这是一条Debug日志")
+		log.Info("这是一条info日志")
+		log.Warning("warning")
+		log.Error("error")
+		time.Sleep(time.Second * 2)
+	}
+}
+~~~
+
+
+
+
+
+https://www.bilibili.com/video/BV1FC4y1b7oz?t=529&p=75
 
 作业一：
 
