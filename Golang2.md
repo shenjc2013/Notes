@@ -1991,6 +1991,30 @@ func main() {
 
 
 
+runtime.Caller使用
+
+~~~go
+//runtime.Caller()
+
+func f1() {
+    _,file,line,ok := runtime.Caller(1) //参数1:表示在 f1()所在11行数调用，如果值0：表示在第4行调用
+	//0表示当前行，1表示上一级找，2表示上一级再上一级
+	if !ok {
+		fmt.Printf("runtime.Caller() failed\n")
+		return
+	}
+	fmt.Println(file) ///Users/xxx/go/src/day06/04runtimecaller/main.go长路径
+    fmt.Println(path.Base(file)) //main.go
+	fmt.Println(line) // 11行
+}
+
+func main() {
+	f1()
+}
+~~~
+
+
+
 
 
 https://www.bilibili.com/video/BV1FC4y1b7oz?t=529&p=75
