@@ -1202,7 +1202,7 @@ func main()  {
 
 ###### 5.5.9 复制文件
 
-复制文件
+**自定义函数实现**
 
 > 方法一：读取与写入
 
@@ -1280,9 +1280,7 @@ func CopyFile(dstFileName, srcFileName string) (err error) {
 }
 ~~~
 
-
-
-###### 5.5.10 io.Copy
+**系统函数实现**
 
 借助`io.Copy()`实现一个拷贝文件函数。
 
@@ -1427,13 +1425,13 @@ go.mod
 
 解决方法：创建项目的时候不要选择go mod
 
-<img src="Golang2.assets/image-20200903173327229.png" alt="image-20200903173327229" style="zoom:50%;float:left;" />
+<img src="Golang.assets/image-20200903173327229.png" alt="image-20200903173327229" style="zoom:50%;float:left;" />
 
 
 
 解决方法：File > Preferences 勾选 Go Modules
 
-<img src="Golang2.assets/image-20200903173458040.png" alt="image-20200903173458040" style="zoom:50%;float:left;" />
+<img src="Golang.assets/image-20200903173458040.png" alt="image-20200903173458040" style="zoom:50%;float:left;" />
 
 
 
@@ -1537,7 +1535,7 @@ import _ "包的路径"
 
 **包初始化执行的顺序**  如下图所示：
 
-<img src="Golang2.assets/image-20200903111050571.png" alt="image-20200903111050571" style="zoom:35%;float:left" />
+<img src="Golang.assets/image-20200903111050571.png" alt="image-20200903111050571" style="zoom:35%;float:left" />
 
 
 
@@ -1549,7 +1547,7 @@ Go语言包会从`main`包开始检查其导入的所有包，每个包中又可
 
 在运行时，被最后导入的包会最先初始化并调用其`init()`函数， 如下图示：
 
-<img src="Golang2.assets/image-20200903111431504.png" alt="image-20200903111431504" style="zoom:45%;float:left;" />
+<img src="Golang.assets/image-20200903111431504.png" alt="image-20200903111431504" style="zoom:45%;float:left;" />
 
 
 
