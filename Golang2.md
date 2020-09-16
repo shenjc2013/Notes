@@ -1118,8 +1118,11 @@ func main()  {
 	defer file.Close()
 
 	str := "天若有情\n"
-	file.Write([]byte(str))    //通过字节写进去
+	file.Write([]byte(str))	//通过byte类型的切片写进去
 	file.WriteString("人间正道")//通过字符串写进去
+    for i := 0;  i < 10; i++ {
+        file.WriteString(strconv.Itoa(i),"人间正道\r\n") //换行必须要 \r\n
+	}
 }
 ~~~
 
@@ -1155,7 +1158,7 @@ func main()  {
 
 	writer := bufio.NewWriter(file)
 	for i := 0; i < 10; i++ {
-        //或使用 strconv.Itoa(i)
+		//或使用 strconv.Itoa(i)
 		writer.WriteString(fmt.Sprintf("this is line:%d\r\n", i))//将数据写入缓存
 	}
 	writer.Flush()//刷新缓冲区
@@ -1201,51 +1204,80 @@ func main()  {
 
 复制文件
 
-
-
 > 方法一：读取与写入
 
 ~~~go
-//方法一：
+//方法一：一次性读取文件
 inputTxt, err := ioutil.ReadFile(srcFileName)
 	
 err = ioutil.WriteFile(dstFileName, inputTxt, 0644)
 ~~~
 
 ~~~go
+//复制文件操作函数
 func copyFile(dstFileName string, srcFileName string) (err error) {
-	byteStr, err := ioutil.ReadFile(srcFileName)
+	byteStr, err := ioutil.ReadFile(srcFileName)//得到切片数据
 	if err != nil {
 		return err
 	}
 
-	err2 := ioutil.WriteFile(dstFileName, byteStr, 0777)
+	err2 := ioutil.WriteFile(dstFileName, byteStr, 0755)
 	if err2 != nil {
 		return err2
 	}
-
+	//复制成功
 	return nil
 }
 
 func main() {
-	copyFile("main.bak", "main.go")
+	copyFile("main.bak", "main.go")//包括所有文件类型
 }
 ~~~
 
 
 
-> 方法二：流写入
+> 方法二：文件流方式复制文件
 
 ~~~go
 //方法二：文件流写入到切片
 source, _ := os.Open(srcFileName)
+
 destination, _ := os.OpenFile(dstFileName, os.O_CREATE|os.O_WRONLY, 0666)
+
 n, err := soruce.Read(buf)
+
 destination.Write(buf[:n])
 ~~~
 
 ~~~go
+func CopyFile(dstFileName, srcFileName string) (err error) {
+	srcFile,err1 := os.Open(srcFileName)
+	dstFile,err2 := os.OpenFile(dstFileName, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0666)
+	defer srcFile.Close()
+	defer dstFile.Close()
+	if err1 != nil {
+		return err1
+	}
+	if err2 != nil {
+		return err2
+	}
 
+	var tmpSlice = make([]byte, 128)
+	for {
+		n1, e1 := srcFile.Read(tmpSlice)
+		if err == io.EOF {
+			break
+		}
+		if e1 != nil {
+			return e1
+		}
+
+		if _, err := dstFile.Write(tmpSlice[:n1]); err != nil {
+			return err
+		}
+	}
+	return nil
+}
 ~~~
 
 
@@ -1285,6 +1317,28 @@ func main()  {
 	}
 	fmt.Println("copy done!")
 }
+~~~
+
+
+
+###### 创建目录：
+
+~~~go
+_ := os.Mkdir("./abc". 0666) //目录存在是不会有什么操作的，可以不要等号左边
+
+err := os.MkdirAll("dir1/dir2/dir3", 0666)//多层目录创建
+~~~
+
+~~~go
+//删除一个文件或目录
+err := os.Remove("test.txt")
+
+err := os.RemoveAll("dir") //删除dir级其下面的所有目录
+~~~
+
+~~~go
+//文件重命名
+os.Rename("aaa", "bbb")
 ~~~
 
 
