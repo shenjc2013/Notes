@@ -1319,7 +1319,7 @@ func main()  {
 
 
 
-###### 创建目录：
+###### 5.5.10 创建删除目录
 
 ~~~go
 _ := os.Mkdir("./abc". 0666) //目录存在是不会有什么操作的，可以不要等号左边
@@ -1331,7 +1331,7 @@ err := os.MkdirAll("dir1/dir2/dir3", 0666)//多层目录创建
 //删除一个文件或目录
 err := os.Remove("test.txt")
 
-err := os.RemoveAll("dir") //删除dir级其下面的所有目录
+err := os.RemoveAll("dir1") //删除dir级其下面的所有目录
 ~~~
 
 ~~~go
