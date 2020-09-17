@@ -455,6 +455,7 @@ func (tx *Tx) Rollback() error
 
 ~~~go
 
+
 ~~~
 
 
@@ -464,6 +465,217 @@ func (tx *Tx) Rollback() error
 
 
 ##### 10.4 Redis操作
+
+###### 10.4.1 Redis介绍
+
+1、Redis支持的**数据结构**
+
+字符串（strings）、哈希（hashes）、列表（lists）、集合（sets）、带范围查询的排序集合（sorted sets）、位图（bitmaps）、hyperloglogs、带半径查询和流的地理空间索引等数据结构（geospatial indexes）
+
+
+
+2、应用场景
+
+- 缓存系统，减轻主数据库（MySQL）的压力。
+- 计数场景，比如微博、抖音中的关注数和粉丝数。
+- 热门排行榜，需要排序的场景特别适合使用ZSET。
+- 利用LIST可以实现队列的功能。
+
+
+
+3、docker容器
+
+~~~go
+docker run --name redis507 -p 6379:6379 -d redis:5.0.7
+~~~
+
+启动一个redis-cli连接上面的redis server：
+
+~~~go
+docker run -it --network host --rm redis:5.0.7 redis-cli
+~~~
+
+
+
+###### 10.4.2 Redis库
+
+下载Redis库：
+
+~~~go
+go get -u github.com/go-redis/redis
+~~~
+
+
+
+###### 10.4.3 初始化连接
+
+> 单服务器
+
+~~~go
+// 声明一个全局的rdb变量
+var rdb *redis.Client
+
+// 初始化连接
+func initClient() (err error) {
+	rdb = redis.NewClient(&redis.Options{
+		Addr:     "127.0.0.1:6379",
+		Password: "", // no password set
+		DB:       0,  // use default DB
+	})
+
+	_, err = rdb.Ping().Result()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+~~~
+
+
+
+> 哨兵模式
+
+~~~go
+func initClient()(err error){
+	rdb = redis.NewFailoverClient(&redis.FailoverOptions{
+		MasterName:    "master",
+		SentinelAddrs: []string{"x.x.x.x:26379", "xx.xx.xx.xx:26379", "xxx.xxx.xxx.xxx:26379"},
+	})
+
+	_, err = rdb.Ping().Result()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+~~~
+
+
+
+> 集群模式
+
+~~~go
+func initClient()(err error){
+	rdb = redis.NewClusterClient(&redis.ClusterOptions{
+		Addrs: []string{":7000", ":7001", ":7002", ":7003", ":7004", ":7005"},
+	})
+
+	_, err = rdb.Ping().Result()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+~~~
+
+
+
+###### 10.4.4 基本使用
+
+> set/get
+
+~~~go
+func main() {
+	err := initRedis()
+	if err != nil {
+		fmt.Println("redis 连接出错：", err)
+	}
+
+	//set/get
+	error := rdb.Set("username", "chenglh",time.Second * 60).Err() //60s生命期，0表示永久有效
+	if error != nil {
+		fmt.Printf("set username failed, err:%v\n", error)
+		return
+	}
+
+	val,error := rdb.Get("username").Result()
+	if error != nil {
+		fmt.Printf("get username failed, err:%v\n", error)
+		return
+	}
+	fmt.Printf("username=%v\n", val)
+}
+~~~
+
+
+
+> Zset
+
+~~~go
+func main() {
+	err := initRedis()
+	if err != nil {
+		fmt.Println("redis 连接出错：", err)
+	}
+
+	zsetKey := "language_rank"
+	languages := []redis.Z{
+		redis.Z{Score: 90.0, Member: "Php"},
+		redis.Z{Score: 98.0, Member: "Golang"},
+		redis.Z{Score: 99.0, Member: "C++"},
+	}
+
+	// ZADD
+	num, err := rdb.ZAdd(zsetKey, languages...).Result()//切片拆分
+	if err != nil {
+		fmt.Printf("zadd failed, err:%v\n", err)
+		return
+	}
+	fmt.Printf("zadd %d succ.\n", num)
+
+	// 把Golang的分数(热度)加10
+	newScore, err := rdb.ZIncrBy(zsetKey, 7, "Golang").Result()
+	if err != nil {
+		fmt.Printf("zincrby failed, err:%v\n", err)
+		return
+	}
+	fmt.Printf("Golang's score is %f now.\n", newScore)
+
+	//插入元素
+	num1, err := rdb.ZAdd(zsetKey, []redis.Z{redis.Z{Score: 95.0, Member: "Java"}}...).Result()
+	if err != nil {
+		fmt.Printf("zadd failed, err:%v\n", err)
+		return
+	}
+	fmt.Printf("zadd %d succ.\n", num1)//添加成功数量：1
+
+	// 取分数最高的3个
+	ret, err := rdb.ZRevRangeWithScores(zsetKey, 0, 2).Result()
+	if err != nil {
+		fmt.Printf("zrevrange failed, err:%v\n", err)
+		return
+	}
+	for _, z := range ret {
+		fmt.Println(z.Member, z.Score)
+	}
+
+	// 取95~100分的
+	opt := redis.ZRangeBy{
+		Min: "95",
+		Max: "100",
+	}
+	ret, err = rdb.ZRangeByScoreWithScores(zsetKey, opt).Result()
+	if err != nil {
+		fmt.Printf("zrangebyscore failed, err:%v\n", err)
+		return
+	}
+	for _, z := range ret {
+		fmt.Println(z.Member, z.Score)
+	}
+}
+~~~
+
+
+
+###### 10.4.5 Pipeline
+
+
+
+###### 10.4.6 事务
+
+
+
+###### 10.4.7 Watch
 
 
 
