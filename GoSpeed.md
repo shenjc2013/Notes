@@ -252,10 +252,123 @@ import (
 
 func main() {
 	//BeanFactory.Set(&services.OrderService{}) //&services.OrderService{Version:""}
-	BeanFactory.Set(services.NewOrderService())
+	BeanFactory.Set(services.NewOrderService()) //&services.OrderService{Version:"1.0"}
 	BeanFactory.Get((*services.OrderService)(nil))
-	//&services.OrderService{Version:"1.0"}
 	//fmt.Printf("%#v", order)
+}
+~~~
+
+
+
+###### 1.3 处理注入依赖
+
+用户服务依赖了订单服务，PHP，Java可以通过注解注入，但是Go注析获取不方便，但是可以通过 Tag获取。
+
+~~~go
+// services/UserService.go
+package services
+
+import "fmt"
+
+type UserService struct {
+	Order *OrderService `inject:"-"` //- 表示约定是 OrderService
+}
+
+func NewUserService() *UserService {
+	return &UserService{}
+}
+
+func (this *UserService) GetUserInfo(uid int) {
+	fmt.Println("uid = ", uid)
+}
+
+func (this *UserService) GetOrderInfo(uid int) {
+	this.Order.GetOrderInfo(uid)
+}
+~~~
+
+
+
+~~~go
+package Injector
+
+import "reflect"
+
+var BeanFactory *BeanFactoryImpl
+
+func init()  {
+	BeanFactory = NewBeanFactory()
+}
+
+type BeanFactoryImpl struct {
+	beanMapper BeanMapper
+}
+
+func NewBeanFactory() *BeanFactoryImpl {
+	return &BeanFactoryImpl{beanMapper:make(BeanMapper)}
+}
+
+func (this *BeanFactoryImpl) Set(vlist ...interface{}) {
+	if vlist == nil || len(vlist) == 0 {
+		return
+	}
+	for _,v := range vlist {
+		this.beanMapper.add(v)
+	}
+}
+
+func (this *BeanFactoryImpl) Get(vl interface{}) interface{} {
+	if vl == nil {
+		return nil
+	}
+	getV := this.beanMapper.get(vl)
+	if getV.IsValid() {
+		return getV.Interface()
+	}
+	return nil
+}
+
+//处理依赖注入
+func (this *BeanFactoryImpl) Apply(bean interface{}) {
+	if bean == nil {
+		return
+	}
+	v := reflect.ValueOf(bean)
+	if v.Kind() == reflect.Ptr {
+		v = v.Elem()
+	}
+	if v.Kind() != reflect.Struct {
+		return
+	}
+	for i := 0; i < v.NumField(); i++ {
+		field := v.Type().Field(i)
+		if v.Field(i).CanSet() && field.Tag.Get("inject") != "" {
+			if getV := this.Get(field.Type);getV != nil {
+				v.Field(i).Set(reflect.ValueOf(getV))
+			}
+		}
+	}
+}
+~~~
+
+
+
+程序调用
+
+~~~go
+package main
+
+import (
+	"fmt"
+	. "www.test.com/Injector"
+	"www.test.com/services"
+)
+
+func main() {
+	BeanFactory.Set(services.NewOrderService())
+	userService := services.NewUserService()
+	BeanFactory.Apply(userService)
+	fmt.Println(userService.Order)
 }
 ~~~
 
