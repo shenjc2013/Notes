@@ -502,7 +502,7 @@ docker run -it --network host --rm redis:5.0.7 redis-cli
 下载Redis库：
 
 ~~~go
-go get -u github.com/go-redis/redis
+go get github.com/go-redis/redis/v8
 ~~~
 
 
