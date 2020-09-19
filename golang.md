@@ -142,7 +142,7 @@ main : a =  10  b=  20
 */
 ~~~
 
-
+<img src="golang.assets/image-20200919093553690.png" alt="image-20200919093553690" style="zoom:90%;" />
 
 
 
