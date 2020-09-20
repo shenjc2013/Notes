@@ -1968,7 +1968,7 @@ func main() {
 切片完整表达式：
 
 ~~~go
-a[low : high : maxCap]
+a[low : high : Cap]
 ~~~
 
 上面的代码会构造与简单切片表达式`a[low: high]`相同类型、相同长度和元素的切片。
