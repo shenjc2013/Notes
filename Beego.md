@@ -231,7 +231,6 @@ fmt.Printf("值：%#v,类型：%T\n", str4, str4)
 ~~~go
 var i int64 = 20
 
-
 str1 := strconv.FormatInt(i, 10) // 参数1：int64数值，参数2：进制数
 fmt.Printf("值：%#v,类型：%T\n", str1, str1)
 ~~~
