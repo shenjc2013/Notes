@@ -34,7 +34,11 @@ https://golang.google.cn/dl
 
 
 
-Mac环境搭建
+Mac环境搭建Go
+
+- GOROOT 就是Go的安装环境
+- GOPATH 就是工作目录，包含 src、pkg、bin文件夹
+- 注意：不要把gopath设置成安装目录
 
 ~~~go
 # mkdir /usr/local/go
@@ -47,6 +51,17 @@ Mac环境搭建
 # tar -zxvf go1.15.2.darwin-amd64.tar.gz
 
 //3、配置
+# vim ~/.bash-profile
+export GOROOT=/usr/local/go
+export GOPATH=/Users/chenglh/GoRoot
+export PATH=/usr/local/go/bin:$GOPATH/bin:$PATH
+~~~
+
+
+
+检测Go是否安装成功
+
+~~~go
 
 ~~~
 
@@ -62,6 +77,14 @@ Beego框架地址：
 
 ~~~go
 https://beego.me
+~~~
+
+
+
+安装Beego
+
+~~~go
+
 ~~~
 
 
