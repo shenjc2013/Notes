@@ -55,6 +55,9 @@ Mac环境搭建Go
 export GOROOT=/usr/local/go
 export GOPATH=/Users/chenglh/GoRoot
 export PATH=/usr/local/go/bin:$GOPATH/bin:$PATH
+
+//4、生效
+source ~/.bash_profile
 ~~~
 
 
@@ -62,7 +65,7 @@ export PATH=/usr/local/go/bin:$GOPATH/bin:$PATH
 检测Go是否安装成功
 
 ~~~go
-
+go version
 ~~~
 
 
