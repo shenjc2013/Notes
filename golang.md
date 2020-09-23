@@ -620,7 +620,7 @@ fmt.Printf("&boy.name = %p\n", &boy.name) //这里的两个值是一样的
 
 
 
-###### 1.5 string
+###### 第五章 string
 
 字符串拆分
 
@@ -659,7 +659,7 @@ flg = strings.HasPrefix("test.abc", "tes.")
 
 
 
-###### 1.6 文件操作
+###### 第六章 文件操作
 
 打开、创建文件：
 
@@ -766,6 +766,14 @@ func main() {
 
 
 读文件：
+
+read() 按字节读文件
+
+write()按字节写文件
+
+
+
+
 
 
 
