@@ -826,7 +826,24 @@ func main() {
 
 
 
+Go从语言的层面就支持并行，并发程序的内存管理有时候非常复杂，而Go提供了自动垃圾回收机制。
 
+GO语言中的并发程序主要使用两种手段来实现：goroutine和channel。
+
+
+
+主go程退出，其他工作的goroutine也一起退出。
+
+
+
+~~~go
+func main() {
+    go newTask()
+    
+    fmt.Println("main goroutine exit")
+}
+
+~~~
 
 
 
@@ -844,7 +861,7 @@ write()按字节写文件
 
 
 
-https://www.bilibili.com/video/BV1TK4y1a7ex?p=34
+https://www.bilibili.com/video/BV1TK4y1a7ex?p=57
 
 
 
