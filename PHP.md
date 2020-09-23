@@ -91,11 +91,9 @@ http://ip-api.com/json/{IP地址}?lang=zh-CN　　# 查询某个ip的信息
 
 ###### 1.3 Composer
 
-> 安装composer
-
-文档参考：https://getcomposer.org/download
-
 ~~~php
+//文档参考：https://getcomposer.org/download
+
 # composer -v
 
 下载软件包
@@ -317,9 +315,9 @@ $ brew services restart php@7.4
 
 
 
-> http://blog.phpdr.net/mac-zendstudio-字体过小问题解决.html
+~~~php
+//http://blog.phpdr.net/mac-zendstudio-字体过小问题解决.html
 
-~~~
 -Dorg.eclipse.swt.internal.carbon.smallFonts
 ~~~
 

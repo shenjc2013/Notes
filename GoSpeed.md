@@ -1,4 +1,4 @@
-
+##### 第一章 手撸IoC容器
 
 > 初始化项目
 
@@ -372,3 +372,18 @@ func main() {
 }
 ~~~
 
+
+
+##### 第二章 手撸Redis脚手架
+
+###### 2.1 
+
+脚手架：框架上再框架一层，定制化开发，方便调用。
+
+<img src="GoSpeed.assets/image-20200922143407677.png" alt="image-20200922143407677" style="float:left;" />
+
+
+
+实现案例：
+
+<img src="GoSpeed.assets/image-20200922144221134.png" alt="image-20200922144221134" style="float:left" />

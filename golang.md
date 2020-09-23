@@ -646,16 +646,28 @@ strings.HasSuffix(str, suffix string) bool
 字符串处理函数:
 
 1.字符串按指定分割符拆分:     Split
+
+~~~go
 ret := strings.Split(str, ";")
+~~~
 
 2.字符串按空格拆分: Fields
+
+~~~go
 ret = strings.Fields(str)
+~~~
 
-3.判断字符串结束标记HasSuffix
+3.判断字符串结束标记 HasSuffix
+
+~~~go
 flg := strings.Hassuffix("test.abc", ".mp3")
+~~~
 
-4.判断字符串起始标记HasPrefix
+4.判断字符串起始标记 HasPrefix
+
+~~~go
 flg = strings.HasPrefix("test.abc", "tes.")
+~~~
 
 
 
@@ -667,9 +679,22 @@ flg = strings.HasPrefix("test.abc", "tes.")
 
 ​	参数：name 文件名称，打开文件的路径：绝对路径、相对路径。
 
-2、打开文件 os.Open		以只读文件打开文件。文件不存在，打开失败。
+~~~go
+func main() {
+	file,err := os.Create("./a.log")
+	if err != nil {
+		fmt.Println("create file err :", err)
+		return
+	}
+	defer file.Close()
+}
+~~~
+
+2、打开文件 os.Open 以只读文件打开文件。文件不存在，打开失败。
 
 ​	参数：name 文件名称，打开文件的路径：绝对路径、相对路径。
+
+
 
 3、打开文件 os.OpenFile	以只读、只写、读写方式 打开文件。文件不存在，打开失败。
 
@@ -694,26 +719,26 @@ flg = strings.HasPrefix("test.abc", "tes.")
 
 
 
+写文件：
+
+​	**1、按字符串写**   file.WriteString(str)   返回写入的字符个数；
+
+​	回车换行符： window下 \r\n；Linux系统下 \n
+
 ~~~go
 func main() {
-	file,err := os.Create("./a.log")
-	if err != nil {
-		fmt.Println("create file err :", err)
-		return
-	}
+	file,_ := os.OpenFile("log.txt",os.O_CREATE|os.O_WRONLY, 0666) //读写模式
 	defer file.Close()
+
+	n, _ := file.WriteString("123")
+	fmt.Println(n) //返回写入了n个字符数，如果 log.txt中已经有内容，字符串会从0开始覆盖原有字符串
+	//这里代码没多少实用性 ，可用 os.O_APPEND 追加方式写入文件
 }
 ~~~
 
 
 
-写文件：
-
-​	按字符串写   file.WriteString(str) 返回写入的字符个数
-
-​	回车 ；window下 \n\r ; Linux系统下 \n
-
-​	按位置写	Seek() 获取文件的读写指针位置；
+​	**2、按位置写**       Seek()  获取文件的读写指针位置；
 
 ​			参数1：偏移量； 正数：向文件尾偏；负数：向文件头偏
 
@@ -727,30 +752,7 @@ func main() {
 
 ​			返回值：表示从文件起始位置，到当前文件读写指针位置的偏移量。（无论是从前往后，还是从后往前读）
 
-​	按字节写：
-
-​			writeAt()  在文件制定偏移位置，写入 []byte，通常搭配 Seek()
-
-​			n,_ := file.WriteAt([]byte("this word"),  offset)
-
-
-
-按字符串写：
-
-~~~go
-func main() {
-	file,_ := os.OpenFile("log.txt",os.O_CREATE|os.O_WRONLY, 0666) //读写模式
-	defer file.Close()
-
-	n, _ := file.WriteString("123")
-	fmt.Println(n) //返回写入了n个字符数，如果 log.txt中已经有内容，字符串会从0开始覆盖原有字符串
-    //这里代码没多少实用性 ，可用 os.O_APPEND 追加方式写入文件
-}
-~~~
-
-
-
-按位置写：
+​	**3、按字节写**： writeAt()  在文件制定偏移位置，写入 []byte，通常搭配 Seek()
 
 ~~~go
 	//offset,_ := file.Seek(5, io.SeekStart) // offset = 5
@@ -759,13 +761,78 @@ func main() {
 
 	//可以以读写模式打开文件，使用offset偏移光标位置，然后写入文件
 	//即可以修改覆盖文件内容
+	n,_  := file.WriteAt([]byte("this word"),  offset)
+~~~
+
+
+
+读文件：
+
+​		1、按行读：
+
+​		 reader := bufio.NewReader(file) ;
+
+​		 buf,err := reader.ReadBytes('\n')
+
+​		**判断文本结尾  err != nil && err == io.EOF**
+
+~~~go
+func main() {
+	file,err := os.OpenFile("./main.go", os.O_RDONLY, 0666)
+	if err != nil {
+		fmt.Println("打开文件错误，err：", err)
+		return
+	}
+	defer file.Close()
+
+	//创建一个带有缓冲区的 reader
+	reader := bufio.NewReader(file)
+	for {
+		buf,err := reader.ReadBytes('\n') //读取一行内容
+		if err != nil && err == io.EOF {
+			break
+			return
+		}
+		fmt.Print(string(buf))
+	}
+}
+~~~
+
+​		2、按字节读
+
+~~~go
+	var fileContext []byte
+	var tmpStr = make([]byte, 128)
+	for {
+		n,err := file.Read(tmpStr) //按字节读取内容放入到tmpStr
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			fmt.Println("读取文件错误")
+			return
+		}
+		fileContext = append(fileContext, tmpStr[:n]...)
+	}
+~~~
+
+​		3、整个文件读
+
+~~~go
+
 ~~~
 
 
 
 
 
-读文件：
+
+
+
+
+
+
+
 
 read() 按字节读文件
 
@@ -789,17 +856,28 @@ https://www.bilibili.com/video/BV1TK4y1a7ex?p=34
 
 
 
+正则表达式：
+
+https://www.bilibili.com/video/BV1SJ41167HM?p=20
+
+
+
+~~~go
+golang大数据：
+https://www.bilibili.com/video/BV17E41147ox?from=search&seid=4073232537706605890
+~~~
 
 
 
 
 
+![image-20200921161046317](golang.assets/image-20200921161046317.png)
 
+![image-20200921161028474](golang.assets/image-20200921161028474.png)
 
+![image-20200921161221905](golang.assets/image-20200921161221905.png)
 
-
-
-
+![image-20200921161425235](golang.assets/image-20200921161425235.png)
 
 
 

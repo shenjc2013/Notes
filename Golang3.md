@@ -668,7 +668,7 @@ Golang中每个goroutine（协程）默认占用内存远比Java、C的线程少
 golang中的主线程：（可以理解为线程/也可以理解为进程），在一个Golang程序的主线程上可以起多个协程。
 Golang中多协程可以实现并行或者并发。
 
-<img src="Golang2.assets/image-20200906161300314.png" alt="image-20200906161300314" style="zoom:50%;float:left;" />
+<img src="Golang.assets/image-20200906161300314.png" alt="image-20200906161300314" style="zoom:50%;float:left;" />
 
 
 
@@ -1570,7 +1570,7 @@ func main()  {
 
 ###### 7.6.9 通道异常panic
 
-<img src="Golang2.assets/image-20200821133857394.png" alt="image-20200821133857394" style="zoom:50%;float:left;" />
+<img src="Golang.assets/image-20200821133857394.png" alt="image-20200821133857394" style="zoom:50%;float:left;" />
 
 
 
