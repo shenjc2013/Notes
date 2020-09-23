@@ -76,7 +76,7 @@ Beego 简单化：RESTful 支持、MVC 模型；内置了强大的模块，包�
 
 
 
-Beego框架地址：
+框架地址：
 
 ~~~go
 https://beego.me
@@ -84,10 +84,18 @@ https://beego.me
 
 
 
-安装Beego
+Beego安装
 
 ~~~go
+//Beego安装是典型的go安装包安装，命令行
+go get github.com/astaxie/beego
+~~~
 
+Bee工具安装
+
+~~~go
+//bee 工具是一个为了协助快速开发beego项目而创建的项目
+go get github.com/beego/bee
 ~~~
 
 
