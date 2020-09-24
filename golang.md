@@ -671,7 +671,7 @@ flg = strings.HasPrefix("test.abc", "tes.")
 
 
 
-###### 第六章 文件操作
+###### 第六章 file
 
 打开、创建文件：
 
@@ -690,9 +690,23 @@ func main() {
 }
 ~~~
 
+
+
 2、打开文件 os.Open 以只读文件打开文件。文件不存在，打开失败。
 
 ​	参数：name 文件名称，打开文件的路径：绝对路径、相对路径。
+
+~~~go
+func main() {
+	file,err := os.Open("./log.txt")
+	if err != nil {
+		fmt.Println("读取文件出错")
+		return
+	}
+	file.Close()
+	fmt.Println("打开文件成功")
+}
+~~~
 
 
 
@@ -703,6 +717,14 @@ func main() {
 ​	参数2：打开文件模式：O_RDONLY、O_WRONLY、O_RDWR
 
 ​	参数3：权限值，0666
+
+~~~go
+func main() {
+	file,_ := os.OpenFile("log.txt", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+	file.WriteString("this is test, " + time.Now().Format("2006/01/02 15:04"))
+	file.Close()
+}
+~~~
 
 
 
@@ -801,26 +823,43 @@ func main() {
 ​		2、按字节读
 
 ~~~go
+func main() {
+	file,err := os.OpenFile("./main.go", os.O_RDONLY, 0666)
+	if err != nil {
+		fmt.Println("打开文件错误，err：", err)
+		return
+	}
+	defer file.Close()
+
 	var fileContext []byte
 	var tmpStr = make([]byte, 128)
 	for {
 		n,err := file.Read(tmpStr) //按字节读取内容放入到tmpStr
-		if err == io.EOF {
+		if err != nil && err == io.EOF {
 			break
-		}
-		if err != nil {
+			return
+		} else if err != nil {
 			fmt.Println("读取文件错误")
 			return
 		}
 		fileContext = append(fileContext, tmpStr[:n]...)
 	}
+}
 ~~~
 
-​		3、整个文件读
+​		3、整个文件读 ioutil工具包
 
 ~~~go
-
+func main() {
+	//整个文件读取
+	read,_ := ioutil.ReadFile("./main.go")
+	fmt.Println(string(read))
+}
 ~~~
+
+
+
+复制文件：
 
 
 
@@ -839,7 +878,6 @@ GO语言中的并发程序主要使用两种手段来实现：goroutine和channe
 ~~~go
 func main() {
     go newTask()
-    
     fmt.Println("main goroutine exit")
 }
 
