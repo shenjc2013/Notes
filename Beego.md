@@ -98,7 +98,68 @@ Bee工具安装
 go get github.com/beego/bee
 ~~~
 
+Bee可执行文件默认存放在$GOPATH/bin里面，所以需要把$GOPATH/bin配置到环境变量。
 
+~~~go
+$ bee version
+~~~
+
+
+
+Bee命令
+
+~~~go
+bee new 创建一个新的beego项目
+
+bee api	只是用于api，不会创建static和views目录
+
+bee run	运行beego项目
+
+bee pack 打包编译生成文件，注意 mac下打包到linux 使用命令：bee pack -be GOOS=linux
+~~~
+
+创建项目：
+
+~~~go
+//bee new fyouku  //前端
+bee api fyoukuApi //接口
+~~~
+
+
+
+路由设置两种方式：
+
+~~~go
+//方法一：
+beego.Router("/", &controllers.MainController{})
+
+//方法二：
+//@router /channel/list:key [get]
+~~~
+
+
+
+LiteIDE x
+
+~~~go
+//打印输出字符串
+func (c *MainController) GetHello() {
+    var (
+		title string
+	)
+	title = "Hello world"
+    c.Ctx.WriteString(title)
+}
+~~~
+
+配置路由方法一： routers/router.go
+
+~~~go
+func init() {
+	...
+    beego.Router("hello", &controllers.MainController{}, "get:GetHello")
+}
+~~~
 
 
 
