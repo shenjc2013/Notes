@@ -341,3 +341,13 @@ ap工具是apache部分功能
 https://swagger.io
 ~~~
 
+
+
+###### 1.7 注册回调
+
+~~~php
+https://www.jb51.net/article/129213.htm
+~~~
+
+
+
