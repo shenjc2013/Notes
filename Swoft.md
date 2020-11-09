@@ -1463,7 +1463,7 @@ class AccountController
 
 将 token值写入头信息，如下图所示：
 
-![image-20200604152945508](H:\笔记本\Swoft.assets\image-20200604152945508.png)
+![image-20200604152945508](.\Swoft.assets\image-20200604152945508.png)
 
 
 

@@ -14,7 +14,7 @@ https://www.bilibili.com/video/BV1gW411H7Az?from=search&seid=1168170235822834860
 
 举例：1W个人抢1000张票，1W个秒杀100件商品......
 
-![image-20200708144020338](H:\笔记本\Kafka.assets\image-20200708144020338.png)
+![image-20200708144020338](.\Kafka.assets\image-20200708144020338.png)
 
 
 
@@ -41,13 +41,13 @@ https://www.bilibili.com/video/BV1gW411H7Az?from=search&seid=1168170235822834860
 **一般基于Pull或者Polling接收数据**
 发送到队列中的消息被一个而且仅仅一个接收者接受；即使有多个接收者在同一个队列中侦听，也只有一个能消费。(打电话)
 
-<img src="H:\笔记本\Kafka.assets\image-20200708151954001.png" alt="image-20200708151954001" style="zoom:80%;" />
+<img src=".\Kafka.assets\image-20200708151954001.png" alt="image-20200708151954001" style="zoom:80%;" />
 
 2、发布订阅
 
 **发布到同一个主题的消息，可被多个订阅者接收**
 
-![image-20200708151641769](H:\笔记本\Kafka.assets\image-20200708151641769.png)
+![image-20200708151641769](.\Kafka.assets\image-20200708151641769.png)
 
 
 
@@ -100,7 +100,7 @@ https://www.bilibili.com/video/BV1gW411H7Az?from=search&seid=1168170235822834860
 
 Kafka是分布式的发布一-订阅消息系统。它最初由LinkedIn(领英)公司发布， 使用Scala语言编写，与2010年12月份开源，成为Apache的顶级项目。Kafka是一 个高吞吐量的、 持久性的、分布式发布订阅消息系统。它主要用于处理活跃live的数据(登录、浏览、点击分享、喜欢等用户行为产生的数据)。
 
-![image-20200710110058680](H:\笔记本\Kafka.assets\image-20200710110058680.png)
+![image-20200710110058680](.\Kafka.assets\image-20200710110058680.png)
 
 ~~~php
 #kafka官网
