@@ -359,3 +359,74 @@ JSON-handle
 http://www.cnplugins.com/zhuanti/jsontuijian.html
 ~~~
 
+
+
+
+
+对缓存（Redis/Memcached）、
+
+消息（ActiveMQ/RabbitMQ）、
+
+搜索(ElasticSearch)等机制有深刻的理解
+
+
+
+###### 1.8 swoole
+
+服务端：server.php
+
+~~~php
+<?php
+// 绑定端口，监听IP地址，为所有IP地址提供服务，9501
+$server = new Swoole\Server('127.0.0.1', 9501); // tcp服务端
+
+// 设置参数
+$server->set([
+    'worker_num' => 4, //设置4个子进程数
+]);
+
+//监听连接进入事件
+$server->on('Connect', function ($server, $fd) {
+    echo "Client: Connect.\n";
+});
+
+//监听数据接收事件
+$server->on('Receive', function ($server, $fd, $from_id, $data) {
+    var_dump($data);
+    $server->send($fd, "Server: " . $data);
+});
+
+//监听连接关闭事件
+$server->on('Close', function ($server, $fd) {
+    echo "Client: Close.\n";
+});
+
+//启动服务器
+$server->start();
+~~~
+
+客户端：client.php
+
+~~~php
+<?php
+$client = new Swoole\Client(SWOOLE_SOCK_TCP);
+$client->connect("127.0.0.1", 9501);
+
+$params = json_encode([
+    'service' => 'cartService',
+    'action'    => 'cart',
+    'params' => ["token"=>'asaff',"uid"=>123]
+]);
+$client->send($params);
+
+echo $client->recv(), PHP_EOL;
+~~~
+
+然后在终端分别运行这两个PHP文件即可得到结果。
+
+
+
+> 实现rpc分布式调用
+
+
+

@@ -11,10 +11,10 @@ iptables和selinux关闭
 
 ###### 1.1 基础简介
 
-> mongodb是一个非关系型数据库，但操作与关系型数据库类似
-> mongodb是面向文档存储的非关系型数据库，数据以json格式存储
-> mongodb可用来永久存储，也可用来缓存数据
-> mongodb提供副本集和分片集群功能，操作简单
+- mongodb是一个非关系型数据库，但操作与关系型数据库类似
+- mongodb是面向文档存储的非关系型数据库，数据以json格式存储
+- mongodb可用来永久存储，也可用来缓存数据
+- mongodb提供副本集和分片集群功能，操作简单
 
 
 
@@ -26,7 +26,7 @@ mongodb官网：https://www.mongodb.com
 
 菜单栏 > Software > Community Server  【社区版本】
 
-<img src="H:\笔记本\Mongodb.assets\image-20200526170253002.png" alt="image-20200526170253002" style="float:left;" />
+<img src=".\Mongodb.assets\image-20200526170253002.png" alt="image-20200526170253002" style="float:left;" />
 
 ```php
 下载二进制包
