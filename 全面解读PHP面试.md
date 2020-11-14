@@ -1048,3 +1048,223 @@ FastCGI
 
 
 
+###### 12、高并发和大流量解决方案考点
+
+并发：在某个时间点，有多少个访问点同时请求过来。
+
+
+
+QPS：每秒钟请求或查询的数量。
+
+吞吐量：单位时间内处理的请求数据
+
+响应时间：
+
+PV
+
+UV
+
+
+
+ab -c 100 -n 5000 待测试的网站
+
+
+
+测试机与被测试机分开
+
+不要对线上服务做压力测试
+
+CPU,内存，网络等都 不超过最高限度的 70%
+
+
+
+==前端优化==
+
+减少HTTP请求
+
+添加异步请求
+
+启动浏览器缓存和文件压缩
+
+CDN加速，把一些资源添加到CDN节点当中
+
+建立独立的图片服务器，与web的IO分开
+
+
+
+==服务端的优化==
+
+页面静态化
+
+并发处理，队列等处理，协程
+
+数据库的优化
+
+数据缓存
+
+分库分表，分区操作
+
+读写分离
+
+
+
+防盗链
+
+通过refer
+
+Nginx模块，ngx_http_referer_module用于阻挡来源非法的
+
+
+
+Nginx负载均衡
+
+加权轮询策略，权重到服务器性能好的
+
+IP Hash策略  变相的轮询
+
+fair策略 选出负载最轻的服务器
+
+能用Hash、一致必Hash策略
+
+
+
+Nginx配置
+
+~~~php
+http{
+	upstream cluster {
+        ip_hash;
+		server srv1 weight=10; //权重
+        server srv2 weight=15; //反射代理
+        server srv3 weight=20;
+	}
+}
+~~~
+
+
+
+###### 13、秒杀
+
+减库存时 卡顿或并发，会同时读取到有效库存进行操作。
+
+
+
+执行函数，设置
+
+设置成功即表示，获取到锁
+
+```php
+x10 1function setLock(.....) {2    $script = <<<LUA3    //定义变量的语法4    local key = KEYS[1]5    local expire = ARGV[1]6    7    //写入缓存和过期时间8    if redis.call("setnx", key, 1) ==1 then9        return redis.call("expire", key, expire)10    end11    12    return 013LUA14}php
+```
+
+设置成功即表示，获取到锁
+
+~~~php
+function delLock(.....) {
+    $script = <<<LUA
+	local key = KEYS[1]
+	return redis.call("del", key)
+LUA
+}
+~~~
+
+
+
+~~~php
+function lock(....) {
+    $retry = $this->retry; //建议获取三次
+	whill ($retry-- > 0) {
+		$getLock = getLock(....);
+		if ($getLock) {
+			return true;
+        }
+		usleep(1000*10*1); //休眠100毫秒
+    }
+    
+    return false;   
+}
+~~~
+
+
+
+~~~php
+function run(....) {
+	try {
+        if (lock(...)) { //取锁成功
+            //业务操作
+                        
+            delLock(....);
+            return true;                                    
+        }
+        return false;        
+    } catch() {
+        delLock(....);
+        return false;        
+    }
+}
+~~~
+
+
+
+整体逻辑是争夺锁，执行业务逻辑，释放锁。
+
+
+
+
+
+##### 第二讲-分布式
+
+Nginx 配置知识。
+
+负载均衡
+
+
+
+接口 去服务注册与管理中心拿到一个健康的连接，自己去调用服务。
+
+内部也可以调用其他服务。熔断与降级  rpc
+
+
+
+传统的 nginx + php-fpm模式
+
+<img src="全面解读PHP面试.assets/image-20201114163304248.png" alt="image-20201114163304248" style="zoom:50%;float:left;" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

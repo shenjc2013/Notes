@@ -430,3 +430,49 @@ echo $client->recv(), PHP_EOL;
 
 
 
+###### 1.9 负载均衡
+
+LVS常用三种负载均衡模式：
+
+1、lvs nat 模式 （Network Address ，轮叫机制）
+
+2、lvs ip-tun模式
+
+3、lvs dr模式
+
+
+
+
+
+Lvs   基于  VS/NAT，轮叫机制 （左边是公网地址，右侧是内网地址）
+
+<img src="PHP.assets/image-20201113131158786.png" alt="image-20201113131158786" style="zoom:50%;float:left;" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

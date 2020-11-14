@@ -94,11 +94,65 @@ tcp 0 0 127.0.0.1:27017 0.0.0.0:* LISTEN 108417/mongod
 
 
 
+数据库(database)、集合(collection)、数据/文档(document)
+
+~~~go
+> show databases
+
+> use 数据库名
+//留心：隐式创建，在mongodb选择不存在的数据不会报错，后期该数据库有数据时，系统自动创建
+
+> show collections
+
+//创建集合
+> db.createCollection('c1')
+> db.createCollection('c2')
+
+> show collections
+
+//删除集合
+> db.cl.drop()
+~~~
+
+
+
+删除数据库
+
+~~~php
+1、use 数据库名
+    
+2、db.dropDatabase()
+~~~
 
 
 
 
 
+总结：
+
+数据库(查看、创建、选择、删除)
+
+~~~php
+show databases
+
+隐式创建
+    
+use数据库名
+    
+删除数据库  1、use 数据库名 2、db.dropDatabase()
+~~~
+
+
+
+集合 （查看、创建、删除）
+
+~~~php
+show collections
+
+db.createCollection("集合名")
+
+db.集合名.drop()
+~~~
 
 
 
