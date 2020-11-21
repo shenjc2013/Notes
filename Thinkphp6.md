@@ -1471,7 +1471,7 @@ $ vi src/lib/view.js
 
 
 
-
+![image-20201115111319932](Thinkphp6.assets/image-20201115111319932.png)
 
 
 

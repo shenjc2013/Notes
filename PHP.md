@@ -454,6 +454,177 @@ Lvs   基于  VS/NAT，轮叫机制 （左边是公网地址，右侧是内网�
 
 
 
+HTTP协议
+
+Webservice = http协议 + XML
+
+REST = http + json
+
+
+
+ftp、http、stmp、pop，tcp/ip协议
+
+
+
+HTTP协议的工作流程
+
+客户端    ---->   
+
+
+
+
+
+403 Nginx没有权限去访问对应的文件，如添加： chown + x   4.3.php
+
+404 访问的文件不存在
+
+500 PHP内部程序有错误
+
+502  nginx是把.php文件转发给php-fpm处理的，如果关闭了php-fpm服务就报 502错误
+
+504 Gateway Time-out
+
+
+
+Nginx 配置
+
+~~~php
+events {
+    worker_connections  1024;
+}
+
+fastcgi_read_timeout 3s;   //如果PHP处理时间过长，Nginx直接返回 504
+~~~
+
+
+
+总结：
+
+403 检查web服务器是否有权限访问资源文件。
+
+404 访问URL对应的服务器上的文件是否存在
+
+499 1、可能是两次POST过快，nginx主动断开认为是不安全；2、PHP进程数处理不过来，client断开了，但是进程还在跑,（改善进程数或代码）
+
+500 程序内部错误
+
+502 检查web代码服务器与CGI接口，如：nginx和PHP-FPM的socket连接
+
+504 代码运行时间过久，或nginx参数的 FASTCGI_READ_TIMEOUT值太小。
+
+
+
+==nginx负载均衡策略==
+
+1、轮询(默认)
+
+2、权重
+
+3、IP hash
+
+4、least_conn 最小连接
+
+~~~php
+http {
+    upstream imgServer {// 定义一个upstream 名字是 imgServer
+        //ip_hash;least_conn;
+        server IP:8001 weight=2;
+        server IP:8002;
+        server IP:8003 backup;
+        server IP:8004 max_fails=3 fail_timeout=20s;
+    }
+
+    server {
+        listen       80;
+        server_name  localhost;
+
+        location ~.*\.(jpg|jpeg|gif|png)$ {
+            proxy_pass http://imgServer;
+        }
+    }
+}
+~~~
+
+
+
+读写是怎么判断的
+
+- 使用了数据库的写操作方法（`execute`/`insert`/`update`/`delete`以及衍生方法）；
+- 如果调用了数据库事务方法的话，会自动连接主服务器；
+- 从服务器连接失败，会自动连接主服务器；
+- 调用了查询构造器的`lock`方法；
+- 调用了查询构造器的`master`/`readMaster`方法
+
+
+
+主服务器来不及同步到从服务器的，直接读取主服务器。
+
+```php
+Db::name('user')
+    ->where('id', 1)
+    ->update(['name' => 'thinkphp']);
+Db::name('user')
+    ->master(true)
+    ->find(1);
+```
+
+
+
+top命令是Linux下常用的性能分析工具，能够实时显示系统中各个进程的资源占用状况。
+
+
+
+设计模式
+
+
+
+Nginx 与 PHP-FPM连接通讯，以下两种都是通过 socket建立连接。
+
+<img src="PHP.assets/image-20201117195938493.png" alt="image-20201117195938493" style="zoom:50%;float:left;" />
+
+socket的连接打开文件数量也会受系统影响。
+
+
+
+~~~php
+$ ab -c 2000 -n 8000 http://127.0.0.1/index.html
+
+//ulimit -n 可以查看当前系统的最大打开文件数
+$ ulimit -n
+~~~
+
+
+
+utf8mb4 数据库存表情符。
+
+
+
+乐观锁、队列、分布式锁、解锁
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

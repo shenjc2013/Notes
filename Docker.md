@@ -44,7 +44,7 @@ Docker Hub仓库地址(https://hub.docker.com)
 //第三个图是拉取远程镜像仓库(DockerHub)
 ~~~
 
-<img src="H:\笔记本\Docker.assets\image-20200519114638987.png" alt="image-20200519114638987" style="zoom:120%;float:left;" />
+<img src=".\Docker.assets\image-20200519114638987.png" alt="image-20200519114638987" style="zoom:120%;float:left;" />
 
 
 
@@ -62,7 +62,7 @@ Docker Hub仓库地址(https://hub.docker.com)
 
 Docker是一种轻量级的虚拟化技术，比传统的虚拟机性能更好
 
-![image-20200519150207170](H:\笔记本\Docker.assets\image-20200519150207170.png)
+![image-20200519150207170](.\Docker.assets\image-20200519150207170.png)
 
 ```php
 server    //表示真实电脑
@@ -139,7 +139,7 @@ $ sudo docker run hello-world
 $ docker pull hello-world
 ```
 
-<img src="H:\笔记本\Docker.assets\image-20200519175705831.png" alt="image-20200519175705831" style="float:left;" />
+<img src=".\Docker.assets\image-20200519175705831.png" alt="image-20200519175705831" style="float:left;" />
 
 
 
@@ -259,7 +259,7 @@ $ docker rmi -f $(docker images -qa)    //删除所有镜像
 $ docker inspect 容器ID
 ```
 
-<img src="H:\笔记本\Docker.assets\image-20200521102129526.png" alt="image-20200521102129526" style="zoom:100%;float:left;" />
+<img src=".\Docker.assets\image-20200521102129526.png" alt="image-20200521102129526" style="zoom:100%;float:left;" />
 
 ---
 
@@ -474,11 +474,11 @@ $ sudo docker push registry.cn-hangzhou.aliyuncs.com/phpclh/php1234:[镜像版�
 $ sudo docker pull registry.cn-hangzhou.aliyuncs.com/phpclh/php1234:[镜像版本号]
 ```
 
-<img src="H:\笔记本\Docker.assets\image-20200522160048909.png" alt="image-20200522160048909" style="zoom:100%;float:left;" />
+<img src=".\Docker.assets\image-20200522160048909.png" alt="image-20200522160048909" style="zoom:100%;float:left;" />
 
 
 
-![image-20200522160745393](H:\笔记本\Docker.assets\image-20200522160745393.png)
+![image-20200522160745393](.\Docker.assets\image-20200522160745393.png)
 
 
 

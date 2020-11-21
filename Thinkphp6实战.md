@@ -250,3 +250,33 @@ $ composer require topthink/think-captcha
 thinkphp6与layuiadmin部署：
 
 https://www.kancloud.cn/monday/thinkphp6/1802421
+
+
+
+Layuiadmin 打印内容
+
+```js
+var field = data.field;
+alert(JSON.stringify(field));
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

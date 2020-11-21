@@ -26,6 +26,18 @@ Elasticsearch是一个基于Lucene的搜索服务器。它提供了一个分布�
 
 
 
+~~~go
+1.站内搜索:主要和Solr竞争,属于后起之秀。
+2.NoSQL Json文档数据库:主要抢占Mongo的市场,它在读写性能上优于Mongo ,同时也支持地理位置查询,还方便地理位置和文本混合查询。
+3.监控:统计、日志类时间序的数据存储和分析、可视化,这方面是引领者。
+4.国外: Wikipedia (维基百科)使用ES提供全文搜索并高亮关键字、StackOverflow ( IT问答网站)结合全文搜索与地理位置查询、Github使用Elasticsearch检索1300亿行的代码。
+5.国内:百度(在云分析、网盟、预测、文库、钱包、风控等业务.上都应用了ES ,单集群每天导入30TB+数据,总共每天60TB+ )、 新浪、阿里巴
+巴、腾讯等公司均有对ES的使用。
+6.使用比较广泛的平台ELK(ElasticSearch, Logstash, Kibana)。
+~~~
+
+
+
 ##### 第二章 Elasticsearch安装
 
 ###### 2.1 Elasticsearch安装
@@ -52,6 +64,7 @@ $ wget https://mirrors.huaweicloud.com/elasticsearch/7.9.3/elasticsearch-7.9.3-d
 > 解压：
 
 ~~~php
+//查看 java版本
 $ java  -version
 
 $ tar -zxvf elasticsearch-7.9.3-darwin-x86_64.tar.gz
@@ -773,8 +786,6 @@ GET /chenglh/user/_search
 
 ==多条件查询==
 
-
-
 Must (对应 and 所有条件都要满足)
 
 ~~~bash
@@ -947,6 +958,98 @@ Match 会使用分词器解析！(先分析文档，然后在通过分析的文�
 
 
 
+ElasticSearch是一款基于Lucene构建的开源搜索引擎。
+
+
+
+==主题: ES和Solr对比==
+
+> 1,相同点
+
+都是基于Lucene，都是对lucene的封装。
+
+> 2，不同点
+
+①使用
+Solr安装略微复杂一些; es基本是开箱即用,非常简单
+
+②接口
+Solr类似webservice的接口; es REST风格的访问接口
+
+③分布式存储
+solrCloud solr4.x才支持
+es是为分布式而生的
+
+④支持的格式
+Solr支持更多格式的数据,比如JSON、XML、 CSV ; es仅支持json文件格式。
+
+
+
+百度指数：可以查看对比。
+
+
+
+==es与mysql对比==
+
+| MySQL            | ElasticSearch   |
+| ---------------- | --------------- |
+| Database(数据库) | Index（索引库） |
+| Table(表)        | Type(类型)      |
+| row(行)          | Document(文档)  |
+| Column(列)       | Field(字段)     |
+
+
+
+REST操作
+
+GET 		 获取
+PUT 		 修改
+
+POST		创建
+
+DELETE 	删除
+
+HEAD		获取头信息
+
+
+
+
+
+ES内置REST接口：
+
+| URL              |                                                     |
+| ---------------- | --------------------------------------------------- |
+| 描述             |                                                     |
+| /index/_search   | 搜索指定索引下的数据                                |
+| /_aliases        | 获取或操作索引的别名                                |
+| /index/          | 查看指定索引的详细信息                              |
+| /index/type/     | 创建或操作类型                                      |
+| /index/_ mapping | 创建或操作mapping                                   |
+| /index/_setting  | 创建或操作设置(number_of_shards是不可更改的)        |
+| /index/_ open    | 打开指定被关闭的索引                                |
+| /index/_close    | 关闭指定索引                                        |
+| /index/_refresh  | 刷新索引(使新加内容对搜索可见,不保证数据被写入磁盘) |
+| /index/flush     | 刷新索引(会触发Lucene提交)                          |
+
+
+
+==倒排索引==
+
+正向索引：文段  ---》 词语
+
+倒排索引：词语  ---》 文段
+
+
+
+
+
+<img src="Elasticsearch7.assets/image-20201120094436960.png" alt="image-20201120094436960" style="zoom:70%;float:left;" />
+
+
+
+<img src="Elasticsearch7.assets/image-20201120094533610.png" alt="image-20201120094533610" style="zoom:70%;float:left;" />
+
+<img src="Elasticsearch7.assets/image-20201120094656956.png" alt="image-20201120094656956" style="zoom:70%;float:left;" />
 
 
 
@@ -956,34 +1059,72 @@ Match 会使用分词器解析！(先分析文档，然后在通过分析的文�
 
 
 
+自动生成ID
+
+<img src="Elasticsearch7.assets/image-20201120101601298.png" alt="image-20201120101601298" style="zoom:50%;float:left;" />
 
 
 
 
 
+==内置字段与类型==
+
+<img src="Elasticsearch7.assets/image-20201120104157229.png" alt="image-20201120104157229" style="zoom:50%;float:left;" />
 
 
 
 
 
+~~~go
+#添加数据
+POST /library/books/2   //如果不指定ID会生成UUID
+{
+  "title":"Elasticsearch Flp",
+  "name":{
+    "first": "flp",
+    "last" : "halin"
+  },
+  "publish_date":"2017-12-01",
+  "price":"59.99"
+}
+
+#通过ID获取文档信息
+GET /library/books/1
+GET /library/books/2
+GET /library/books/6cJv43UB9Z3MfQCzN2PE
+
+#更新方法一：覆盖
+PUT /library/books/2
+{
+  "title":"Elasticsearch Flp",
+  "name":{
+    "first": "flp",
+    "last" : "halin"
+  },
+  "publish_date":"2017-12-01",
+  "price":"109.99"
+}
+#更新方法二：修改
+POST /library/books/2/_update
+{
+  "doc":{
+    "price":"10.00"
+  }
+}
+
+#删除一个文档
+DELETE /library/books/2
+
+##DELETE /library/books这条执行会出错
+
+DELETE /library
+~~~
 
 
 
+~~~go
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+~~~
 
 
 
