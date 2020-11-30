@@ -20,7 +20,7 @@
 https://www.php.net/manual/zh/ref.sockets.php
 ```
 
-<img src="H:\笔记本\Websocket.assets\image-20200515142636903.png" alt="image-20200515142636903" style="float:left;" />
+<img src=".\Websocket.assets\image-20200515142636903.png" alt="image-20200515142636903" style="float:left;" />
 
 ```php
 //1、创建并返回一个套接字，也称作一个通讯节点
@@ -52,4 +52,6 @@ socket_close($socket);//关机
 
 #PHP的控制台要运行当前PHP，然后浏览器打开
 ```
+
+
 

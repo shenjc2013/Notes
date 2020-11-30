@@ -15,13 +15,13 @@
 
 ###### 1.2 综合参数对比
 
-<img src="H:\笔记本\Nginx.assets\image-20200505121803182.png" alt="image-20200505121803182" style="zoom:100%;float:left" />
+<img src=".\Nginx.assets\image-20200505121803182.png" alt="image-20200505121803182" style="zoom:100%;float:left" />
 
 
 
 ###### 1.3 正向反向代理
 
-<img src="H:\笔记本\Nginx.assets\image-20200505124004810.png" alt="image-20200505124004810" style="zoom:100%;float:left;" />
+<img src=".\Nginx.assets\image-20200505124004810.png" alt="image-20200505124004810" style="zoom:100%;float:left;" />
 
 ##### 第二章 软件安装
 
@@ -307,7 +307,7 @@ server {
 Nginx如果实现负载均衡：(通过在Nginx的nginx.conf配置文件进行配置即可实现)
 ```
 
-<img src="H:\笔记本\Nginx.assets\image-20200514110510134.png" alt="image-20200514110510134" style="zoom:100%;float:left;" />
+<img src=".\Nginx.assets\image-20200514110510134.png" alt="image-20200514110510134" style="zoom:100%;float:left;" />
 
 ```php
 #具体配置如下：(2个步骤)
@@ -377,7 +377,7 @@ upstream www.xxx.com {
 实际应用中，我们将静态资源比如图片、css、html、js等交给Nginx处理
 ```
 
-<img src="H:\笔记本\Nginx.assets\image-20200514152915817.png" alt="image-20200514152915817" style="zoom:100%;float:left;" />
+<img src=".\Nginx.assets\image-20200514152915817.png" alt="image-20200514152915817" style="zoom:100%;float:left;" />
 
 Nginx静态代理如何实现？(通过修改Nginx的nginx.conf文件进行配置即可实现)
 

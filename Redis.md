@@ -1031,7 +1031,7 @@ Redis客户端可以订阅任意数量的频道。
 
 访问延迟时间
 
-<img src="H:\笔记本\Redis.assets\image-20200724145229507.png" alt="image-20200724145229507" style="float:left;" />
+<img src=".\Redis.assets\image-20200724145229507.png" alt="image-20200724145229507" style="float:left;" />
 
 
 

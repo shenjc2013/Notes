@@ -1293,7 +1293,7 @@ class ClassArr {
 
 
 
-反射方式的调用：
+> 反射方式的调用：
 
 ~~~php
 <?php
@@ -1451,8 +1451,6 @@ class HttpException extends Handle {
 
 
 **用于判断用户登录的可以使用 中间件 或 写两个基类。**
-
-
 
 
 
