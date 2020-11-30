@@ -193,13 +193,16 @@ redis > shutdown
 
 ###### 3.2 配置解读
 
-```php
-配置文件中大小写不敏感。
+==配置文件中大小写不敏感。==
+
+> 网络
+
+~~~php
 #units are case insensitive so 1GB 1Gb 1gB are all the same.
 
 1. Redis默认不是以守护进程的方式运行，修改配置项， yes启用守护进程                       
-//daemonize no    
-daemonize yes    //守护进程，即终端退出，Redis进程没有中止
+//daemonize no   //终端退出，Redis进程也会中止
+daemonize yes    //yes，开启守护进程模式
 
 2. 当Redis以守护进程方式运行时，Redis默认会把pid写入/var/run/redis.pid文件，通过pidfile指定
 pidfile  /var/run/redis.pid
@@ -212,8 +215,16 @@ bind 127.0.0.1
 
 5. 当客户端闲置时间多长后关闭联机，如果指定为0，表示关闭该功能
 timeout 0 //300 表示空闲5分钟即关闭
+~~~
 
-6. 指定日志记录级别，Redis总共支持四个级别：debug,verbose,notice,warning，默认为verbose     
+
+
+> 通用配置
+
+```php
+//daemonize yes    //yes，开启守护进程模式
+
+6. 指定日志记录级别，Redis总共支持四个级别：//debug,verbose,notice,warning，默认为notice
 loglevel notice
 
 7. 日志记录方式，默认标准输出，如果配置Redis为守护进程方式运行， 而这里有配置为日志记录方式为
@@ -222,16 +233,22 @@ logfile /usr/local/redis/var/redis.log
 
 8.设置数据库的数量，默认连接数据库为0号， 可以使用SELECT <dbid>命令在链接指定数据库ID
 database 16
+```
 
+
+
+> 快照，即持久化到文件，.rdb或.aof
+
+~~~php
 9. 快照，指定多长时间内，有多少个更新操作，就会将数据同步到数据文件，可以多个条件配合。
 save <seconds> <changes>
 Redis 提供了三个条件内存持久化
 save 900 1        (900s，即15min内有1个更改)
 save 300 10       (300s，即5min内有10个更改)
-save 60 10000     (60s， 即1min内有1W个更改)
+save 60  10000    (60s， 即1min内有1W个更改)
 
 10. 指定存储至本地数据库文件时是否压缩数据，默认为yes,Redis采用LZF压缩算法，如果为了节省CPU时  
-间可以关闭该选项，但会导致数据库文件变得巨大，默认为压缩数据
+间可以关闭该选项，但会导致数据库文件变得巨大，//默认为压缩数据
 rdbcompression yes
 
 11. 指定本地数据库文件名，默认为dump.rdb
@@ -288,7 +305,11 @@ Redis作为优秀的中间件缓存，时常会存储大量的数据，即使采
 #allkeys-random        查询所有的key之后随机删除
 #volatile-ttl          查询全部设定超时时间的数据，追后马上排序，将马上将要过期的数据进行删除操作
 #noeviction            【默认】如果设置为该属性，则不会进行删除操作，如果内存溢出则报错返回
-```
+~~~
+
+
+
+
 
 ###### 3.3 自定义配置参数
 
