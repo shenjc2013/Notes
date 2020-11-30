@@ -693,6 +693,18 @@ GET /chenglh/user/_search?q=name:明二
 
 > ==复杂搜索== select (排序、分布、高亮、模糊查询、精准查询！)
 
+==查询的参数体使用Json结构体==
+
+==结果中Hit：==
+
+==索引和文档的信息==
+
+==然后查询出来 的具体文档==
+
+==数据中的东西可以遍历出来了==
+
+==分数：我们可以通过来判断谁更加符合结果==
+
 <img src="Elasticsearch7.assets/image-20201112212828079.png" alt="image-20201112212828079" style="zoom:50%;" />
 
 再添加一条数据：
@@ -711,6 +723,8 @@ PUT /chenglh/user/4
 
 ==查询结果==
 
+查询的条件是结构体
+
 ~~~bash
 GET /chenglh/user/_search
 {
@@ -728,13 +742,13 @@ GET /chenglh/user/_search
 
 
 
-==结果的过滤==
+==结果的过滤==   查询指定字段
 
 ![image-20201112214035902](Elasticsearch7.assets/image-20201112214035902.png)
 
 
 
-==排序查询==
+> ==排序查询==
 
 ~~~bash
 GET /chenglh/user/_search
@@ -760,9 +774,9 @@ GET /chenglh/user/_search
 
 
 
-==分页显示==
+> ==分页显示==   (from, size关键字)
 
-~~~bash
+~~~json
 GET /chenglh/user/_search
 {
   "query":{
@@ -784,9 +798,11 @@ GET /chenglh/user/_search
 
 
 
+> 布尔值查询
+
 ==多条件查询==
 
-Must (对应 and 所有条件都要满足)
+==Must==（and）,所有的条件都要符合  where name="张三" ==and== age=25
 
 ~~~bash
 GET /chenglh/user/_search
@@ -814,7 +830,7 @@ GET /chenglh/user/_search
 
 
 
-Should ( 相当于 or ) ，或者的关系，符合其中一个即可
+==Should== ( 相当于 or ) ，或者的关系，符合其中一个即可，即 where name = "张三" ==or==age = 25
 
 ~~~bash
 GET /chenglh/user/_search
@@ -840,7 +856,7 @@ GET /chenglh/user/_search
 
 
 
-不等于 must_not 
+不等于 ==must_not==  , where age <> 25
 
 ~~~bash
 GET /chenglh/user/_search
@@ -861,7 +877,7 @@ GET /chenglh/user/_search
 
 
 
-增加过滤条件：
+> ==筛选结果==，即增加过滤条件，使用 filter过滤结果 ： where name="张三" having  age > 10
 
 ~~~bash
 GET /chenglh/user/_search
@@ -925,7 +941,9 @@ GET /chenglh/user/_search
 
 
 
-多条件 ，结果中也是会有分值的 【多个条件使用空格隔开，只要满足其中一个结果既可以被查出，晕个时候可以通过分值基本的判断】
+> 多条件 ，结果中也是会有分值的 
+
+【==多个条件使用空格隔开，只要满足其中一个结果既可以被查出==，判断时候可以通过分值基本的判断】
 
 ~~~bash
 GET /chenglh/user/_search
@@ -944,15 +962,267 @@ GET /chenglh/user/_search
 
 > 精确查询
 
-Term 查询是直接通过倒排索引指定的词条进行精确的查找的！
+term 查询是直接通过==倒排索引==指定的词条进行精确的查找的！
+
+关于分词：
 
 trem ,直接查询精确的
 
-Match 会使用分词器解析！(先分析文档，然后在通过分析的文档进行查询)
+Match 会使用分词器解析！(==先分析文档，然后在通过分析的文档进行查询==)
 
 
 
-**两个类型 keyword  text**
+==**两个类型 keyword  text**==  区别
+
+> 1、创建索引
+
+<img src="Elasticsearch7.assets/image-20201122094057302.png" alt="image-20201122094057302" style="zoom:50%;" />
+
+
+
+> 2、写入数据
+
+~~~php
+#创建索引
+PUT testdb
+{
+  "mappings":{
+    "properties":{
+      "name":{
+        "type":"text"
+      },
+      "desc":{
+        "type":"keyword"
+      }
+    }
+  }
+}
+
+#写入记录
+PUT testdb/_doc/1
+{
+  "name":"张大伟说Java name",
+  "desc":"张大伟说Java desc"
+}
+
+PUT testdb/_doc/2
+{
+  "name":"张大伟说Java name",
+  "desc":"张大伟说Java desc2"
+}
+~~~
+
+
+
+> 3、查询数据
+
+<img src="Elasticsearch7.assets/image-20201122094827921.png" alt="image-20201122094827921" style="zoom:50%;float:left;" />
+
+
+
+> 4、查询
+
+~~~php
+GET _analyze
+{
+  "analyzer": "keyword",
+  "text": "张大伟说Java name"
+}
+
+GET _analyze
+{
+  "analyzer": "standard",
+  "text": "张大伟说Java name"   //这里被拆分到很细的粒子串
+}
+~~~
+
+
+
+![image-20201122095533931](Elasticsearch7.assets/image-20201122095533931.png)
+
+
+
+> ==查询的结果==   注意，是否被命中
+
+<img src="Elasticsearch7.assets/image-20201122100117250.png" alt="image-20201122100117250" style="zoom:50%;" />
+
+
+
+==keyword类型==不会被分词器解析。
+
+多个 term也可以组合查询
+
+![image-20201122100621253](Elasticsearch7.assets/image-20201122100621253.png)
+
+
+
+> ==高亮查询==
+
+数据入库
+
+<img src="Elasticsearch7.assets/image-20201122101705729.png" alt="image-20201122101705729" style="zoom:50%;" />
+
+
+
+==高亮显示（默认标签）==
+
+<img src="Elasticsearch7.assets/image-20201122101918191.png" alt="image-20201122101918191" style="zoom:50%;" />
+
+
+
+==高亮显示（自定义标签）==
+
+<img src="Elasticsearch7.assets/image-20201122102321013.png" alt="image-20201122102321013" style="zoom:50%;" />
+
+
+
+> 匹配
+
+按条件匹配
+
+精确匹配
+
+区间范围匹配
+
+匹配字段过滤
+
+多条件查询
+
+高亮查询
+
+
+
+###### 2.7 整合到程序
+
+~~~php
+https://www.elastic.co/guide/index.html
+~~~
+
+
+
+<img src="Elasticsearch7.assets/image-20201122102856931.png" alt="image-20201122102856931" style="zoom:50%;float:left;" />
+
+==下载API==
+
+<img src="Elasticsearch7.assets/image-20201122102947855.png" alt="image-20201122102947855" style="zoom:50%;float:left;" />
+
+
+
+==下载对应的源码API==
+
+
+
+
+
+==**官方文档接口**==
+
+~~~php
+https://www.elastic.co/guide/en/elasticsearch/client/php-api/current/index.html
+~~~
+
+
+
+创建集群：修改elasticsearch配置文件
+
+~~~php
+$ vi ./config/elasticsearch.yml
+
+cluster.name: goods_cluster
+node.name: goods_cluster_1
+node.master: true
+~~~
+
+
+
+创建节点2、3
+
+~~~php
+$ mkdir es-2
+$ mkdir es-3
+
+$ cp elasticsearch-7.9.3-darwin-x86_64.tar.gz ./es-2
+$ cp elasticsearch-7.9.3-darwin-x86_64.tar.gz ./es-3
+
+//解压后，修改对应的config/elasticsearch.yml文件
+http.port: 9202   //自字义端口
+
+http.cors.enabled: true  //跨域
+http.cors.allow-origin: "*"
+
+cluster.name: goods_cluster  //节点
+node.name: goods_cluster_2
+node.master: false
+
+discovery.seed_hosts: ["127.0.0.1"] //注册节点
+
+~~~
+
+
+
+###### 2.8 集群搭建
+
+==单机部署，必须要下载三次源码包，**不要复制节点文件目录到其他集群，复制的节点目录无法加入主节点**==
+
+~~~php
+//创建统一入口
+$ mkdir elasticsearch-7.9.3-cluster
+
+//引入elasticsearch文件
+$ cp elasticsearch-7.9.3-darwin-x86_64.tar.gz ./elasticsearch-7.9.3-cluster
+$ cd elasticsearch-7.9.3-cluster
+$ tar -zxvf elasticsearch-7.9.3-darwin-x86_64.tar.gz
+$ rm -rf elasticsearch-7.9.3-darwin-x86_64.tar.gz
+
+//节点 es-1、es-2、es-3
+$ cp -R elasticsearch-7.9.3 es-1
+$ cp -R elasticsearch-7.9.3 es-2
+$ cp -R elasticsearch-7.9.3 es-3
+
+//修改 节点1 配置文件
+$ vi es-1/config/elasticsearch.yml
+
+/Users/chenglihui/software/elasticsearch-7.9.3-cluster/data/data-node-1
+    
+    
+path.logs: /Users/chenglihui/software/elasticsearch-7.9.3-cluster/logs/data-logs-1
+
+~~~
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
