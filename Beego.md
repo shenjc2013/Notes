@@ -385,3 +385,98 @@ https://blog.csdn.net/qq_36431213/article/details/82982181
 
 
 
+
+
+
+
+==**Gin框架**==
+
+安装框架
+
+~~~go
+go get -u github.com/gin-gonic/gin
+~~~
+
+
+
+==main.go文件入口==
+
+~~~go
+$ vi main.go
+
+package main
+
+import "github.com/gin-gonic/gin"
+
+func main() {
+	router := gin.Default()
+
+	router.GET("/", func(ctx *gin.Context) {
+		ctx.String(200, "hello gin~")
+	})
+
+	router.Run()
+}
+~~~
+
+
+
+==飘红处理==
+
+~~~go
+go mod init www.gin.com    //初始化模块
+
+go mod vendor  //下载模块到本地
+~~~
+
+
+
+==源码分析==
+
+~~~go
+package main
+
+import "github.com/gin-gonic/gin"
+
+func main() {
+	router := gin.Default() //区别：1、比gin.New多了两个默认中间件（日志，恢复），2、打印的信息也些少区别；Default() 还是会执行 New()操作
+	//router := gin.New()
+    //default是new的升级版
+
+	router.GET("/", func(ctx *gin.Context) {
+		ctx.String(200, "hello gin~")
+	})
+
+	router.Run()
+	//router.Run(":9000") //指定端口
+}
+~~~
+
+
+
+==路由方法==
+
+![image-20201207230707138](Beego.assets/image-20201207230707138.png)
+
+
+
+==抽离逻辑==
+
+~~~go
+package main
+
+import "github.com/gin-gonic/gin"
+
+func Hello(ctx *gin.Context) {
+	ctx.String(200, "hello gin~")
+}
+
+func main() {
+	router := gin.Default()
+
+    router.GET("/", Hello)  //不需要写() 会报错
+
+	router.Run()
+}
+~~~
+
