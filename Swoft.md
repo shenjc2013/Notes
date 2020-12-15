@@ -13,6 +13,30 @@ alias composer='/usr/local/php/bin/php /home/chenglh/composer.phar'
 
 
 
+==另一个文档==
+
+~~~php
+https://www.bookstack.cn/read/swoft-doc-v2.x/config-config.md
+~~~
+
+
+
+==参照写法==
+
+~~~php
+https://github.com/xiaoyukarl/pin_swoft_api
+~~~
+
+
+
+安装PHP Annotations
+
+~~~php
+https://blog.csdn.net/weixin_44244357/article/details/108626862
+~~~
+
+
+
 ###### 1.2 升级swoole拓展
 
 ```PHP
@@ -349,7 +373,7 @@ Swoft的Bean容器池(Mysql类、Route类、Cache类等)，消费者直接去容
 
 
 
-<img src="H:\笔记本\Swoft.assets\image-20200601102148814.png" alt="image-20200601102148814" style="zoom:90%;float:left" />
+<img src=".\Swoft.assets\image-20200601102148814.png" alt="image-20200601102148814" style="zoom:90%;float:left" />
 
 **Swoft底层是一个BeanFactory管理着Container**
 
@@ -1203,7 +1227,7 @@ $response->withHeader('Access-Control-Allow-Origin', 'http://mysite')
 
 在请求到达控制器之前对参数进行过滤、权限校验、数据初始等操作；在数据返回给用户之前，可以进行数据更改、日志记录等操作。
 
-<img src="H:\笔记本\Swoft.assets\image-20200603161456230.png" alt="image-20200603161456230" style="float:left;" />
+<img src=".\Swoft.assets\image-20200603161456230.png" alt="image-20200603161456230" style="float:left;" />
 
 
 
@@ -1763,6 +1787,14 @@ class User extends Model{
 Swoft支持原生操作、查询器操作、AR(Active Record)，AR是目前流行对象-关系映射，也就是我们常说的ORM，一个AR对应一个数据表，类里面的属性对应表里面的字段，一个AR实例对应表里面一行记录。
 查询器操作通过一个QueryBuilder实现，这个操作简单，类似TP的数据库链式操作。
 
+
+
+==如连接到  window数据库 需要把 user表中root的记录  host = % 然后重启mysql==
+
+
+
+
+
 **如果配置了读写数据库，增、删、改操作会走写数据库；查询走读数据库**
 
 > 一、原生操作
@@ -2021,6 +2053,67 @@ $result = User::updateOrCreate(['user_mobile'=>'13678910022'], $updateData);
 
 **读写分离**
 
+~~~php
+    'db' => [
+        'charset'  => 'utf8mb4',
+        'prefix'   => 'sdb_b2c_',
+        'class'    => Swoft\Db\Database::class,
+        'config'   => [
+            'collation' => 'utf8mb4_unicode_ci',
+            'strict'    => true,
+            'timezone'  => '+8:00',
+            'modes'     => 'NO_ENGINE_SUBSTITUTION,STRICT_TRANS_TABLES'
+        ],
+        'writes' => [
+            [
+                'dsn'      => 'mysql:dbname=swoft;host=127.0.0.1:3306',
+                'username' => 'root',
+                'password' => '12345678'
+            ]
+        ],
+        'reads'  => [
+            [
+                'dsn'      => 'mysql:dbname=swoft;host=192.168.1.102:3306',
+                'username' => 'root',
+                'password' => 'root'
+            ]
+        ]
+    ],
+    'db.pool'           => [
+        'class'    => Pool::class,
+        'database' => bean('db'),
+        'minActive'=> 10, //预估的
+        'maxActive'=> 20, //预估的
+        'maxWaitTime' => 0,
+        'maxIdleTime' => 120, //2分钟没使用就被回收
+    ],
+    'master' => [
+        'class'    => Database::class,
+        'dsn'      => 'mysql:dbname=swoft;host=127.0.0.1',
+        'username' => 'root',
+        'password' => '12345678',
+        'charset'  => 'utf8mb4',
+    ],
+    'master.pool' => [
+        'class'    => Pool::class,
+        'database' => bean('master')
+    ],
+~~~
+
+
+
+==使用==
+
+~~~php
+//正常使用  或者  指定主库读取
+return DB::select("SELECT * FROM sdb_b2c_goods");
+return DB::query("master.pool")->getConnection()->select("SELECT * FROM sdb_b2c_goods");
+~~~
+
+
+
+
+
 
 
 ###### 4.0 Redis
@@ -2029,6 +2122,114 @@ $result = User::updateOrCreate(['user_mobile'=>'13678910022'], $updateData);
 
 ###### 4.1 消息队列
 
+**==基于RabbitMQ实现延时队列==**
+
+RabbitMQ是实现了高级消息队列协议(AMQP) 的开源消息代理软件(亦称面向消息的中间件)。
+
+RabbitMQ服务器是用Erlang语言编写的，而集群和故障转移是构建在开放电信平台框架上的。所有主要的编程语言均有与代理接口通讯的客户端库。
+
+==延时队列使用场景：==
+
+1、订单超时取消
+
+2、自动确认收货
+
+3、会员续费提醒
+
+4、会员到期提醒
+
+5、分布式事务
+
+6、异步回调
+
+
+
+==MAC下启动 RabbitMQ服务端==
+
+需要安装服务端和开启PHP扩展
+
+~~~php
+#安装
+$ brew install rabbitmq
+
+#添加环境变量
+$ vi ~/.bash_profile
+
+export PATH=$PATH:/usr/local/sbin //如果有了当前路径，则不需要再添加
+
+#安装Rabitmq的可视化监控插件
+//切换到MQ目录
+cd /usr/local/Cellar/rabbitmq/3.8.6
+
+//启用rabbitmq management插件
+sudo sbin/rabbitmq-plugins enable rabbitmq_management
+
+#配置环境变量
+# vi ~/.bash_profile
+export RABBIT_HOME=/usr/local/Cellar/rabbitmq/3.8.6
+export PATH=$PATH:$RABBIT_HOME/sbin
+
+//配置文件生效
+# source ~/.bash_profile
+
+#后台启动rabbitmq
+rabbitmq-server -detached
+
+//查看状态
+rabbitmqctl status
+rabbitmqctl stop   //关闭
+~~~
+
+
+
+> 安装客户端及PHP扩展
+
+~~~php
+# 1、安装rabbitmq-c
+brew install rabbitmq-c
+
+//获得文件路径 /usr/local/Cellar/rabbitmq-c/0.10.0
+
+# 2、安装amqp
+pecl install amqp
+
+//直至出现Set the path to librabbitmq install prefix [autodetect] : 上面得到的路径
+
+# 3、添加扩展到php.ini
+vi /usr/local/etc/php/7.4/php.ini
+[rabbitmq]
+extension=amqp.so
+
+# 4、重启php
+brew services restart php@7.4
+~~~
+
+
+
+==PHP的RabbitMQ客户端==
+
+~~~php
+//composer上链接：
+https://packagist.org/packages/php-amqplib/php-amqplib
+~~~
+
+
+
+~~~php
+//composer安装
+composer require php-amqplib/php-amqplib
+~~~
+
+
+
+创建控制器
+
+~~~php
+php swoftcli.phar gen:http-ctrl cart @app/Http/Controller/v1 -n App\\Http\\Controller\\v1 --prefix /cart
+~~~
+
+
+
 
 
 ###### 5.1 webstock
@@ -2036,3 +2237,12 @@ $result = User::updateOrCreate(['user_mobile'=>'13678910022'], $updateData);
 绑定uid和fd
 
 https://www.cnblogs.com/heijinli/p/12935495.html
+
+
+
+
+
+~~~php
+
+~~~
+

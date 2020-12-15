@@ -262,6 +262,24 @@ alert(JSON.stringify(field));
 
 
 
+==购物车添加==
+
+~~~php
+/cart/add
+~~~
+
+
+
+==控制层==
+
+![image-20201213092515215](Thinkphp6实战.assets/image-20201213092515215.png)
+
+==逻辑层处理==
+
+![image-20201213092140426](Thinkphp6实战.assets/image-20201213092140426.png)
+
+![image-20201213092231502](Thinkphp6实战.assets/image-20201213092231502.png)
+
 
 
 

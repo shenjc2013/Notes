@@ -480,3 +480,92 @@ func main() {
 }
 ~~~
 
+
+
+###### 第一节 使用模板
+
+==1、有几级目录，得在通配符上指明==
+
+~~~go
+一级：router.LoadHTMLGlob("template/*")   //基本很少使用一级
+二级：router.LoadHTMLGlob("template/**/*")
+三级：router.LoadHTMLGlob("template/**/**/*")
+~~~
+
+
+
+==2、指定html文件==
+
+~~~go
+ctx.HTML(200, "index/index.html", nil)
+ctx.HTML(200, "user/index.html", nil)
+~~~
+
+==3、在html中==
+
+~~~go
+{{ define "user/index.html" }}
+
+html内容块
+
+{{ end }}
+~~~
+
+
+
+例子
+
+~~~go
+func main() {
+	router := gin.Default()
+
+	router.LoadHTMLGlob("template/**/*")
+
+	router.GET("/", Hello)
+
+	router.Run()
+}
+
+func Hello(ctx *gin.Context) {
+	ctx.HTML(200, "index/index.html", nil)
+}
+~~~
+
+
+
+~~~html
+{{ define "index/index.html" }}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+{{.name}} - {{.age}}
+</body>
+</html>
+{{ end }}
+~~~
+
+
+
+==静态资源目录==
+
+~~~go
+//静态资源
+router.Static("/static", "static")
+~~~
+
+
+
+则在 html中  直接使用如：/static 其实不是一个文件夹，是uri的。只是与static目录名称一致
+
+~~~php
+/static/css/index.css
+/static/images/default.jpg
+/static/js/jquery.js
+~~~
+
+
+

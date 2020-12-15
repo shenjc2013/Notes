@@ -315,6 +315,46 @@ $ brew services restart php@7.4
 
 
 
+==Nginx 转发到 swoft==
+
+~~~php
+upstream foo{
+    server 127.0.0.1:18306;
+}
+
+server{
+    listen 80;
+    index index.php index.html index.htm;
+    server_name www.swoft210.com;
+    root  /Users/chenglihui/wwwroot/www.swoft210.com;
+
+    charset utf-8;
+
+   # nginx 转发请求给 swoft
+   location / {
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header Host $host;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header Connection "keep-alive";
+        proxy_pass http://foo;
+    }
+}
+~~~
+
+
+
+==本地修改host==
+
+~~~php
+# sodu vi /etc/hosts
+~~~
+
+
+
+重启 nginx
+
+
+
 ~~~php
 //http://blog.phpdr.net/mac-zendstudio-字体过小问题解决.html
 
@@ -602,6 +642,34 @@ utf8mb4 数据库存表情符。
 
 
 乐观锁、队列、分布式锁、解锁
+
+
+
+==Nginx转发swoft==
+
+~~~php
+upstream foo{
+    server 127.0.0.1:18306;
+}
+
+server{
+    listen 80;
+    index index.php index.html index.htm;
+    server_name www.swoft210.com;
+    root  /Users/chenglihui/wwwroot/www.swoft210.com;
+
+    charset utf-8;
+
+   # nginx 转发请求给 swoft
+   location / {
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header Host $host;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header Connection "keep-alive";
+      proxy_pass http://foo;
+    }
+}
+~~~
 
 
 
