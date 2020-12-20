@@ -121,6 +121,34 @@ Directory of: /data/wwwroot/www.chenglh.com
 
 
 
+###### 1.7 Nginx转发到swoft
+
+~~~php
+upstream foo{
+    server 127.0.0.1:18306;
+}
+
+server{
+    listen 80;
+    index index.php index.html index.htm;
+    server_name www.swoft210.com;
+    root  /Users/xxxx/wwwroot/www.swoft210.com;
+
+    charset utf-8;
+
+   # nginx 转发请求给 swoft
+   location / {
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header Host $host;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header Connection "keep-alive";
+        proxy_pass http://foo;
+    }
+}
+~~~
+
+
+
 ---
 
 ##### 第二章 Swoft核心
@@ -1306,7 +1334,7 @@ Target File: app/Http/Middleware/AuthMiddleware.php
 
 
 
-中间件流程打印结果
+==中间件流程打印结果==
 
 > 全局中间件before request handle
 > Auth中间件before request handle
