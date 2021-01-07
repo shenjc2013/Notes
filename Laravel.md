@@ -1,3 +1,29 @@
+
+
+
+
+==创建控制器==
+
+~~~php
+php artisan make:controller UserController
+~~~
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ~~~php
 ##Laravel6.x从入门到进阶，深入浅出
 https://www.bilibili.com/video/BV1eg4y1q7r7?p=42
@@ -8,7 +34,9 @@ https://www.bilibili.com/video/BV1kJ411i7RY?p=1
 
 
 
-###### 1.1 分布式锁
+
+
+1.1 分布式锁
 
 > 下载安装
 
@@ -130,7 +158,7 @@ LUA;
 
 
 
-###### 1.2 消息队列
+1.2 消息队列
 
 > 秒杀、排队处理业务、应用解耦、流量削峰等
 
@@ -327,7 +355,7 @@ php artisan schedule:run 1>> NUL 2>&1
 
 
 
-###### 1.3 RBAC权限管理
+1.3 RBAC权限管理
 
 https://www.bilibili.com/video/av329058585?p=3
 

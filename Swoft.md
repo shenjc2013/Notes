@@ -2268,9 +2268,23 @@ https://www.cnblogs.com/heijinli/p/12935495.html
 
 
 
+###### 5.2定时任务
 
+==开启==
 
 ~~~php
+'crontab' => bean(Swoft\Crontab\Process\CrontabProcess::class)
 
+以下图好象不行
+~~~
+
+
+
+<img src="Swoft.assets/image-20210107231649854.png" alt="image-20210107231649854" style="zoom:50%;float:left;" />
+
+~~~php
+php swoftcli.phar gen:task
+
+ 》Time 用于时间控制
 ~~~
 
