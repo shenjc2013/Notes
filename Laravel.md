@@ -1,8 +1,46 @@
 
 
+==Laravel入门到放弃==
+
+###### ==1.1 下载安装==
+
+~~~php
+composer create-project --prefer-dist laravel/laravel dev.laravel.com "5.7.*"
+~~~
 
 
-==创建控制器==
+
+默认是要带index.php访问
+
+~~~php
+Nginx重写：
+
+location / {
+    try_files $uri $uri/ /index.php?$query_string;
+}
+~~~
+
+
+
+生成密钥
+
+~~~php
+php artisan key:generate
+~~~
+
+
+
+查看路由
+
+~~~php
+php artisan| grep route
+~~~
+
+
+
+###### ==1.2 创建控制器==
+
+自动加载好相关继承基类
 
 ~~~php
 php artisan make:controller UserController
@@ -10,7 +48,28 @@ php artisan make:controller UserController
 
 
 
+模型创建，指定目录下
 
+~~~php
+php artisan make:model Models/Menu
+~~~
+
+常见操作，指定表名，主键和禁用时间戳
+
+~~~php
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Menu extends Model
+{
+    protected $table = "menu";
+    
+    protected $primaryKey = "menu_id";
+    
+    public $timestamps = false;
+}
+~~~
 
 
 

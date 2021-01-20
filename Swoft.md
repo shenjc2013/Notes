@@ -1821,6 +1821,76 @@ Swoft支持原生操作、查询器操作、AR(Active Record)，AR是目前流�
 
 
 
+==1、切数据库==
+
+~~~php
+$product = DB::db("hx_oneshop")->selectOne("select * from xxx");
+~~~
+
+
+
+==2、切数据源==
+
+~~~php
+//默认查询源
+'db' => [
+    'class'    => Database::class,
+    'dsn'      => 'mysql:dbname=tswoft;host=127.0.0.1',
+    'username' => 'root',
+    'password' => '123456',
+    'charset'  => 'utf8mb4',
+],
+'db.pool' => [
+    'class'     => Pool::class,
+    'database'  => bean('db'), //连接池要与上面的key对应
+],
+
+//别一个数据源
+'omsDb' => [
+    'class'    => Database::class,
+    'dsn'      => 'mysql:dbname=tswoft;host=192.168.0.1',
+    'username' => 'root',
+    'password' => '123456',
+    'charset'  => 'utf8mb4',
+],
+'omsDb.pool' => [
+    'class'     => Pool::class,
+    'database'  => bean('omsDb'),
+],
+~~~
+
+使用方法
+
+~~~php
+$product = DB::query("omsDb.pool")->getConnection()->selectOne("select * from xxx");
+~~~
+
+
+
+==协程==
+
+~~~php
+{
+	sgo(function () use($product){
+		\Swoole\Coroutine::sleep(5);
+		//数据库操作
+		echo "coroutine done";
+	});
+}
+        
+{
+	sgo(function () use($product){
+		\Swoole\Coroutine::sleep(5);
+		//数据库操作
+		echo "coroutine done";
+	});
+}
+~~~
+
+
+
+
+
 
 
 **如果配置了读写数据库，增、删、改操作会走写数据库；查询走读数据库**
