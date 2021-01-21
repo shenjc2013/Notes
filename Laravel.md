@@ -17,25 +17,18 @@ PHP JSON 扩展
 composer create-project --prefer-dist laravel/laravel dev.laravel.com "5.7.*"
 ~~~
 
-
-默认是要带index.php访问
-
+Nginx虚拟主机配置：
 ~~~php
-Nginx重写：
-
 location / {
     try_files $uri $uri/ /index.php?$query_string;
 }
 ~~~
-
-
 
 生成密钥
 
 ~~~php
 php artisan key:generate
 ~~~
-
 
 
 查看路由
@@ -91,6 +84,54 @@ lsof -i tcp:80
 
 netstat -ntlp
 
+
+==二开设置==
+
+1、服务提供者 app/Providers/RouteServiceProvider.php
+
+~~~php
+<?php
+......
+protected $custom = 'App\Http\Controllers\Custom';
+
+public function map()
+{
+    ......
+
+    $this->mapCustomRoutes();
+}
+
+protected function mapCustomRoutes()
+{
+    Route::prefix('custom')
+        ->middleware('web')
+        ->namespace($this->custom)
+        ->group(base_path('routes/custom.php'));
+}
+~~~
+
+2、创建路由
+
+routes/custom.php
+
+~~~php
+<?php
+use Illuminate\Http\Request;
+
+Route::get('/user', 'UserController@index');
+~~~
+
+3、创建控制器
+
+~~~php
+php artisan make:controller Custom/UserController
+~~~
+
+4、链接访问
+
+~~~php
+http://dev.laravel.com/custom/user?sex=2&name=zhangsan
+~~~
 
 
 
