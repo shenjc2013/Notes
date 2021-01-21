@@ -72,7 +72,13 @@ class Menu extends Model
 }
 ~~~
 
+配置文件
 
+config/app.php
+
+~~~php
+'timezone' => 'Asia/Shanghai',
+~~~
 
 
 
