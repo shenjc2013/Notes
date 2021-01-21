@@ -1,13 +1,21 @@
-
-
 ==Laravel入门到放弃==
 
 ###### ==1.1 下载安装==
 
 ~~~php
-composer create-project --prefer-dist laravel/laravel dev.laravel.com "5.7.*"
+PHP >= 7.1.3
+PHP OpenSSL 扩展
+PHP PDO 扩展
+PHP Mbstring 扩展
+PHP Tokenizer 扩展
+PHP XML 扩展
+PHP Ctype 扩展
+PHP JSON 扩展
 ~~~
 
+~~~php
+composer create-project --prefer-dist laravel/laravel dev.laravel.com "5.7.*"
+~~~
 
 
 默认是要带index.php访问
@@ -77,8 +85,11 @@ class Menu extends Model
 
 
 
+查看某个端口
+lsof -i tcp:80
+列出所有端口
 
-
+netstat -ntlp
 
 
 
