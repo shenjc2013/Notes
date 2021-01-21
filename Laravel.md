@@ -19,8 +19,13 @@ composer create-project --prefer-dist laravel/laravel dev.laravel.com "5.7.*"
 
 Nginx虚拟主机配置：
 ~~~php
+# web访问
 location / {
     try_files $uri $uri/ /index.php?$query_string;
+}
+# api访问
+location / {
+    try_files $uri $uri/ /api.php?$query_string;
 }
 ~~~
 
