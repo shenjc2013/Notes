@@ -86,7 +86,33 @@ config/app.php
 ~~~
 
 
+日志
 
+~~~php
+single		单一
+daily		每日
+slack		空闲
+syslog		系统日志
+errorlog	错误日志
+monolog		monolog日志
+custom		自定义
+stack		堆栈
+
+
+Log::debug("this is", ['name'=>'zhangsan', 'sex'=>'男']);
+Log::alert("this is", ['name'=>'zhangsan', 'sex'=>'男']);
+
+//自定义文件
+/** config/logging.php */
+'aliyun' => [
+    'driver' => 'daily',
+    'path' => storage_path('logs/aliyun.log'),
+    'level' => 'info',
+    'days' => 7,
+]
+//使用
+Log::channel('aliyun')->info("userInfo", ['name'=>'zhangsan', 'sex'=>'男']);
+~~~
 
 
 查看某个端口
