@@ -1,6 +1,14 @@
-
-
 ==Laravel入门到放弃==
+
+
+
+~~~php
+composer -h
+
+查找composer安装路径
+
+php -d memory_limit=-1 /usr/local/bin/composer install
+~~~
 
 
 
@@ -12,7 +20,7 @@ https://learnku.com/docs/laravel/5.7/releases/2239
 
 
 
-###### ==1.1 下载安装==
+##### 1.1 框架入门
 
 ~~~php
 composer create-project --prefer-dist laravel/laravel dev.laravel.com "5.7.*"
@@ -32,41 +40,686 @@ location / {
 
 
 
+**Laravel框架基础**
+
+
+
+文档参考：
+
+~~~php
+https://learnku.com/docs/laravel/5.7/releases/2239
+~~~
+
+
+
+###### 1.1.1 目录结构
+
+~~~php
+app					程序应用目录
+    Console			命令行相关目录
+    	Kernel.php	命令行内核
+    Exceptions		自定义的异常处理类
+    	Handler.php	集中处理异常类
+    Http
+    	Controllers	控制器相关目录
+    	Middleware	中间件
+    	Kernel.php	Http的内核
+    Providers		服务提供者目录，是在程序初始化加载时做的一些事情
+    Models			模型目录(手动创建的)
+bootstrap		引导启动目录
+	cache		框架生成的缓存，如路由缓存、服务缓存等
+    app.php     加载框架内核
+config			框架所有的配置文件，数组形式返回
+database		数据库迁移文件
+    factories	数据模型生成类
+    migrations	数据表的结构生成和修改
+	seeds		数据填充
+public			程序的入口
+    index.php
+resources		程序资源文件
+    js
+    lang		语言包
+    	en
+    sass
+    views
+routes				路由目录
+    api.php			api接口路由
+    channels.php	广播路由
+  	console.php		命令行的路由
+    web.php			页面路由
+storage				存储目录，目录包含了编译后的 Blade 模板、基于文件的 Session、文件缓存，以及其它由框架生成的文件
+    app				app生成的一些文件
+    framework		用于存放框架生成的文件和缓存
+    logs			应用的日志文件
+tests				测试目录
+    Feature			功能测试（整个功能的测试）
+    Unit			单元测试（某个函数的测试）
+vendor				所有的外部依赖类库
+.env
+artisan
+composer.json
+composer.lock
+server.php
+~~~
+
+
+
+###### 1.1.2 路由
+
+**URL结构**
+
+~~~php
+https://sitechecker.pro/knowledge-base/?name=article&topic=seo#top
+
+https:// 				//协议 protocol
+sitechecker.pro			//域名 domain
+knowledge-base			//访问路径 path (转发的路由)
+?name=article&topic=seo	//请求参数
+#top					//锚点
+~~~
+
+
+
+**laravel相关命令行**
+
+~~~php
+php artisan					//查看所有命令信息
+
+php artisan | grep route	//管道符过滤搜索信息
+
+php artisan route:cache		//把路由缓存起来
+php artisan route:clear		//清除路由缓存
+php artisan route:list		//查看所有的路由
+~~~
+
+
+
+==查看路由列表==
+
+![image-20210214121316572](Laravel.assets/image-20210214121316572.png)
+
+
+
+==常用路由==
+
+~~~php
+Route::get('/user', 'UserController@index'); //从服务器取出资源列表
+
+Route::get('/user/ID', 'UserController@detail'); //从服务器取出ID的资源
+
+Route::post('/user', 'UserController@add'); //在服务器新建一个资源
+
+Route::put('/user/ID', 'UserController@update'); //在服务器更新资源(完整更新)
+
+Route::patch('/user/ID', 'UserController@update'); //在服务器更新资源(修改属性，即部分)
+
+Route::delete('/user/ID', 'UserController@delete'); //删除操作
+
+Route::options($uri, $callback);//获取信息
+~~~
+
+
+
+==多种方式请求==
+
+~~~php
+Route::match(['get', 'post'], 'UserController@update');
+~~~
+
+
+
+==路由重定向==
+
+~~~php
+//301 - 永久重定向（seo收录重写向后的地址）
+
+//302 - 临时重定向 (seo收录之前的)
+~~~
+
+
+
+==举例如下：==
+
+~~~php
+Route::get('/here', function (){
+    return '重定向前';
+});
+Route::get('/there', function (){
+    return '重定向后';
+});
+
+//301 - 永久重定向
+//Route::permanentRedirect('here', 'there');
+
+//302 - 临时重定向
+Route::redirect('here', 'there');
+~~~
+
+
+
+重定向传参数
+
+1、使用query方式，即如在uri后面  http://www.test.cn/here?id=1200&price=10.2&name=水杯
+
+在目标地址函数中注入 Request $request对象，使用 $input = $request->query();
+
+
+
+2、使用post方式，使用 $input = $request->post();方式获取。
+
+
+
+3、uri方式传参数，如：http://www.test.cn/here/1200
+
+~~~php
+实现如下路由功能：如果不传id=1200，默认是查询所有列表。
+
+Route::get('/user/{id}', 'UserController@detail'); //这里必须要传参数
+
+//Route::get('/user/{id}/{name}', 'UserController@detail');  传递多个参数
+
+Route::get('/user/{id?}', 'UserController@detail'); //这里可以不传参数，但是定义方法中参数必须要默认值
+~~~
+
+
+
+举例如下：
+
+~~~php
+//路由
+
+Route::any('/order',"OrderController@index");
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+<?php
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request; //【注意这里引入的相关http类】
+
+class OrderController extends Controller
+{
+    public function index(Request $request)
+    {
+        $query = $request->query();  //get方式的传参数
+        $post  = $request->post();	 //post方式的传参数
+        
+        return [$query, $post];
+    }
+}
+~~~
+
+
+
+**==注意：路由重复定义，只有第一个才生效，其他的不生效==**
+
+
+
+==路由参数约束==
+
+~~~php
+Route::get('/order/{id}/{name}', 'OrderController@detail')
+    ->where('id', '[0-9]+')
+    ->where('name', '[a-zA-Z]+');
+~~~
+
+
+
+路由全局参数约束(相对少用)
+
+~~~php
+# vi ./app/Providers/RouteServiceProvider.php
+
+public function boot()
+{
+    // 在 boot的函数里添加
+    //parent::pattern('id', '[0-9]+');
+    parent::patterns(['id'=>'[0-9]+', 'name'=>'[a-zA-Z]+']);
+    parent::boot();
+}
+~~~
+
+
+
+==路由别名==
+
+~~~php
+Route::get('getUser', 'UserController@getUser')->name('user.getUser');
+Route::get('getUrl', function (){
+//    return redirect()->route('user.getUser'); //路径跳转
+//    return redirect()->to(route('user.getUser'));
+    return \route('user.getUser', [], false); //返回路由相对路径
+});
+~~~
+
+
+
+路由分组与加载
+
+~~~php
+如增加 admin.php 后台入口
+
+// 第一步：
+# vim ./routes/admin.php
+//添加路由规则
+
+// 第二步：
+# vim app/Providers/RouteServiceProvider.php
+
+// 这里的 ServiceProvider是别名，RouteServiceProvider路由服务提供者，点进去后
+// public function boot()里有加载或刷新路由表，$this->app['router']加载到服务容器中
+use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
+
+class RouteServiceProvider extends ServiceProvider
+{
+    ......
+    public function map()
+    {
+        $this->mapApiRoutes();  //API的路由
+
+        $this->mapWebRoutes();  //web的路由
+
+        //$this->mapAdminRoutes();
+    }
+
+    protected function mapAdminRoutes()
+    {
+        Route::prefix('admin')
+            ->middleware('admin')
+            ->namespace($this->namespace)
+            ->group(base_path('routes/admin.php'));
+    }
+~~~
+
+
+
+###### 1.1.3 中间件
+
+**平时报的 419 错误码，一般是中间件拦截了的**
+
+在接口使用时，可以先注释掉csrf的校验。在laravel5.7的版本中
+
+~~~php
+# vim app/Http/Kernel.php
+
+//\App\Http\Middleware\VerifyCsrfToken::class, 注释掉
+~~~
+
+
+
+其他更高级的laravel版本则在中间件中 app/Http/Middleare/VerifyCsrfToken.php中注释掉。
+
+
+
+<img src="Laravel.assets/image-20210218212551699.png" alt="image-20210218212551699" style="zoom:40%;float:left;" />
+
+
+
+==中间件创建==
+
+~~~php
+php artisan make:middleware Benchmark   //用户记录程序运行时间的中间件
+~~~
+
+
+
+在 handle方法中写逻辑方法
+
+~~~php
+<?php
+
+namespace App\Http\Middleware;
+
+use Closure;
+use Illuminate\Support\Facades\Log;
+
+class Benchmark
+{
+    public function handle($request, Closure $next)
+    {
+        //return $next($request); //$next相当于要执行的业务逻辑程序
+        
+        //前置
+        $startTime = microtime(true);
+        
+        $response  = $next($request);//业务逻辑
+        
+        //后置中
+        $runTime = microtime(true) - $startTime;
+        Log::info('benchmark', [
+            'url' => $request->url(),
+            'input' => $request->input(),
+            'time' => "$runTime ms"
+        ]);
+
+        return $response;
+    }
+}
+~~~
+
+
+
+==中间件的使用==，把中间件注册到框架中
+
+**1、全局中间件**
+
+**2、路由中间件**
+
+**3、控制器中使用**
+
+
+
+==1、全局中间件== ，在内核内中添加 app/Http/Kernel.php
+
+~~~php
+//全局中间件
+protected $middleware = [
+    \App\Http\Middleware\CheckForMaintenanceMode::class,
+    \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,
+    \App\Http\Middleware\TrimStrings::class,
+    \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
+    \App\Http\Middleware\TrustProxies::class,
+    Benchmark::class,   //这里写入中间件类
+    //'benchmark'
+];
+
+//分组路由中间件
+protected $middlewareGroups = [
+    'web' => [
+        ......
+        //'benchmark'
+    ],
+
+    'api' => [
+        ......
+    ],
+];
+
+//定义中间件别名
+protected $routeMiddleware = [
+    ......
+    //'benchmark' => \App\Http\Middleware\Benchmark::class,
+];
+
+//这里是路由权重顺序，越在前面的就越重，先执行
+protected $middlewarePriority = [
+    \Illuminate\Session\Middleware\StartSession::class,
+    \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+    \App\Http\Middleware\Authenticate::class,
+    \Illuminate\Session\Middleware\AuthenticateSession::class,
+    \Illuminate\Routing\Middleware\SubstituteBindings::class,
+    \Illuminate\Auth\Middleware\Authorize::class,
+];
+~~~
+
+
+
+==测试观察中间件==
+
+~~~php
+# tail -f storage/logs/laravel.log
+~~~
+
+
+
+==2、路由中间件==  (只挂载在当前路由中生效)
+
+~~~php
+Route::get('/test',"UserController@test")->middleware(App\Http\Middleware\Benchmark::class);
+//Route::get('/test',"UserController@test")->middleware('benchmark'); 别名写法
+~~~
+
+
+
+挂载到路由分组中
+
+~~~php
+protected $middlewareGroups = [
+    'web' => [
+        //......
+        Benchmark::class,
+    ],
+
+    'api' => [
+        //......
+    ],
+];
+~~~
+
+
+
+==路由别名==  ( app/Http/Kernel.php)
+
+~~~php
+protected $routeMiddleware = [
+    'auth' => \App\Http\Middleware\Authenticate::class,
+    ......
+    'benchmark' => \App\Http\Middleware\Benchmark::class,
+    //定义好别名之后，上面的两处注释就可以简写了
+];
+~~~
+
+
+
+3、中间件还可以通过==控制器构造函数来生效==
+
+==这里的好处是可以，使用黑白名单过滤方法名，也可以传递参数==
+
+~~~php
+use App\Http\Middleware\Benchmark;
+class UserController extends Controller
+{
+    public function __construct()
+    {
+        //点进去程序 middleware里定义了两个属性
+        $this->middleware("benchmark",
+            //['exptet' => ['index', 'test']] //这是黑名单，即排除掉
+            ['only'=>['index']] //这是白名单，即生效方法
+        );
+        //$this->middleware(Benchmark::class);
+    }
+
+    public function index(Request $request)
+    {
+        $query = $request->query();
+        $input = $request->input();
+
+        return ['query'=>$query, 'input'=>$input];
+    }
+}
+~~~
+
+
+
+中间件传参
+
+~~~php
+use App\Http\Middleware\Benchmark;
+class UserController extends Controller
+{
+    public function __construct()
+    {
+        $this->middleware("benchmark:liming,boy");//这里传递两个参数
+    }
+
+    public function index(Request $request)
+    {
+    }
+}
+
+中间件中接收参数
+class Benchmark
+{
+    public function handle($request, Closure $next, $name, $sex)
+    {
+    }
+}
+~~~
+
+
+
+==中间件指定顺序执行==，app/Kernel.php指定顺序
+
+~~~php
+protected $middlewarePriority = [
+    //中间件名称1
+	//.....
+];
+~~~
+
+
+
+==laravel系统自带的中间件==说明
+
+~~~php
+protected $middleware = [
+    \App\Http\Middleware\CheckForMaintenanceMode::class,//检测 laravel 是否处于维护状态
+    \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,//ValidatePostSize检验上传数据的大小
+    \App\Http\Middleware\TrimStrings::class,//传入参数头尾的空格
+    \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,//把空串传为null
+    \App\Http\Middleware\TrustProxies::class, //服务器与客户端中间有一层代理服务器，信任代理中间件
+];
+
+protected $middlewareGroups = [
+    'web' => [
+        //cookie
+        \App\Http\Middleware\EncryptCookies::class,//cookie加解密
+        \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,//cookie添加到response
+        
+        //session
+        \Illuminate\Session\Middleware\StartSession::class,//开启session
+        // \Illuminate\Session\Middleware\AuthenticateSession::class,
+        \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+        
+        //csrf攻击
+        //\App\Http\Middleware\VerifyCsrfToken::class, web访问的可以开启，api的就不需要了
+        \Illuminate\Routing\Middleware\SubstituteBindings::class,//参数的绑定如: /{id} 可以传成 ?id=12
+    ],
+
+    'api' => [
+        'throttle:60,1', // throttle别名，可以用来限流的，这里是1分钟限定访问60次，对应文件中有具体类路径
+        'bindings',
+    ],
+];
+
+protected $routeMiddleware = [
+    //鉴权
+    'auth' => \App\Http\Middleware\Authenticate::class,
+    'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
+    
+	//绑定参数
+    'bindings' => \Illuminate\Routing\Middleware\SubstituteBindings::class,
+    'cache.headers' => \Illuminate\Http\Middleware\SetCacheHeaders::class,//缓存头
+    
+    //鉴权
+    'can' => \Illuminate\Auth\Middleware\Authorize::class,
+    'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
+    
+    //认证
+    'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class,//验签
+    'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,//限流
+    'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,//系统验证邮件地址
+
+    //自定义中间件
+];
+~~~
+
+
+
+###### 1.1.4 数据库迁移
+
+
+
+数据库参数配置，在 .env文件中
+
+~~~php
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=testdb
+DB_USERNAME=root
+DB_PASSWORD=123456
+~~~
+
+
+
+==单一数据库配置==
+
+~~~php
+# vim app/database.php
+<?php
+//这里的值对应的是下面的 真正连接资源名字
+'default' => env('DB_CONNECTION', 'mysql'),
+
+'connections' => [
+	//这个名称对应的 上面default 的具体名字
+    'mysql' => [
+        'driver' => 'mysql',
+        'host' => env('DB_HOST', '127.0.0.1'),
+        'port' => env('DB_PORT', '3306'),
+        'database' => env('DB_DATABASE', 'forge'),
+        'username' => env('DB_USERNAME', 'forge'),
+        'password' => env('DB_PASSWORD', ''),
+        'unix_socket' => env('DB_SOCKET', ''),
+		'charset' => 'utf8mb4',
+        'collation' => 'utf8mb4_unicode_ci',
+        'prefix' => '',
+        'prefix_indexes' => true,
+        'strict' => true, //mysql严格格式
+        //如int在严格模式下 "1"写不进去，长度60字段写入100字节，严格下不可以写成功，但是在非严格模式下会截断写成功
+        'engine' => null,
+    ],
+....
+~~~
+
+
+
+==主从复制配置==
+
+~~~php
+'mysql' => [
+    'driver' => 'mysql',
+    'read' => [
+        ['host' => '127.0.0.1', 'username'=>'root', 'password'=>'12345678', /*'database'=>'testdb1'*/],
+        ['host' => '127.0.0.1', 'username'=>'root', 'password'=>'12345678', /*'database'=>'testdb2'*/],
+    ],
+    'write' => [
+        ['host' => '127.0.0.1', 'username'=>'root', 'password'=>'12345678', /*'database'=>'testdb'*/],
+    ],
+    'port' => env('DB_PORT', '3306'),
+    'database' => env('DB_DATABASE', 'testdb')
+    'unix_socket' => env('DB_SOCKET', ''),
+    'charset' => 'utf8mb4',
+    'collation' => 'utf8mb4_unicode_ci',
+    'prefix' => '',
+    'prefix_indexes' => true,
+    'strict' => true,
+    'engine' => null,
+],
+~~~
+
+
+
+原理：
+
+~~~php
+1、根据 database.php 配置，创建写库和读库的链接 connection
+2、调用 select 时先判断使用读库还是写库，而 insert/update/delete 统一使用写库
+~~~
+
+
+
+~~~php
+https://www.cnblogs.com/chenhaoyu/p/10775824.html
+~~~
+
+
+
 生成密钥
 
 ~~~php
 php artisan key:generate
 ~~~
-
-
-
-~~~php
-php artisan  就可以查看所有的命令
-~~~
-
-
-
-查看路由
-
-~~~php
-php artisan| grep route
-
-route:cache 把路由缓存起来
-route:clear 清除路由缓存
-route:list  查看所有的路由
-~~~
-
-
-
-路由重定向
-
-~~~php
-//301 - 永久重定向 （seO收录重写向后的地址）
-
-//302 - 临时重定向 (seo收录之前的)
-~~~
-
-![image-20210122231347873](Laravel.assets/image-20210122231347873.png)
 
 
 
@@ -105,16 +758,6 @@ class Menu extends Model
 
 
 
-web请求出现 419代码错误时，是 
-
-~~~php
-中间件的问题，app/Http/Kernel.php文件中修改数组 'web'=>...
-
-\App\Http\Middleware\VerifyCsrfToken::class,
-~~~
-
-
-
 ==方法一：传递参数(get、post)==
 
 ~~~php
@@ -146,8 +789,8 @@ Route::post("/user/{id?}", "UserController@index");
 
 public function index(Request $request, int $id = 0)
 {
-    $query = $request->query();
-    $input = $request->input();
+    $query = $request->query();// get方式传值
+    $input = $request->input();// get或post传值
 
     return ['query'=>$query, 'id'=>$id ,'input'=>$input];
 }
@@ -177,274 +820,19 @@ public function test(int $id=0, string $name = '')
 
 
 
-服务提供者中路由
 
-~~~php
-/app/Providers/RouteServicePrivder.php
-现在只有 
 
-$this->mapApiRoutes();
 
-$this->mapWebRoutes();
 
-可以添加一个
-$this->mapAdminRoutes();
-~~~
 
 
 
-中间件
 
-~~~php
-php artisan make:middleware Benchmark
-~~~
 
 
 
-==中间件定义==
 
-<img src="Laravel.assets/image-20210124105926231.png" alt="image-20210124105926231" style="zoom:50%;" />
 
-
-
-==中间件注册到框架中==
-
-1、全局中间件
-
-2、路由中间件
-
-
-
-全局中间件 app/Http/Kernel.php
-
-~~~php
-//全局中间件
-protected $middleware = [
-    \App\Http\Middleware\CheckForMaintenanceMode::class,
-    \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,
-    \App\Http\Middleware\TrimStrings::class,
-    \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
-    \App\Http\Middleware\TrustProxies::class,
-    Benchmark::class   //这里写入中间件类
-    //'benchmark',这里是别名写法
-];
-~~~
-
-
-
-路由中间件  (只在当前路由中生效)
-
-~~~php
-Route::get('/test',"UserController@test")->middleware(App\Http\Middleware\Benchmark::class);
-//Route::get('/test',"UserController@test")->middleware('benchmark'); 这里是别名写法
-~~~
-
-
-
-根据路由分组来实现
-
-~~~php
-protected $middlewareGroups = [
-    'web' => [
-        //......
-        \Illuminate\Routing\Middleware\SubstituteBindings::class,
-        Benchmark::class //只能web路由分组有效
-    ],
-
-    'api' => [
-        'throttle:20,1',
-        'bindings',
-    ],
-];
-~~~
-
-
-
-路由别名  ( app/Http/Kernel.php)
-
-~~~php
-protected $routeMiddleware = [
-    'auth' => \App\Http\Middleware\Authenticate::class,
-    'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
-    'bindings' => \Illuminate\Routing\Middleware\SubstituteBindings::class,
-    'cache.headers' => \Illuminate\Http\Middleware\SetCacheHeaders::class,
-    'can' => \Illuminate\Auth\Middleware\Authorize::class,
-    'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
-    'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class,
-    'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
-    'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-    'benchmark' => \App\Http\Middleware\Benchmark::class,
-    
-    //定义好别名之后，上面的两处注释就可以简写了
-];
-~~~
-
-
-
-中间件还可以通过控制器构造函数来生效
-
-==这里的好处是可以，使用黑白名单过滤方法名==
-
-~~~php
-class UserController extends Controller
-{
-    public function __construct()
-    {
-        $this->middleware("benchmark", //点进去可以看到详细的 exptet 和 only属性
-            //['exptet' => ['index', 'test']] //这是黑名单，即排除掉
-            ['only'=>['index']] //这是白名单，即生效方法
-        );
-    }
-
-    public function index(Request $request)
-    {
-        $query = $request->query();
-        $input = $request->input();
-
-        return ['query'=>$query, 'input'=>$input];
-    }
-
-}
-~~~
-
-
-
-中间件传参与接收参数
-
-~~~php
-//传参(控制器)
-public function __construct()
-{
-    //中间件传参，如果多个要用,分隔
-    $this->middleware("benchmark:admin,general",
-         //['exptet' => ['index', 'test']] //这是黑名单，即排除掉
-         ['only'=>['index']] //这是白名单，即生效方法
-    );
-}
-
-
-//接参(中间件)
-class Benchmark
-{
-    public function handle($request, Closure $next, $params1, $params2)
-    {
-        //$params1 = admin; $params2=general
-    }
-}
-~~~
-
-
-
-全局中间件是 按从上向下的顺序执行
-
-
-
-中间件指定顺序执行，app/Kernel.php指定顺序
-
-~~~php
-protected $middlewarePriority = [
-    //中间件名称1
-	//.....
-];
-~~~
-
-
-
-系统中间件说明
-
-~~~php
-protected $middleware = [
-    \App\Http\Middleware\CheckForMaintenanceMode::class,//检测 laravel是否处于维护状态
-    \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,//ValidatePostSize检验上传数据的大小
-    \App\Http\Middleware\TrimStrings::class,//传入参数头尾的空格
-    \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,//空串传为null
-    \App\Http\Middleware\TrustProxies::class, //服务器与客户端中间有一层代理服务器，信任代理中间件
-];
-
-protected $middlewareGroups = [
-    'web' => [
-        //cookie
-        \App\Http\Middleware\EncryptCookies::class,//cookie加密
-        \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,//cookie添加到response
-        
-        //session
-        \Illuminate\Session\Middleware\StartSession::class,//开启session
-        // \Illuminate\Session\Middleware\AuthenticateSession::class,
-        \Illuminate\View\Middleware\ShareErrorsFromSession::class,
-        
-        //csrf攻击
-        //\App\Http\Middleware\VerifyCsrfToken::class, web访问的可以开启，api的就不需要了
-        \Illuminate\Routing\Middleware\SubstituteBindings::class,//参数的绑定如: /{id} 可以传成 ?id=12
-    ],
-
-    'api' => [
-        'throttle:60,1', // throttle别名，可以用来限流的，对应文件中有具体类路径
-        'bindings',
-    ],
-];
-
-protected $routeMiddleware = [
-    //鉴权
-    'auth' => \App\Http\Middleware\Authenticate::class,
-    'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
-    
-	//绑定参数
-    'bindings' => \Illuminate\Routing\Middleware\SubstituteBindings::class,
-    'cache.headers' => \Illuminate\Http\Middleware\SetCacheHeaders::class,
-    
-    //认证
-    'can' => \Illuminate\Auth\Middleware\Authorize::class,
-    'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
-    
-    'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class,//签名检验
-    'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,//限流
-    'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,//系统验证邮件地址
-
-    //自定义中间件
-    'benchmark' => \App\Http\Middleware\Benchmark::class,
-];
-~~~
-
-
-
-数据库配置
-
-~~~php
-//app/database.php
-<?php
-    
-'default' => env('DB_CONNECTION', 'mysql'), //这里的值对应的是下面的 真正连接名字
-
-'connections' => [
-	//这个名称对应的 上面default 的具体名字
-    'mysql' => [
-        'driver' => 'mysql',
-        'host' => env('DB_HOST', '127.0.0.1'),
-        'port' => env('DB_PORT', '3306'),
-        'database' => env('DB_DATABASE', 'forge'),
-        'username' => env('DB_USERNAME', 'forge'),
-        'password' => env('DB_PASSWORD', ''),
-        'unix_socket' => env('DB_SOCKET', ''),
-		'charset' => 'utf8mb4',
-        'collation' => 'utf8mb4_unicode_ci',
-        'prefix' => '',
-        'prefix_indexes' => true,
-        'strict' => true, //mysql严格格式，如int在严格模式下 "1"写不进去，长度60字段写入100字节，严格下不可以写成功，但是在非严格模式下会截断写成功
-        'engine' => null,
-~~~
-
-
-
-数据库对应的参数配置在 .env文件中
-
-~~~php
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=testdb
-DB_USERNAME=root
-DB_PASSWORD=123456
-~~~
 
 
 
@@ -760,6 +1148,55 @@ var_dump($result);
 软删除和恢复
 
 <img src="Laravel.assets/image-20210124235232241.png" alt="image-20210124235232241" style="zoom:50%;float:left;" />
+
+
+
+==集合==
+
+
+
+```
+//$collection = collect([1, 2, 3]);
+//dd($collection->toArray());
+//dd($collection->all());
+
+$collect = collect(['k1'=>'v1', 'k2'=>'v2', 'k3'=>'v3']);
+$keys = $collect->keys()->toArray();
+$values = $collect->values()->toArray();
+//dd($keys, $values);
+//dd($collect->last());
+//dd($collect->only(['k1', 'k2'])->toArray());
+```
+
+![image-20210125214156548](Laravel.assets/image-20210125214156548.png)
+
+![image-20210125214743493](Laravel.assets/image-20210125214743493.png)
+
+
+
+~~~php
+$users = User::all();
+//        $newUsers = $users->each(function ($item) {
+//            return ($item->newId = '编号:'.$item->id); //可以对集合进行添加元素或处理值，其他元素保留
+//        });
+//        dd($newUsers->toArray());
+
+$newUsers = $users->map(function ($item) {
+    return ($item->newId = '编号:'.$item->id); //map只返回处理后的对应列，其他元素舍弃
+});
+dd($newUsers->toArray());
+
+
+dd($users->keyBy('id'));//把id列作为 key 返回,把指定列 作为key返回数组
+
+dd($users->groupBy('role_id'))
+~~~
+
+
+
+
+
+
 
 
 
