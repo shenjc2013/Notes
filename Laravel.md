@@ -715,6 +715,58 @@ https://www.cnblogs.com/chenhaoyu/p/10775824.html
 
 
 
+~~~php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Goods extends Model
+{
+    //默认数据库表名
+    protected $table = "sdb_b2c_goods";
+
+    //哪个连接驱动
+    protected $connection = "mysql";
+
+    //数据库主键
+    protected $primaryKey = "id";
+
+    //不主动修改 created_at 和 updated_at字段
+    public $timestamps = false;
+
+    protected $guarded = [];
+}
+~~~
+
+
+
+使用模型：
+
+~~~php
+public function detail()
+{
+    //return Goods::query()->find(2);
+
+    $goods = new Goods();
+    $goods->fill([
+        'name' => 'test-write-name',
+        'title' => 'test-write-title',
+        'create_time' => time(),
+        'status' => 1,
+        'created_at' => date('Y-m-d H:i:s'),
+        'updated_at' => date('Y-m-d H:i:s'),
+    ]);
+    $goods->save();
+    return $goods;
+}
+~~~
+
+
+
+
+
 生成密钥
 
 ~~~php
