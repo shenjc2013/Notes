@@ -384,7 +384,7 @@ class Benchmark
         
         $response  = $next($request);//业务逻辑
         
-        //后置中
+        //后置
         $runTime = microtime(true) - $startTime;
         Log::info('benchmark', [
             'url' => $request->url(),
@@ -626,9 +626,7 @@ protected $routeMiddleware = [
 
 
 
-###### 1.1.4 数据库迁移
-
-
+###### 1.1.4 数据库配置
 
 数据库参数配置，在 .env文件中
 
@@ -664,7 +662,7 @@ DB_PASSWORD=123456
 		'charset' => 'utf8mb4',
         'collation' => 'utf8mb4_unicode_ci',
         'prefix' => '',
-        'prefix_indexes' => true,
+        'prefix_indexes' => true,//是否要使用前缀，如果设为false，上面的一行配置就失效了
         'strict' => true, //mysql严格格式
         //如int在严格模式下 "1"写不进去，长度60字段写入100字节，严格下不可以写成功，但是在非严格模式下会截断写成功
         'engine' => null,
@@ -700,7 +698,7 @@ DB_PASSWORD=123456
 
 
 
-原理：
+实现原理：
 
 ~~~php
 1、根据 database.php 配置，创建写库和读库的链接 connection
@@ -709,9 +707,273 @@ DB_PASSWORD=123456
 
 
 
+**1、判断 database.php 是否配置了读写分离数据库**
+
 ~~~php
-https://www.cnblogs.com/chenhaoyu/p/10775824.html
+//文件位置：Illuminate/Database/Connectors/ConnectionFactory.php
+
+public function make(array $config, $name = null)
+{
+    $config = $this->parseConfig($config, $name);
+
+    //如果配置了read读库，则同时创建读链接和写链接
+    if (isset($config['read'])) {
+        return $this->createReadWriteConnection($config);
+    }
+	//否则创建单个链接资源
+    return $this->createSingleConnection($config);
+}
 ~~~
+
+
+
+**2、创建读库和写库的链接**
+
+~~~php
+protected function createReadWriteConnection(array $config)
+{
+    //获取写库的配置信息，并创建链接
+    $connection = $this->createSingleConnection($this->getWriteConfig($config));
+	//获取读库配置信息，创建读库链接
+    return $connection->setReadPdo($this->createReadPdo($config));
+}
+~~~
+
+
+
+**3、多个读库或者写库会选择哪个**
+
+~~~php
+protected function getReadWriteConfig(array $config, $type)
+{
+    //如果数组 读/写有多个库，则随机获取一个，否则默认
+    return isset($config[$type][0]) ? Arr::random($config[$type]) : $config[$type];
+}
+~~~
+
+
+
+**4、select和insert/update/delete源码解析**
+
+~~~php
+文件位置：Illuminate/Database/Connection.php
+~~~
+
+
+
+==(1) select 函数根据第三个输入参数判断使用读库还是写库==
+
+~~~php
+public function select($query, $bindings = [], $useReadPdo = true)
+{
+    return $this->run($query, $bindings, function ($query, $bindings) use ($useReadPdo) {
+        if ($this->pretending()) {
+            return [];
+        }
+
+        // 根据 第三个参数 $useReadPdo 来确定使用读库还是写库，true为读库，为默认库；false为写库。
+        $statement = $this->prepared($this->getPdoForSelect($useReadPdo)
+                                     ->prepare($query));
+
+        $this->bindValues($statement, $this->prepareBindings($bindings));
+
+        $statement->execute();
+
+        return $statement->fetchAll();
+    });
+}
+~~~
+
+
+
+==(2) insert/update/delete 统一使用写库==
+
+~~~php
+public function insert($query, $bindings = [])
+{
+    return $this->statement($query, $bindings);
+}
+
+public function update($query, $bindings = [])
+{
+    return $this->affectingStatement($query, $bindings);
+}
+
+public function delete($query, $bindings = [])
+{
+    return $this->affectingStatement($query, $bindings);
+}
+
+
+public function statement($query, $bindings = [])
+{
+    return $this->run($query, $bindings, function ($query, $bindings) {
+        //....
+        $statement = $this->getPdo()->prepare($query);
+        return $statement->execute();
+        //....
+    });
+}
+
+public function affectingStatement($query, $bindings = [])
+{
+    return $this->run($query, $bindings, function ($query, $bindings) {
+        //......
+        $statement = $this->getPdo()->prepare($query);
+        $statement->execute();
+		//......
+    });
+}
+~~~
+
+
+
+**总结：**
+
+~~~php
+1，getReadPdo() 获得读库链接，getPdo() 获得写库链接。
+
+2，select() 函数根据第三个参数判断使用读库还是写库。
+~~~
+
+
+
+**==强制从写库读取数据的方法==**
+
+~~~php
+use App\Models\Goods;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Connectors\ConnectionFactory;
+
+//方法一：
+return Goods::query()->lock()->find(2);
+
+//方法二：
+return Goods::onWriteConnection()->whereIn('id',[1,2])->get(['*']);
+
+//方法三：
+$sql = 'select * from item_goods';
+return DB::select($sql, [], false);  //第三个参数设置成 false
+
+//方法四：
+$sql = 'select * from item_goods';
+return DB::selectFromWriteConnection($sql);
+~~~
+
+
+
+###### 1.1.5 数据库迁移
+
+
+
+==先安装 migrate数据表==（第一次执行迁移文件时需要操作以下命令，主要是创建migrate表）
+
+~~~php
+php artisan migrate:install
+~~~
+
+
+
+数据库迁移前置知识
+
+~~~php
+//指定路径生成 表迁移文件
+php artisan make:migration create_hx_orders_table --path=app/Custom/Guestbook/database/migrations
+
+//执行路径下的 表迁移文件
+php artisan migrate  --path=app/Custom/Guestbook/database/migrations
+~~~
+
+
+
+**==1、创建数据表==**
+
+~~~php
+php artisan make:migration create_hx_orders_table 
+
+php artisan make:migration create_hx_orders_item_table
+
+//以上分别生成 hx_orders 及 hx_orders_item表，如果需要指定其他的表名，可以使用 --create=表名
+// php artisan make:migration create_hx_orders_table --create=orders  即生成orders表名
+~~~
+
+
+
+脚本生成迁移 hx_orders 数据表
+
+~~~php
+#  vim 2021_02_19_140748_create_hx_orders_table.php
+
+<?php
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
+
+class CreateHxOrdersTable extends Migration
+{
+    public function up()
+    {
+        Schema::create('hx_orders', function (Blueprint $table) {
+            $table->increments('order_id')->comment('ID主键');//默认就是主键
+            $table->unsignedInteger('user_id')->default(0)->comment('用户ID');
+            $table->string('user_nickname', 120)->default('')->comment('用户昵称');
+            $table->string('order_sn', 60)->nullable(false)->unique('order_sn')->comment('订单编号');
+            $table->decimal('total_amount', 10, 2)->default('0.00')->comment("订单金额");
+            $table->decimal('final_amount',10,2)->default('0.00')->comment('实付金额');
+            $table->tinyInteger('payment_type')->default(1)->comment('支付方式，1支付宝;2微信');
+            $table->dateTime('payment_time')->comment('支付时间');
+            $table->string('ship_reciver_info', 500)->default('')->comment('收货信息');
+            $table->text('description')->default(null)->comment('备注');
+            $table->timestamps();
+
+            //添加索引，索引可以在上面字段中直接添加，指定索引名称，默认的字段是表名+字段名+index 过长
+            //$table->unique('order_sn', 'order_sn');
+            $table->index('created_at', 'created_at');
+
+            //表引擎
+            $table->engine = 'innodb';
+        });
+
+        DB::statement("ALTER TABLE `hx_orders` comment '订单表'");
+    }
+
+    public function down()
+    {
+        Schema::dropIfExists('hx_orders');
+    }
+}
+~~~
+
+
+
+**执行数据库迁移操作**
+
+~~~php
+php artisan migrate
+~~~
+
+
+
+**回滚上一批次的操作**
+
+~~~php
+php artisan migrate:rollback
+~~~
+
+
+
+==**2、修改数据表**==
+
+
+
+**数据库迁移总结**
+
+~~~php
+
+~~~
+
+
 
 
 
@@ -888,75 +1150,6 @@ public function test(int $id=0, string $name = '')
 
 
 
-数据库迁移
-
-先安装 migrate数据表（第一次执行迁移文件时需要操作以下命令，主要是创建migrate表）
-
-~~~php
-php artisan migrate:install
-~~~
-
-
-
-回滚上一批次的操作
-
-~~~php
-php artisan migrate:rollback
-~~~
-
-
-
-如果 迁移文件已经创建好并且执行了，建议不要再去修改迁移文件的名称了，容易出错。
-
-
-
-==创建数据表==
-
-~~~php
-php artisan make:migration create_sys_order_table 
-
-php artisan make:migration create_sys_order_product_table
-~~~
-
-
-
-==1、创建数据表==
-
-~~~php
-#  php artisan make:migration create_sys_sale_order_table
-
-#  vi 2021xxx_create_sys_sale_order_table
-
-public function up()
-{
-    Schema::create('sys_sale_order', function (Blueprint $table) {
-        $table->increments('order_id')->comment('ID主键');//默认就是主键
-        $table->string('order_sn', 60)->nullable(false)->default('')->comment('订单编号');
-        $table->unsignedInteger('store_id')->default(0)->comment('店铺ID');
-        $table->string('customer_id', 120)->default('')->comment('用户ID');
-        $table->decimal('total_amount', 10, 2)->default('0.00')->comment("订单金额");
-        $table->decimal('final_amount',10,2)->default('0.00')->comment('实付金额');
-        $table->decimal('discount_amount',10,2)->default('0.00')->comment('优惠金额');
-        $table->tinyInteger('payment_type')->default(1)->comment('支付方式，1支付宝;2微信');
-        $table->dateTime('payment_time')->comment('支付时间');
-        $table->string('ship_reciver', 120)->default('')->comment('收货姓名');
-        $table->string('ship_province', 120)->default('')->comment('收货省份');
-        $table->string('ship_city', 150)->default('')->comment('收货市区');
-        $table->timestamps();
-
-        //添加索引
-        $table->unique('order_sn', 'order_sn');
-        $table->index('store_id', 'store_id');
-        $table->index('customer_id', 'customer_id');
-        $table->index('payment_time', 'payment_time');
-        $table->index('ship_reciver', 'ship_reciver');
-
-        //表引擎
-		$table->engine = 'innodb';
-    });
-}
-~~~
-
 
 
 ==2、修改数据表==
@@ -1034,12 +1227,6 @@ public function up()
 ~~~
 
 
-
-==4、更新操作==
-
-~~~php
-php artisan migrate
-~~~
 
 
 
