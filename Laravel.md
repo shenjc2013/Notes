@@ -878,10 +878,10 @@ php artisan migrate:install
 
 ~~~php
 //指定路径生成 表迁移文件
-php artisan make:migration create_hx_orders_table --path=app/Custom/Guestbook/database/migrations
+$ php artisan make:migration create_hx_orders_table --path=app/Custom/Guestbook/database/migrations
 
 //执行路径下的 表迁移文件
-php artisan migrate  --path=app/Custom/Guestbook/database/migrations
+$ php artisan migrate  --path=app/Custom/Guestbook/database/migrations
 ~~~
 
 
@@ -889,9 +889,9 @@ php artisan migrate  --path=app/Custom/Guestbook/database/migrations
 **==1、创建数据表==**
 
 ~~~php
-php artisan make:migration create_hx_orders_table 
+$ php artisan make:migration create_hx_orders_table 
 
-php artisan make:migration create_hx_orders_item_table
+$ php artisan make:migration create_hx_orders_item_table
 
 //以上分别生成 hx_orders 及 hx_orders_item表，如果需要指定其他的表名，可以使用 --create=表名
 // php artisan make:migration create_hx_orders_table --create=orders  即生成orders表名
@@ -947,10 +947,105 @@ class CreateHxOrdersTable extends Migration
 
 
 
+**==2、修改数据表==**
+
+~~~php
+# composer require doctrine/dbal    修改表结果需要，安装此插件
+~~~
+
+
+
+~~~php
+//如果报内存不够的错误信息，如需要查看composer的安装路径
+# composer -h
+# php -d memory_limit=-1 /usr/local/bin/composer require  doctrine/dbal
+~~~
+
+
+
+举例说明：==增加列字段==
+
+~~~php
+# php artisan make:migration add_quantity_to_hx_orders_table --path=app/Custom/Guestbook/database/migrations
+
+public function up()
+{
+    Schema::table('hx_orders', function (Blueprint $table) {
+        $table->integer('quantity')->default(0)->after('order_sn')->comment('商品数量');
+    });
+}
+
+public function down()
+{
+    Schema::table('hx_orders', function (Blueprint $table) {
+        $table->dropColumn('quantity');
+		//$table->dropColumn(['quantity']);//如果有多列的，可以放入数组
+    });
+}
+~~~
+
+
+
+举例说明：==删除列字段==
+
+~~~php
+
+~~~
+
+
+
+举例说明：==修改列字段==
+
+~~~php
+# php artisan make:migration alter_quantity_hx_orders_table --path=app/Custom/Guestbook/database/migrations
+
+public function up()
+{
+    //mysql命令行方式
+    DB::statement("alter table hx_orders add prepay_rate2 decimal(6,4) 
+    	DEFAULT '0' COMMENT '提前结清违约金费率2';");
+}
+
+public function down()
+{
+    DB::statement("alter table hx_orders DROP prepay_rate2;");
+}
+~~~
+
+
+
+其实的例子：
+
+~~~php
+Schema::table('sys_sale_order', function (Blueprint $table) {
+    //新增字段
+    $table->string('ship_telephone', 15)->default('')->after('payment_time')->comment('手机号码');
+
+    //修改字段
+    $table->string('name', 50)->change();//修改长度或类型都可以
+
+    //列重命名
+    $table->renameColumn('oldName', 'newName');
+
+    //删除单列或多列
+    $table->dropColumn('votes');
+    //$table->dropColumn(['votes', 'avatar', 'location']);
+
+    //删除索引
+    $table->dropIndex(['state']);//单列或多列
+});
+~~~
+
+
+
 **执行数据库迁移操作**
 
 ~~~php
+#默认路径
 php artisan migrate
+
+#指定路径
+//php artisan migrate  --path=app/Custom/Guestbook/database/migrations
 ~~~
 
 
@@ -958,28 +1053,52 @@ php artisan migrate
 **回滚上一批次的操作**
 
 ~~~php
+//默认路径
 php artisan migrate:rollback
+
+#指定路径
+//php artisan migrate:rollback  --path=app/Custom/Guestbook/database/migrations
 ~~~
-
-
-
-==**2、修改数据表**==
 
 
 
 **数据库迁移总结**
 
 ~~~php
+//创建
+php artisan make:migration create_hx_orders_table --path=app/...
 
+//增加
+php artisan make:migration add_quantity_to_hx_orders_table --path=app/...
+
+//修改
+php artisan make:migration alter_tablename_table
+
+//删除
+
+//执行
+php artisan migrate
+
+//回滚
+php artisan migrate:rollback
 ~~~
 
 
 
+==**在使用时需注意：有些字段数据结构是不能通过数据库迁移修改得了的**==
 
+如：**bigInteger、binary、boolean ......等等**
+
+也如：枚举也是不能修改的。
+
+
+
+###### 1.1.6 数据模型
+
+创建模型：
 
 ~~~php
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -1022,6 +1141,132 @@ public function detail()
     ]);
     $goods->save();
     return $goods;
+}
+~~~
+
+
+
+###### 1.1.7 服务层
+
+为了不使用控制器过重，加多了一个层
+
+~~~php
+<?php
+...
+class UserServices
+{
+	public function getByUserName($username)
+    {
+		return User::query()->where('username',$username)->where('deleted',0)->first();
+    }
+
+	public function getByUserMobile($mobile)
+    {
+		return User::query()->where('mobile',$mobile)->where('deleted',0)->first();
+    }
+}
+~~~
+
+
+
+###### 1.1.8 时间操作
+
+==laravel自带了时间处理库==
+
+~~~php
+
+// 获取当前时间和时间戳
+echo Carbon::now(); //获取得到是的 Y-m-d H:i:s格式
+echo Carbon::now()->timestamp;
+
+//获取昨天、今天、明天时间
+echo Carbon::today();     // Y-m-d 00:00:00
+echo Carbon::tomorrow();
+echo Carbon::yesterday();
+
+//获取几天前或几天后
+echo Carbon::now()->addDay(-2)->toDateString();
+
+//日期类型转换为字符串
+echo Carbon::now()->toDateString();         // 2021-02-21
+
+echo Carbon::now()->toDateTimeString();     // 2021-02-21 09:41:42
+
+echo Carbon::now()->toTimeString();         // 09:43:42
+
+//动态计算时间时要注意下
+$startTime = Carbon::now();
+$endTime = $startTime->copy()->addDay(5);
+//或者 $endTime = Carbon::now()->addDay(5);
+echo $startTime,'--',$endTime;
+~~~
+
+
+
+门面模式验证：
+
+~~~php
+<?php
+$validator = Validator::make( ['mobile' => $mobile], [ " mobile' => 'regex:/~1[0-9][10]$']) ;
+if ($validator->fails()) [
+	return ['errno' => 704, I'errmsg' => ' P8E;Et'];l
+]
+~~~
+
+
+
+代码提示：
+
+~~~php
+composer require --dev barryvdh/laravel-ide-helper
+~~~
+
+
+
+~~~php
+php artisan ide-helper:models
+
+> no   //让其生成到一个新的文件中
+
+~~~
+
+
+
+~~~php
+public function getCoupon($id, $columns = ['*'] )
+	return Coupon:: query()->whereDeleted( value: Ø)->whereId($id) ;
+    return Coupon::query()->where( 'deleted', Ø)->find($id, $co lumns) ;
+	//可以有提示提示，需要去掉 static
+}
+~~~
+
+
+
+~~~php
+php artisan ide-helper: generate - PHPDoc generation for L .aravel Facades //解决门面模式下的方法
+php artisan ide-helper:models - PHPDocs for models
+php artisan ide-helper:meta - PhpStorm Meta file      //ide重启才能生效，解决通过工厂模式找对应的方法和属性
+~~~
+
+
+
+软删除的代码块
+
+表字段名  deleted deleted_at
+
+~~~php
+class Goods extends BaseModel
+{
+    use  SoftDeletes;
+
+    protected $casts =[
+        ‘counter_price' => 'float',
+        'retail_ price' => 'float',
+        'is_new'=>'boolean',
+        'is_hot'=>'boolean',
+        'gallery' => 'array' ,
+        'is_on_ ale' =>'boolean'
+    ];
 }
 ~~~
 
@@ -1152,43 +1397,6 @@ public function test(int $id=0, string $name = '')
 
 
 
-==2、修改数据表==
-
-安装插件：
-
-~~~php
-composer require doctrine/dbal
-~~~
-
-
-
-如果遇到问题：
-
-~~~php
-//查看composer的安装路径
-composer -h
-~~~
-
-
-
-~~~php
-//如果报内存不够的错误信息
-
-php -d memory_limit=-1 /usr/local/bin/composer require  doctrine/dbal
-~~~
-
-
-
-==3、如新增字段、添加表备注==
-
-![image-20210124213601726](Laravel.assets/image-20210124213601726.png)
-
-
-
-正常执行的是 up方法
-
-如果回滚即执行 down方法
-
 
 
 ~~~php
@@ -1203,23 +1411,7 @@ $  php artisan make:migration modify_sys_sale_order_table --table=sys_sale_order
 
 public function up()
 {
-    Schema::table('sys_sale_order', function (Blueprint $table) {
-        //新增字段
-        $table->string('ship_telephone', 15)->default('')->after('payment_time')->comment('手机号码');
-		
-		//修改字段
-		$table->string('name', 50)->change();//修改长度或类型都可以
-        
-        //列重命名
-        $table->renameColumn('oldName', 'newName');
-
-		//删除单列或多列
-        $table->dropColumn('votes');
-        //$table->dropColumn(['votes', 'avatar', 'location']);
-
-		//删除索引
-        $table->dropIndex(['state']);//单列或多列
-    });
+    
 
     //修改表备注
     DB::statement("ALTER TABLE `sys_sale_order` comment '订单主表'");
