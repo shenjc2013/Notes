@@ -1215,6 +1215,35 @@ if ($validator->fails()) [
 
 
 
+~~~php
+header中添加：Accept:application/json
+
+$this->validate($request, [
+    'goods_id' => 'required|integer',
+    'num' => 'required|integer',
+],[
+    'goods_id.required' => 'goods_id必须',
+    'num.required' => 'num必须',
+    'num.integer' => 'num必须是数值',
+]);
+
+或者使用
+$request->validate([
+    'username' => 'required|string',
+    'password' => 'required|string',
+    'captcha' => ['required', 'captcha'],
+], [
+    'captcha.required' => '验证码不能为空',
+    'captcha.captcha' => '请输入正确的验证码',
+]);
+~~~
+
+
+
+
+
+
+
 代码提示：
 
 ~~~php
