@@ -1500,8 +1500,6 @@ $  php artisan make:migration modify_sys_sale_order_table --table=sys_sale_order
 
 public function up()
 {
-    
-
     //修改表备注
     DB::statement("ALTER TABLE `sys_sale_order` comment '订单主表'");
 }
@@ -1675,17 +1673,69 @@ var_dump($result);
 
 
 
-```
+```php
 //$collection = collect([1, 2, 3]);
 //dd($collection->toArray());
 //dd($collection->all());
+// toArray与all功能一样
 
 $collect = collect(['k1'=>'v1', 'k2'=>'v2', 'k3'=>'v3']);
-$keys = $collect->keys()->toArray();
-$values = $collect->values()->toArray();
+$keys = $collect->keys()->toArray();//获取keys
+$values = $collect->values()->toArray();//获取values
+
+
 //dd($keys, $values);
 //dd($collect->last());
-//dd($collect->only(['k1', 'k2'])->toArray());
+//dd($collect->only(['k1', 'k2'])->toArray()); //只要k1 k2的key=>value
+
+// $products = Product::all();
+// $products->pluck('title'); 取一列
+// $products->take(2); 取两条
+// $products->toJson(); 转换成json
+// $products->pluck('title')->implode(',');  // implode()函数
+
+// 聚合运算
+
+// 包含判断
+
+contains
+has
+
+// 运算
+    
+// 集合的判断
+
+// where函数
+
+// 遍历
+each
+map
+$products->keyBy('id')->toArray();  把id取出来做key值,超实用
+$products->toArray(); //索引自增的数组
+
+groupBy('cate_id') //分组
+
+//过滤筛选
+$products->filter(function($item){
+    return $item->price > 10;
+})
+    
+    
+key与value互换，一维数组
+$collect->flip()->toArray();
+
+//反序
+collect->reverse()->toArray();
+
+//排序
+collect($aa)->sortDesc();
+collect($aa)->sort();
+
+$products->sortByDesc('price');
+可以传入闭包，使用相关运算得到一个值
+$products->sortByDesc(function($item){
+    return $item['price'] * 10;
+});
 ```
 
 ![image-20210125214156548](Laravel.assets/image-20210125214156548.png)
@@ -1732,19 +1782,35 @@ dd($users->groupBy('role_id'))
 
 
 
+![image-20210224235435252](Laravel.assets/image-20210224235435252.png)
 
 
 
+![image-20210224235841256](Laravel.assets/image-20210224235841256.png)
 
 
 
+![image-20210224235956541](Laravel.assets/image-20210224235956541.png)
 
 
 
+![image-20210225001304424](Laravel.assets/image-20210225001304424.png)
 
 
 
+![image-20210225001548731](Laravel.assets/image-20210225001548731.png)
 
+
+
+![image-20210225001652892](Laravel.assets/image-20210225001652892.png)
+
+
+
+![image-20210225002051534](Laravel.assets/image-20210225002051534.png)
+
+
+
+![image-20210225000355504](Laravel.assets/image-20210225000355504.png)
 
 ~~~php
 ##Laravel6.x从入门到进阶，深入浅出
