@@ -1540,6 +1540,8 @@ echo DB::table('users')->where("id", ">", 1)->where(function(Builder $query){
 
 
 
+![image-20210225205908072](Laravel.assets/image-20210225205908072.png)
+
 更新操作
 
 <img src="Laravel.assets/image-20210124212537530.png" alt="image-20210124212537530" style="zoom:50%;" />
@@ -1551,6 +1553,36 @@ echo DB::table('users')->where("id", ">", 1)->where(function(Builder $query){
 删除
 
 ![image-20210124213911118](Laravel.assets/image-20210124213911118.png)
+
+
+
+![image-20210225211130133](Laravel.assets/image-20210225211130133.png)
+
+
+
+需要引用转值才能修改   ==$invalidCartIds==
+
+==**filter为真的时候会保留当前遍历的对象，否则不被丢弃掉**==
+
+![image-20210225214206265](Laravel.assets/image-20210225214206265.png)
+
+
+
+![image-20210225215529169](Laravel.assets/image-20210225215529169.png)
+
+
+
+![image-20210225215805832](Laravel.assets/image-20210225215805832.png)
+
+![image-20210225232508604](Laravel.assets/image-20210225232508604.png)
+
+
+
+bccomp($coupon_price, $price) == 1
+
+
+
+![image-20210225234958522](Laravel.assets/image-20210225234958522.png)
 
 
 
