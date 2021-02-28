@@ -28,7 +28,15 @@ composer create-project --prefer-dist laravel/laravel dev.laravel.com "5.7.*"
 
 
 
-默认是要带index.php访问
+生成.env配置文件下的密钥
+
+~~~php
+php artisan key:generate
+~~~
+
+
+
+Nginx 默认是要带index.php访问
 
 ~~~php
 Nginx重写：
@@ -40,9 +48,61 @@ location / {
 
 
 
+==**开发准备**==
+
+1）格式规范：
+
+![image-20210227170501848](Laravel.assets/image-20210227170501848.png)
+
+
+
+保存即格式化代码：
+
+![image-20210227171036701](Laravel.assets/image-20210227171036701.png)
+
+
+
+格式化重排use的类，也可以自动去掉没有用到的引入类
+
+![image-20210227171855435](Laravel.assets/image-20210227171855435.png)
+
+
+
+代码提示：
+
+~~~php
+composer require --dev barryvdh/laravel-ide-helper
+~~~
+
+
+
+~~~php
+php artisan ide-helper:models
+
+> no   //让其生成到一个新的文件中
+~~~
+
+
+
+~~~php
+public function getCoupon($id, $columns = ['*'] )
+	return Coupon::query()->whereDeleted(0)->whereId($id) ;
+    return Coupon::query()->where( 'deleted', 0)->find($id, $columns) ;
+	//可以有提示提示，需要去掉 static
+}
+~~~
+
+
+
+~~~php
+php artisan ide-helper: generate - PHPDoc generation for L .aravel Facades //解决门面模式下的方法代码提示
+php artisan ide-helper:models - PHPDocs for models
+php artisan ide-helper:meta - PhpStorm Meta file      //ide重启才能生效，解决通过工厂模式找对应的方法和属性
+~~~
+
+
+
 **Laravel框架基础**
-
-
 
 文档参考：
 
@@ -864,9 +924,7 @@ return DB::selectFromWriteConnection($sql);
 
 ###### 1.1.5 数据库迁移
 
-
-
-==先安装 migrate数据表==（第一次执行迁移文件时需要操作以下命令，主要是创建migrate表）
+==安装 migrate数据表==（第一次执行迁移文件时需要操作以下命令，主要是创建migrate表）
 
 ~~~php
 php artisan migrate:install
@@ -1098,6 +1156,19 @@ php artisan migrate:rollback
 创建模型：
 
 ~~~php
+//默认路径下
+php artisan make:model Products
+
+//指定路径，且生成迁移文件(迁移文件在默认路径下，可移动到具体位置)
+php artisan make:model /Custom/Models/Products -m
+
+//
+php artisan magrate
+~~~
+
+
+
+~~~php
 <?php
 namespace App\Models;
 
@@ -1108,18 +1179,79 @@ class Goods extends Model
     //默认数据库表名
     protected $table = "sdb_b2c_goods";
 
-    //哪个连接驱动
+    //config/database.php 默认连接驱动
     protected $connection = "mysql";
 
-    //数据库主键
+    //表主键
     protected $primaryKey = "id";
 
-    //不主动修改 created_at 和 updated_at字段
+    //默认字段 created_at 和 updated_at ，不主动修改这两个字段值
     public $timestamps = false;
+    
+    //当 表字段不是以上两个命名时，
+    const CREATED_AT = 'add_time';
+    const UPDATED_AT = 'update_time';
+
+	//数据的转换
+    protected $casts = [
+        'attr' => 'array' //存入直接是数据，取出来的结果也是数组
+    ];
 
     protected $guarded = [];
 }
 ~~~
+
+
+
+模型的使用
+
+~~~php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Menu extends Model
+{
+    //默认数据库表名
+    protected $table = "hx_channel_menu";
+
+    //哪个连接驱动
+    protected $connection = "mysql";
+
+    //数据库主键
+    protected $primaryKey = "menu_id";
+
+    //不主动修改 created_at 和 updated_at字段
+    public $timestamps = false;
+
+    //自定义的时间字段
+    //const CREATED_AT = 'add_time';
+    //const UPDATED_AT = 'update_time';
+
+    protected $casts = [
+        'url' => 'array'   //自动转换
+    ];
+
+    //白名单
+//    protected $fillable = [
+//        'title',
+//        'pid',
+//        'sort',
+//        'url',
+//        'hide',
+//        'tip',
+//        'group',
+//        'icon'
+//    ];
+
+        //黑名单 不能与白名单同时出现
+        protected $guarded = [];
+}
+~~~
+
+
 
 
 
@@ -1242,43 +1374,6 @@ $request->validate([
 
 
 
-
-
-代码提示：
-
-~~~php
-composer require --dev barryvdh/laravel-ide-helper
-~~~
-
-
-
-~~~php
-php artisan ide-helper:models
-
-> no   //让其生成到一个新的文件中
-
-~~~
-
-
-
-~~~php
-public function getCoupon($id, $columns = ['*'] )
-	return Coupon:: query()->whereDeleted( value: Ø)->whereId($id) ;
-    return Coupon::query()->where( 'deleted', Ø)->find($id, $co lumns) ;
-	//可以有提示提示，需要去掉 static
-}
-~~~
-
-
-
-~~~php
-php artisan ide-helper: generate - PHPDoc generation for L .aravel Facades //解决门面模式下的方法
-php artisan ide-helper:models - PHPDocs for models
-php artisan ide-helper:meta - PhpStorm Meta file      //ide重启才能生效，解决通过工厂模式找对应的方法和属性
-~~~
-
-
-
 软删除的代码块
 
 表字段名  deleted deleted_at
@@ -1294,7 +1389,7 @@ class Goods extends BaseModel
         'is_new'=>'boolean',
         'is_hot'=>'boolean',
         'gallery' => 'array' ,
-        'is_on_ ale' =>'boolean'
+        'is_on_sale' =>'boolean'
     ];
 }
 ~~~
@@ -1303,16 +1398,14 @@ class Goods extends BaseModel
 
 
 
-生成密钥
 
-~~~php
-php artisan key:generate
-~~~
+
+
 
 
 ~~~php
 //创建监听器
-# php artisan make:listener DBSqllistener
+# php artisan make:listener DBSqlListener
 
 <?php
 namespace App\Listeners;
@@ -1371,12 +1464,15 @@ class DBSqllistener
 ~~~
 
 
-###### ==1.2 创建控制器==
+
+###### 1.1.9 创建控制器
 
 自动加载好相关继承基类
 
 ~~~php
 php artisan make:controller UserController
+
+php artisan make:controller /App/Api/IndexController
 ~~~
 
 
@@ -1468,11 +1564,315 @@ public function test(int $id=0, string $name = '')
 
 
 
+###### 1.2.0 缓存
+
+默认是 .env中的
+
+~~~php
+CACHE_DRIVER=file
+CACHE_PREFIX=shop_cache
+
+//.env文件，可以修改为默认redis
+CACHE_DRIVER=redis
+CACHE_PREFIX=shop_cache
+
+//config/cache.php中 redis是默认值
+'redis' => [
+    'driver' => 'redis',
+    'connection' => 'cache', //但是这个是对应 config/database.php中的 redis.cache.database=1 即选择1的库
+],
+~~~
 
 
 
+默认驱动使用方法：
+
+~~~php
+//写入缓存，【注意这里的时间必须有值才能写入成功，也可以认为是框架的bug】
+Cache::put('name', '张三', 1);
+Cache::put('sex', '男', 1);
+Cache::put('score', 95, now()->addMinutes(5));
+
+//读取缓存
+$name = Cache::get('name', 'default-name');
+$sex =  Cache::get('sex', 'default-sex');
+$score =  Cache::get('score', 'default-score');
+
+//dd($name, $sex, $score);
+
+//如果key存在，存储失败
+$bool = Cache::add('name', '张四', 10); //false
+$bool = Cache::add('new_name', '张四', 10); //true
+
+//永久缓存
+Cache::forever('level', 1);
+
+//判断缓存是否存在
+$bool = Cache::has('level');  //true
+
+//自增自减
+Cache::increment('clickNumber', 10);
+Cache::decrement('clickNumber', 5);
+
+//删除缓存
+Cache::forget('level');
+//获取并删除key
+$level = Cache::pull('level');
+
+//获取缓存，存在即返回结果，否则todo获取结果并缓存
+$goods_id = 1200;
+$result = Cache::remember('cache:goods_id:'.$goods_id, 1, function () use ($goods_id) {
+    //todo
+    return ['goods_id' => $goods_id, 'goods_name' => '商品名称'];
+});
+~~~
 
 
+
+多种缓存驱动：
+
+~~~php
+Cache::store('redis')->put('name', 12, 10);
+Cache::store('file')->put('name', 'zhangsan', 10);
+
+$redis = Cache::store('redis')->get('name');
+$file = Cache::store('file')->get('name');
+dd($redis, $file);
+~~~
+
+
+
+###### 1.2.1 集合
+
+~~~php
+$collection = collect([1, 2, 3]);
+dd($collection->toArray());
+dd($collection->all()); // all() 返回底层的数组
+// toArray与all功能一样
+
+$collect = collect(['k1'=>'v1', 'k2'=>'v2', 'k3'=>'v3']);
+$keys = $collect->keys()->toArray();//获取keys
+$values = $collect->values()->toArray();//获取values
+//dd($keys, $values);
+
+dd($collect->last());
+dd($collect->only(['k1', 'k2'])->toArray()); //只要k1 k2的key=>value
+
+// $products = Product::all();
+// $products->pluck('title'); 取一列
+// $products->take(2); 取两条
+// $products->toJson(); 转换成json
+// $products->pluck('title')->implode(',');  // implode()函数
+
+pluck('title', 'product_id') ; // 返回  key => value
+
+$products = $collection->keyBy('product_id'); // 把product_id 提取出来做key 
+
+// 聚合运算
+$products = Products::all()->pluck('price');
+$products->count();
+$products->sum();
+$products->average();
+$products->max();
+$products->min();
+
+// 包含判断
+$collection = collect([
+    ['product' => 'Desk', 'price' => 200],
+    ['product' => 'Chair', 'price' => 100],
+]);
+$bool = $collection->contains('product', 'Desk'); //key=>value 存在即 true
+
+//判断是否包含 key
+$collect = collect(['k1' => 'v1', 'k2' => 'v2']);
+$isHas = $collect->has('k1');
+dd($isHas); // true
+
+// $exists = collect(['val1', 'val2', 'val3'])->contains('val4');
+// dd($exists); // false
+
+//判断 集合是否 非空
+if ($collect->isEmpty()) {
+    //todo
+}
+collect([])->isEmpty();
+
+// 运算
+//array_diff() 求差集
+//collect([1, 2, 3, 4])->diff([2, 3])->dd();
+
+//合并数组
+$collection = collect(['product_id' => 1, 'price' => 100]);
+$merged = $collection->merge(['price' => 200, 'discount' => false]);
+$merged->all();// price 会覆盖旧值
+
+//过滤 
+$collection->only(['product_id', 'price']); //只返回 指定列的 key => value
+
+// 从尾部写入数组
+$collection = collect(['product_id' => 1, 'name' => 'Desk']);
+$collection->put('price', 100);
+
+// 压入数组
+$collection = collect([1, 2, 3, 4]);
+$collection->push(5);
+
+// 集合中移除并返回最后一个项
+$collection = collect([1, 2, 3, 4, 5]);
+$collection->pop();
+
+// where函数 过滤
+$collection = collect([
+    ['product' => 'Desk', 'price' => 200],
+    ['product' => 'Chair', 'price' => 100],
+    ['product' => 'Bookcase', 'price' => 150],
+    ['product' => 'Door', 'price' => 100],
+]);
+
+$filtered = $collection->where('price', '>', 100);
+//$filtered = $collection->where('price', 100);
+
+
+// 遍历
+each
+map
+//        $ret = $collection->map(function ($item){
+//            $item['user_id'] = '123'; //可以加值
+//            return $item;
+//        });
+
+$ret = $collection->each(function ($item){
+    return $item;
+});
+
+$products->keyBy('id')->toArray();  //把id取出来做key值,超实用
+$products->toArray(); //索引自增的数组
+
+groupBy('cate_id') //分组
+
+//过滤筛选
+$products->filter(function($item){
+    return $item->price > 10;
+})
+    
+
+//key与value互换，一维数组
+$collect->flip()->toArray();
+
+//反序
+collect->reverse()->toArray();
+
+//排序
+collect($aa)->sortDesc();
+collect($aa)->sort();
+
+$products->sortByDesc('price');
+
+//可以传入闭包，使用相关运算得到一个值
+$products->sortByDesc(function($item){
+    return $item['price'] * 10;
+});
+~~~
+
+
+
+###### 1.2.2 辅助函数
+
+主要有：
+
+~~~php
+数组 & 对象
+
+//以下两个都能添加成功 key不存在或为null 才能成功
+//$array = array_add(['name' => 'Desk'], 'price', 100);
+$array = array_add(['name' => 'Desk','price'=>null], 'price', 100);
+
+//踢除指定key
+$array = ['name' => 'Desk', 'price' => 100];
+$filtered = array_except($array, ['price']);
+
+//返回第一个值，可以是多维数组
+$array = [100, 200, 300];
+// array_first() 第二个参数可以是闭包函数，第三个值是默认值
+$first = array_first($array, function ($value, $key) {
+    return $value >= 150;
+});
+
+//使用点检索
+$array = ['products' => ['desk' => ['price' => 100]]];
+$price = array_get($array, 'products.desk.price');//第三个参数是默认值
+
+//使用点删除指定key
+$array = ['products' => ['desk' => ['price' => 100]]];
+array_forget($array, 'products.desk');
+
+//判断是否存在指定key
+$array = ['product' => ['name' => 'Desk', 'price' => 100]];
+$contains = array_has($array, 'product.name');	// true　
+$contains = array_has($array, ['product.price', 'product.discount']); // false，同时满足才返回true
+
+//从指定数组中返回 指定的键 =>值
+$array = ['name' => 'Desk', 'price' => 100, 'orders' => 10];
+$slice = array_only($array, ['name', 'price']); // ['name'=>'Desk', 'price'=>100]
+
+//从数组中检索给定键的列值
+$array = [
+    ['developer' => ['id' => 1, 'name' => 'Taylor']],
+    ['developer' => ['id' => 2, 'name' => 'Abigail']],
+];
+$names = array_pluck($array, 'developer.name');  // ['Taylor', 'Abigail']
+//    Arr::pluck();
+
+// 在数据开头插入指定数组，第三个参数是指定key
+$array = [
+    ['name' => 'Desk', 'price' => 100, 'discount' => 10],
+    ['name' => 'Bbt', 'price' => 50, 'discount' => 0],
+];
+$insert = ['name' => 'DD', 'price' => 50, 'discount' => 50];
+$array = array_prepend($array, $insert);
+
+//返回指定key的值并删除对应的key
+$array = ['name' => 'Desk', 'price' => 100];
+$name = array_pull($array, 'name'); //如果key不存在，第三个参数可以指定返回值
+
+路径
+
+字段串
+
+URLs
+
+其他
+~~~
+
+
+
+###### 1.2.3 事务
+
+~~~php
+//1.闭包，自动提交、回滚， (参数1，闭包函数，参数2：重试次数)
+$ret = DB::transaction( function () {
+    DB::table('users')->where('id', 4)->update(['name' => Str::random()]);
+    DB::table('users')->where('id', 5)->update(['name' => Str::random()]);
+});
+
+//2.手动，自行提交、回滚
+try {
+    DB::beginTransaction();
+	DB::table('users')->where('id', 4)->update(['name' => Str::random()]);
+    DB::table('users')->where('id', 5)->update(['name' => Str::random()]);
+    DB::commit();
+} catch (\Exception $exception) {
+    DB::rollBack();
+}
+~~~
+
+
+
+###### 1.2.4  队列
+
+
+
+###### 1.2.5 任务
 
 
 
@@ -1586,16 +1986,6 @@ bccomp($coupon_price, $price) == 1
 
 
 
-事务
-
-开启方式1：闭包方式，自动提交和回滚，不需要人为控制
-
-~~~php
-//参数1，闭包函数，参数2：重试次数
-~~~
-
-![image-20210124214709435](Laravel.assets/image-20210124214709435.png)
-
 
 
 ==模型==
@@ -1609,55 +1999,6 @@ bccomp($coupon_price, $price) == 1
 <img src="Laravel.assets/image-20210124215814523.png" alt="image-20210124215814523" style="zoom:50%;" />
 
 
-
-模型
-
-~~~php
-<?php
-
-namespace App\Models;
-
-use Illuminate\Database\Eloquent\Model;
-
-class Menu extends Model
-{
-    //默认数据库表名
-    protected $table = "hx_channel_menu";
-
-    //哪个连接驱动
-    protected $connection = "mysql";
-
-    //数据库主键
-    protected $primaryKey = "menu_id";
-
-    //不主动修改 created_at 和 updated_at字段
-    public $timestamps = false;
-
-    //自定义的时间字段
-    //const CREATED_AT = 'add_time';
-    //const UPDATED_AT = 'update_time';
-
-    protected $casts = [
-        'url' => 'array'   //自动转换
-    ];
-
-    //白名单
-//    protected $fillable = [
-//        'title',
-//        'pid',
-//        'sort',
-//        'url',
-//        'hide',
-//        'tip',
-//        'group',
-//        'icon'
-//    ];
-
-        //黑名单 不能与白名单同时出现
-        protected $guarded = [];
-}
-
-~~~
 
 
 
@@ -1701,128 +2042,7 @@ var_dump($result);
 
 
 
-==集合==
 
-
-
-```php
-//$collection = collect([1, 2, 3]);
-//dd($collection->toArray());
-//dd($collection->all());
-// toArray与all功能一样
-
-$collect = collect(['k1'=>'v1', 'k2'=>'v2', 'k3'=>'v3']);
-$keys = $collect->keys()->toArray();//获取keys
-$values = $collect->values()->toArray();//获取values
-
-
-//dd($keys, $values);
-//dd($collect->last());
-//dd($collect->only(['k1', 'k2'])->toArray()); //只要k1 k2的key=>value
-
-// $products = Product::all();
-// $products->pluck('title'); 取一列
-// $products->take(2); 取两条
-// $products->toJson(); 转换成json
-// $products->pluck('title')->implode(',');  // implode()函数
-
-// 聚合运算
-
-// 包含判断
-
-contains
-has
-
-// 运算
-    
-// 集合的判断
-
-// where函数
-
-// 遍历
-each
-map
-$products->keyBy('id')->toArray();  把id取出来做key值,超实用
-$products->toArray(); //索引自增的数组
-
-groupBy('cate_id') //分组
-
-//过滤筛选
-$products->filter(function($item){
-    return $item->price > 10;
-})
-    
-    
-key与value互换，一维数组
-$collect->flip()->toArray();
-
-//反序
-collect->reverse()->toArray();
-
-//排序
-collect($aa)->sortDesc();
-collect($aa)->sort();
-
-$products->sortByDesc('price');
-可以传入闭包，使用相关运算得到一个值
-$products->sortByDesc(function($item){
-    return $item['price'] * 10;
-});
-```
-
-![image-20210125214156548](Laravel.assets/image-20210125214156548.png)
-
-![image-20210125214743493](Laravel.assets/image-20210125214743493.png)
-
-
-
-~~~php
-$users = User::all();
-//        $newUsers = $users->each(function ($item) {
-//            return ($item->newId = '编号:'.$item->id); //可以对集合进行添加元素或处理值，其他元素保留
-//        });
-//        dd($newUsers->toArray());
-
-$newUsers = $users->map(function ($item) {
-    return ($item->newId = '编号:'.$item->id); //map只返回处理后的对应列，其他元素舍弃
-});
-dd($newUsers->toArray());
-
-
-dd($users->keyBy('id'));//把id列作为 key 返回,把指定列 作为key返回数组
-
-dd($users->groupBy('role_id'))
-~~~
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-![image-20210224235435252](Laravel.assets/image-20210224235435252.png)
-
-
-
-![image-20210224235841256](Laravel.assets/image-20210224235841256.png)
-
-
-
-![image-20210224235956541](Laravel.assets/image-20210224235956541.png)
 
 
 
@@ -1841,8 +2061,6 @@ dd($users->groupBy('role_id'))
 ![image-20210225002051534](Laravel.assets/image-20210225002051534.png)
 
 
-
-![image-20210225000355504](Laravel.assets/image-20210225000355504.png)
 
 ~~~php
 ##Laravel6.x从入门到进阶，深入浅出

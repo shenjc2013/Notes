@@ -675,6 +675,12 @@ server{
 
 
 
+~~~php
+composer require gregwar/captcha
+
+composer require ramsey/uuid
+~~~
+
 
 
 

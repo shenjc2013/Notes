@@ -228,7 +228,29 @@ php -v
 
 
 
+~~~php
+mac下安装maven
+1.下载maven
 
+https://maven.apache.org/download.cgi
+
+2.解压到指定目录  /usr/local/apache-maven-3.6.3
+
+3.打开终端，输入vim ~/.bash_profile
+
+export MAVEN_HOME=/usr/local/apache-maven-3.6.3
+export PATH= $PATH:$MAVEN_HOME/bin
+
+添加完之后，按esc，执行:wq保存退出
+
+4.执行 source ~/.bash_profile 为配置环境变量生效
+
+5.测试 mvn -v   查看是否出现maven版本
+~~~
+
+
+
+https://blog.csdn.net/qq175023117/article/details/82260221
 
 
 
