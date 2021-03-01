@@ -1,11 +1,12 @@
+
+
 ==Laravel入门到放弃==
 
 
 
 ~~~php
-composer -h
-
-查找composer安装路径
+//查找composer安装路径
+# composer -h
 
 php -d memory_limit=-1 /usr/local/bin/composer install
 ~~~
@@ -68,27 +69,38 @@ location / {
 
 
 
-代码提示：
+安装代码提示插件：
 
 ~~~php
-composer require --dev barryvdh/laravel-ide-helper
+composer require --dev barryvdh/laravel-ide-helper 2.8     // 使用 --dev是只在使用环境中应用
+
+// composer require --dev barryvdh/laravel-ide-helper 这个最新版本支持php8的，会报错信息
 ~~~
 
 
+
+让 model支持代码提示：
 
 ~~~php
 php artisan ide-helper:models
 
-> no   //让其生成到一个新的文件中
+> no   //让其在根目录下生成到一个新的文件中 _ide_helper_models.php
 ~~~
+
+
+
+具体如下显示：
+
+<img src="Laravel.assets/image-20210301210403153.png" alt="image-20210301210403153" style="zoom:50%;float:left;" />
+
+
 
 
 
 ~~~php
 public function getCoupon($id, $columns = ['*'] )
-	return Coupon::query()->whereDeleted(0)->whereId($id) ;
-    return Coupon::query()->where( 'deleted', 0)->find($id, $columns) ;
-	//可以有提示提示，需要去掉 static
+	//return Coupon::query()->whereDeleted(0)->whereId($id) ;
+    return Coupon::query()->where('deleted', 0)->find($id, $columns) ;
 }
 ~~~
 
@@ -286,8 +298,7 @@ Route::get('/user/{id?}', 'UserController@detail'); //这里可以不传参数�
 举例如下：
 
 ~~~php
-//路由
-
+//定义路由
 Route::any('/order',"OrderController@index");
 
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -357,7 +368,7 @@ Route::get('getUrl', function (){
 路由分组与加载
 
 ~~~php
-如增加 admin.php 后台入口
+//如增加 admin.php 后台入口
 
 // 第一步：
 # vim ./routes/admin.php
@@ -1162,43 +1173,8 @@ php artisan make:model Products
 //指定路径，且生成迁移文件(迁移文件在默认路径下，可移动到具体位置)
 php artisan make:model /Custom/Models/Products -m
 
-//
+//数据库迁移
 php artisan magrate
-~~~
-
-
-
-~~~php
-<?php
-namespace App\Models;
-
-use Illuminate\Database\Eloquent\Model;
-
-class Goods extends Model
-{
-    //默认数据库表名
-    protected $table = "sdb_b2c_goods";
-
-    //config/database.php 默认连接驱动
-    protected $connection = "mysql";
-
-    //表主键
-    protected $primaryKey = "id";
-
-    //默认字段 created_at 和 updated_at ，不主动修改这两个字段值
-    public $timestamps = false;
-    
-    //当 表字段不是以上两个命名时，
-    const CREATED_AT = 'add_time';
-    const UPDATED_AT = 'update_time';
-
-	//数据的转换
-    protected $casts = [
-        'attr' => 'array' //存入直接是数据，取出来的结果也是数组
-    ];
-
-    protected $guarded = [];
-}
 ~~~
 
 
@@ -1207,7 +1183,6 @@ class Goods extends Model
 
 ~~~php
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -1218,7 +1193,7 @@ class Menu extends Model
     protected $table = "hx_channel_menu";
 
     //哪个连接驱动
-    protected $connection = "mysql";
+    //protected $connection = "mysql";
 
     //数据库主键
     protected $primaryKey = "menu_id";
@@ -1231,7 +1206,7 @@ class Menu extends Model
     //const UPDATED_AT = 'update_time';
 
     protected $casts = [
-        'url' => 'array'   //自动转换
+        'url' => 'array'   //自动转换，传入的是数组，取出来的结果也是数组
     ];
 
     //白名单
@@ -1246,12 +1221,10 @@ class Menu extends Model
 //        'icon'
 //    ];
 
-        //黑名单 不能与白名单同时出现
+        //黑名单 不能与白名单同时有值
         protected $guarded = [];
 }
 ~~~
-
-
 
 
 
@@ -1273,6 +1246,17 @@ public function detail()
     ]);
     $goods->save();
     return $goods;
+
+
+	/** @var User $user */
+    $user = User::find(3);
+
+    $user->user_nickname = 'test';
+    $user->user_mobile = '13678910011';
+    $user->user_black = 30;
+    $user->save();
+
+    print_r($user->toArray());
 }
 ~~~
 
@@ -1331,43 +1315,6 @@ $startTime = Carbon::now();
 $endTime = $startTime->copy()->addDay(5);
 //或者 $endTime = Carbon::now()->addDay(5);
 echo $startTime,'--',$endTime;
-~~~
-
-
-
-门面模式验证：
-
-~~~php
-<?php
-$validator = Validator::make( ['mobile' => $mobile], [ " mobile' => 'regex:/~1[0-9][10]$']) ;
-if ($validator->fails()) [
-	return ['errno' => 704, I'errmsg' => ' P8E;Et'];l
-]
-~~~
-
-
-
-~~~php
-header中添加：Accept:application/json
-
-$this->validate($request, [
-    'goods_id' => 'required|integer',
-    'num' => 'required|integer',
-],[
-    'goods_id.required' => 'goods_id必须',
-    'num.required' => 'num必须',
-    'num.integer' => 'num必须是数值',
-]);
-
-或者使用
-$request->validate([
-    'username' => 'required|string',
-    'password' => 'required|string',
-    'captcha' => ['required', 'captcha'],
-], [
-    'captcha.required' => '验证码不能为空',
-    'captcha.captcha' => '请输入正确的验证码',
-]);
 ~~~
 
 
@@ -1477,54 +1424,51 @@ php artisan make:controller /App/Api/IndexController
 
 
 
-模型创建，指定目录下
+控制器的验证类
 
 ~~~php
-php artisan make:model Models/Menu
-~~~
+$validator = Validator::make(
+    ['mobile'=>'23678999987'],
+    ['mobile'=>'regex:/^1[0-9]{10}$/']
+);
+if ($validator->fails()) {
+    echo '验证失败';
+}
+echo '成功';
 
-常见操作，指定表名，主键和禁用时间戳
+$this->validate($request, [
+    'goods_id' => 'required|integer',
+    'num' => 'required|integer',
+],[
+    'goods_id.required' => 'goods_id必须',
+    'num.required' => 'num必须',
+    'num.integer' => 'num必须是数值',
+]);
 
-~~~php
-namespace App\Models;
+或者使用
+<?php
+use Illuminate\Http\Request;  //注意正确引入的http/Request类
+use Illuminate\Support\Facades\Cache;
 
-use Illuminate\Database\Eloquent\Model;
-
-class Menu extends Model
+class TestController extends Controller
 {
-    protected $table = "menu";
-    
-    protected $primaryKey = "menu_id";
-    
-    public $timestamps = false;
+    public function arr(Request $request)
+    {
+        $request->validate([
+            'username' => 'required|string',
+            'password' => 'required|string',
+            'captcha' => 'required|captcha'],
+        ], [
+            'captcha.required' => '验证码不能为空',
+            'captcha.captcha' => '请输入正确的验证码',
+        ]);
+    }
 }
 ~~~
 
 
 
-==方法一：传递参数(get、post)==
-
-~~~php
-路由
-
-Route::any("/user", "UserController@index");
-
-控制器
-
-public function index(Request $request)
-{
-    $query = $request->query();
-    $input = $request->input();
-
-    return ['query'=>$query, 'input'=>$input];
-}
-~~~
-
-<img src="Laravel.assets/image-20210123152852229.png" alt="image-20210123152852229" style="zoom:50%;float:left;" />
-
-
-
-==方法二：路径传参==
+==方法一：传递参数与接收参数==
 
 ~~~php
 Route::post("/user/{id?}", "UserController@index");
@@ -1535,12 +1479,11 @@ public function index(Request $request, int $id = 0)
 {
     $query = $request->query();// get方式传值
     $input = $request->input();// get或post传值
+    $post  = $request->post();// post方式
 
     return ['query'=>$query, 'id'=>$id ,'input'=>$input];
 }
 ~~~
-
-<img src="Laravel.assets/image-20210123154037707.png" alt="image-20210123154037707" style="zoom:50%;float:left;" />
 
 
 
@@ -1878,16 +1821,6 @@ try {
 
 
 
-
-
-
-
-
-
-
-
-
-
 ~~~php
 规范
 $ php artisan make:migration add_score_to_sys_sale_order_table --table=sys_sale_order //增加字段
@@ -2039,18 +1972,6 @@ var_dump($result);
 软删除和恢复
 
 <img src="Laravel.assets/image-20210124235232241.png" alt="image-20210124235232241" style="zoom:50%;float:left;" />
-
-
-
-
-
-
-
-![image-20210225001304424](Laravel.assets/image-20210225001304424.png)
-
-
-
-![image-20210225001548731](Laravel.assets/image-20210225001548731.png)
 
 
 
