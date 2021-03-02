@@ -1233,24 +1233,41 @@ class Menu extends Model
 ~~~php
 public function detail()
 {
-    //return Goods::query()->find(2);
+    //return user::query()->find(2);
 
-    $goods = new Goods();
-    $goods->fill([
-        'name' => 'test-write-name',
-        'title' => 'test-write-title',
-        'create_time' => time(),
-        'status' => 1,
-        'created_at' => date('Y-m-d H:i:s'),
-        'updated_at' => date('Y-m-d H:i:s'),
+    $user = new User();
+    $user->fill([
+        'user_nickname' => 'test-write-name',
+        'user_mobile' => '13800138001',
+        'user_black' => 20,
+        'user_regtime' => Carbon::now()->toDateTimeString(),
     ]);
-    $goods->save();
-    return $goods;
+    $user->save();
+    dd($user->toArray());
+    ### 原理过程：第一步 创建一个空的对象，第二步 填充数据，第三步 写入数据 获取 自增的 ID键值 添加到当前对象中
 
+	$user = User::query()->create([
+        'user_nickname' => 'test-write-name',
+        'user_mobile' => '13800138002',
+        'user_black' => 20,
+        'user_regtime' => Carbon::now()->toDateTimeString(),
+    ]);
+    dd($user);
+    //返回创建成功的对象
 
-	/** @var User $user */
+	/*$user = User::query()->insert([
+        'user_nickname' => 'test-write-name',
+        'user_mobile' => '13800138003',
+        'user_black' => 20,
+        'user_regtime' => Carbon::now()->toDateTimeString(),
+    ]);
+    dd($user);  这种方式只返回 true 或  false ，和 Db::table()->insert()一样的效果
+    */
+
+	//查询构造器方式
+	User::query()->where(['user_id',3])->update(['user_name'=>'ttest']);
+	//模型操作更新
     $user = User::find(3);
-
     $user->user_nickname = 'test';
     $user->user_mobile = '13678910011';
     $user->user_black = 30;
