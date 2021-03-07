@@ -687,6 +687,58 @@ composer require ramsey/uuid
 
 
 
+缺少 gd库
+
+先安装4个包扩展
+
+~~~php
+https://www.cnblogs.com/Miss-Lu/p/12787861.html
+~~~
+
+
+
+~~~php
+https://segmentfault.com/q/1010000003829836/a-1020000003829900
+
+安装sudo apt-get install python-dev libfreetype6-dev
+~~~
+
+
+
+一样的套路安装扩展，bcmath
+
+~~~php
+cd /php7.1.33/ext/bcmath
+
+/usr/local/bin/phpize
+
+./configure --with-php-config=/usr/local/bin/php-config
+
+make && make install
+~~~
+
+
+
+安装 pdo_mysql.so
+
+~~~php
+//进入PHP源码包ext/pdo目录
+cd ext/pdo
+/usr/local/bin/phpize
+./configure --with-php-config=/usr/local/bin/php-config --enable-pdo=shared
+make && make install
+
+//进入pdo_mysql目录
+cd /php7.1.33/ext/pdo_mysql
+/usr/local/bin/phpize
+./configure -–with-php-config=/usr/local/bin/php-config -–with-pdo-mysql=/usr/local/mysql
+make && make install
+
+//添加
+extension=pdo.so
+extension=pdo_mysql.so
+~~~
+
 
 
 

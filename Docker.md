@@ -1,5 +1,3 @@
-
-
 ##### 第一章 Docker容器入门
 
 ###### 1.1 简介说明
@@ -515,14 +513,98 @@ $ docker exec -it 437965bada89 /bin/bash   //容器ID
 
 ##### 第二章 项目部署
 
+Mac 更换镜向地址
+
+~~~php
+cd ~
+cd .docker
+vi daemon.json
+ 
+#将文件内容替换为下面内容
+{
+    "registry-mirrors": ["http://hub-mirror.c.163.com"]
+}
+~~~
+
+
+
+**下载 centos**
+
+~~~php
+docker pull centos:7
+~~~
+
+
+
+~~~php
+# cd /Users/chenglh/docker
+# mkdir conf
+# cd conf
+# vi php.ini
+# mkdir conf.d
+~~~
+
+
+
 ###### 2.1 安装PHP
+
+~~~php
+docker pull php:7.1-fpm
+
+//先启动容器获取原生的配置文件
+# cd /Users/chenglihui/docker
+# docker cp 404422aadfasf容器ID:/usr/local/etc/php php
+
+docker run -itd -p 9000:9000 -v /Users/chenglihui/working:/usr/share/nginx/html -v /Users/chenglihui/docker/php:/usr/local/etc/php --name php-fpm7.1 404422fc039e
+//挂载，将主机项目中的目录挂载到容器的/usr/share/nginx/html
+~~~
+
+
+
+<img src="Docker.assets/image-20210306190828645.png" alt="image-20210306190828645" style="zoom:50%;float:left;" />
 
 
 
 ###### 2.2 安装Nginx
 
 ~~~php
+docker pull nginx
 
+//先运行一个 nginx 容器，目的是获取它原生的配置文件
+docker run -itd  -p 8081:80 -v /Users/chenglihui/working:/usr/share/nginx/html --name nginx f6d0b4767a6c
+
+在宿主主机
+# cd /Users/chenglihui/docker/nginx
+# docker cp 8c92517383be容器ID:/etc/nginx/conf.d conf.d
+这里是拿回来default.conf文件
+
+删除当前nginx容器
+docker stop 8c92517383be
+docker rm -f 8c92517383be
+
+docker run -itd  -p 8081:80 -v /Users/chenglihui/working:/usr/share/nginx/html -v  /Users/chenglihui/docker/nginx/conf.d:/etc/nginx/conf.d  --name nginx f6d0b4767a6c
+//挂载，将主机项目中的目录挂载到容器的/usr/share/nginx/html
+
+docker exec -it 64482af15417 /bin/bash
+
+进入容器后需要安装 vim
+# apt-get update
+# apt-get install vim
+~~~
+
+~~~php
+location ~ \.php$ {
+    root           /usr/share/nginx/html;
+    //注意这里
+    fastcgi_pass   phpfpm:9000; 
+    fastcgi_index  index.php;
+    #fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
+    //注意这里，和phpfpm挂载目录一致
+    fastcgi_param  SCRIPT_FILENAME  /usr/share/nginx/html/$fastcgi_script_name;
+    include        fastcgi_params;
+}
+
+//也可以使用 php容器的IP地址
 ~~~
 
 

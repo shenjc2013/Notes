@@ -1361,12 +1361,6 @@ class Goods extends BaseModel
 
 
 
-
-
-
-
-
-
 ~~~php
 //创建监听器
 # php artisan make:listener DBSqlListener
@@ -1425,6 +1419,21 @@ class DBSqllistener
         return;
     }
 }
+~~~
+
+
+
+在服务提供者事件中，主动注册事件
+
+~~~php
+protected $listen = [
+    //Registered::class => [
+    //    SendEmailVerificationNotification::class,
+    //],
+    QueryExecuted::class => [
+        DBSqlListener::class
+    ]
+];
 ~~~
 
 
@@ -2460,6 +2469,278 @@ https://iterm2colorschemes.com/
 
 
 
+
+<img src="Laravel.assets/image-20210307151327564.png" alt="image-20210307151327564" style="zoom:50%;float:left;" />
+
+
+
+有些laravel版本(更高)需要设置 测试配置项
+
+<img src="Laravel.assets/image-20210307153609114.png" alt="image-20210307153609114" style="zoom:50%;float:left;" />
+
+
+
+添加PHP的解析器
+
+<img src="Laravel.assets/image-20210307152827701.png" alt="image-20210307152827701" style="zoom:67%;" />
+
+
+
+<img src="Laravel.assets/image-20210307160337867.png" alt="image-20210307160337867" style="zoom:50%;float:left;" />
+
+
+
+==测试用例一：==
+
+~~~php
+<?php
+namespace Tests\Feature;
+
+use Tests\TestCase;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+
+class AuthTest extends TestCase
+{
+    public function testBasicTest()
+    {
+        $response = $this->get('/');
+
+        $response->assertStatus(200);
+    }
+
+    public function testRegister(){
+        $response = $this->post('api/register',[
+            'username' => 'chenglh',
+            'password' => '123456',
+            'mobile' => '13678913396',
+            'code' => '1234'
+        ]);
+        //$response->assertStatus(200);//assertStatus 断言http的状态
+        //echo $response->getContent();
+
+        //设置两个断言
+        $response->assertStatus(200);
+        $ret = $response->getOriginalContent();//获取原始数组
+        //print_r($ret);
+        $this->assertEquals(0, $ret['errno']);//判断是否与预期的一致
+        $this->assertNotEmpty($ret['data']);
+    }
+}
+~~~
+
+
+
+两个断言，成功了一个，失败了一个
+
+<img src="Laravel.assets/image-20210307155144306.png" alt="image-20210307155144306" style="zoom:50%;float:left;" />
+
+
+
+
+
+==测试用例二：==
+
+1、减少数据表的脏数据，2、一个正常用例，一个异常用例。
+
+~~~php
+<?php
+namespace Tests\Feature;
+
+use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Tests\TestCase;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+
+class AuthTest extends TestCase
+{
+    // 事务回滚操作代码块
+    use DatabaseTransactions;
+
+    public function testBasicTest()
+    {
+        $response = $this->get('/');
+
+        $response->assertStatus(200);
+    }
+
+    public function testRegister(){
+        $response = $this->post('api/register',[
+            'username' => 'chenglh3',
+            'password' => '123456',
+            'mobile' => '13678913390',
+            'code' => '1234'
+        ]);
+        //$response->assertStatus(200);//assertStatus 断言http的状态
+        //echo $response->getContent();
+
+        $response->assertStatus(200);
+        $ret = $response->getOriginalContent();//获取原始数组
+        //print_r($ret);
+        $this->assertEquals(0, $ret['errno']);
+        $this->assertNotEmpty($ret['data']);
+    }
+
+    public function testRegisterMobile(){
+        $response = $this->post('api/register',[
+            'username' => 'chenglh3',
+            'password' => '123456',
+            'mobile' => '1367891339900000',
+            'code' => '1234'
+        ]);
+
+        $response->assertStatus(200);
+        $ret = $response->getOriginalContent();
+        $this->assertEquals(707, $ret['errno']);
+    }
+}
+~~~
+
+
+
+==短信组件==
+
+~~~php
+// overtrue/easy-sms
+// https://github.com/overtrue/easy-sms
+
+composer require overtrue/easy-sms
+~~~
+
+
+
+<img src="Laravel.assets/image-20210307190022409.png" alt="image-20210307190022409" style="zoom:50%;float:left;" />
+
+
+
+安装通知模式的组件
+
+~~~php
+$ composer require leonis/easysms-notification-channel
+
+//生成配置文件
+php artisan vendor:publish --provider="Leonis\Notifications\EasySms\EasySmsChannelServiceProvider"
+//Copied File [/vendor/leonis/easysms-notification-channel/config/easysms.php] To [/config/easysms.php]
+~~~
+
+
+
+修改 config/easysms.php配置信息
+
+<img src="Laravel.assets/image-20210308000932321.png" alt="image-20210308000932321" style="zoom:50%;float:left;" />
+
+~~~php
+//创建一个短信通知类 发送模块
+
+php artisan make:notification SendSmsCode
+
+//在app/Notification/SendSmsCode.php
+
+<?php
+
+namespace App\Notifications;
+
+use Illuminate\Bus\Queueable;
+use Illuminate\Notifications\Notification;
+use Leonis\Notifications\EasySms\Channels\EasySmsChannel;
+use Leonis\Notifications\EasySms\Messages\EasySmsMessage;
+
+class SendSmsCode extends Notification
+{
+    use Queueable;
+
+    private $code;
+
+    /**
+     * Create a new notification instance.
+     *
+     * @return void
+     */
+    public function __construct($code)
+    {
+        $this->code = $code;
+    }
+
+    /**
+     * Get the notification's delivery channels.
+     *
+     * @param  mixed  $notifiable
+     * @return array
+     */
+    public function via($notifiable)
+    {
+        return [EasySmsChannel::class];
+    }
+
+    public function toEasySms($notifiable)
+    {
+        return (new EasySmsMessage())
+            ->setTemplate('SMS_001')
+            ->setData(['code' => $this->code, 'product' => 'xx商城']);
+    }
+}
+~~~
+
+
+
+==调用，注意要引入对应的类==
+
+~~~php
+public function regCaptcha(Request $request)
+{
+    $mobile = $request->input('mobile');
+    if (empty($mobile)) {
+        return ['errno' => 401, 'errmsg' => '参数不正确'];
+    }
+
+    $validator = Validator::make(['mobile' => $mobile], ['mobile' => 'regex:/^1[0-9]{10}$/']);
+    if ($validator->fails()) {
+        return ['errno' => 707, 'errmsg' => '手机格式不正确'];
+    }
+
+    $user = (new UserService())->getByUsermobile($mobile);
+    if (!is_null($user)) {
+        return ['errno' => 705, 'errmsg' => '手机号已被注册'];
+    }
+
+    //防刷功能
+    $code = random_int(100000, 999999);
+    $cache_lock = Cache::add('register_captcha_lock_'.$mobile, 1, 1);
+    if (!$cache_lock) {
+        return ['errno' => 702, 'errmsg' => '验证码发送1分钟内不能重复发送'];
+    }
+
+    //一天不能发送10次
+    $cacheKey = 'register_captcha_lock_count_'.$mobile;
+    if (Cache::has($cacheKey)) {
+        if (Cache::get($cacheKey) > 10) {
+            return ['errno' => 702, 'errmsg' => '当天的发送验证码次数超过了10次'];
+        }
+        Cache::increment($cacheKey);
+    } else {
+        Cache::put($cacheKey, 1, Carbon::tomorrow()->diffInMinutes(now()));
+    }
+
+    Cache::put('register_captcha_lock_'.$mobile, $code, 10);
+
+    Notification::route(
+        EasySmsChannel::class,
+        new PhoneNumber($mobile, 86)
+    )->notify(new SendSmsCode($code));
+
+    return ['errno'=>0, 'errmsg'=>'成功', 'data'=>null];
+}
+~~~
+
+
+
+
+
+一对一的关系
+
+~~~php
+//文章 对 作者
+
+
+~~~
 
 
 
