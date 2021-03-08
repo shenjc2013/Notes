@@ -2627,6 +2627,14 @@ php artisan vendor:publish --provider="Leonis\Notifications\EasySms\EasySmsChann
 
 <img src="Laravel.assets/image-20210308000932321.png" alt="image-20210308000932321" style="zoom:50%;float:left;" />
 
+
+
+具体如下：
+
+![image-20210309000143058](Laravel.assets/image-20210309000143058.png)
+
+
+
 ~~~php
 //创建一个短信通知类 发送模块
 
@@ -2656,7 +2664,7 @@ class SendSmsCode extends Notification
      */
     public function __construct($code)
     {
-        $this->code = $code;
+        $this->code = $code; //使用变量
     }
 
     /**
@@ -2667,14 +2675,14 @@ class SendSmsCode extends Notification
      */
     public function via($notifiable)
     {
-        return [EasySmsChannel::class];
+        return [EasySmsChannel::class];//修改渠道
     }
 
     public function toEasySms($notifiable)
     {
         return (new EasySmsMessage())
-            ->setTemplate('SMS_001')
-            ->setData(['code' => $this->code, 'product' => 'xx商城']);
+            ->setTemplate('SMS_205391427') //短信模板
+            ->setData(['code' => $this->code, 'product' => 'testShop']);
     }
 }
 ~~~
@@ -2729,6 +2737,101 @@ public function regCaptcha(Request $request)
     return ['errno'=>0, 'errmsg'=>'成功', 'data'=>null];
 }
 ~~~
+
+
+
+![image-20210308234657204](Laravel.assets/image-20210308234657204.png)
+
+
+
+![image-20210308234913169](Laravel.assets/image-20210308234913169.png)
+
+
+
+![image-20210308235146351](Laravel.assets/image-20210308235146351.png)
+
+
+
+![image-20210308235327112](Laravel.assets/image-20210308235327112.png)
+
+
+
+
+
+为了实现单元测试，优化代码：
+
+~~~php
+class UserService
+{
+    public function checkMobileSendCaptchaCount(string $mobile, int $code)
+    {
+        //一天不能发送10次
+        $cacheKey = 'register_captcha_lock_count_'.$mobile;
+        if (Cache::has($cacheKey)) {
+            if (Cache::get($cacheKey) >= 10) {
+                return false;
+            }
+            Cache::increment($cacheKey);
+        } else {
+            Cache::put($cacheKey, 1, Carbon::tomorrow()->diffInMinutes(now()));
+        }
+
+        Cache::put('register_captcha_lock_'.$mobile, $code, 10);
+
+        return true;
+    }
+//.....
+}
+~~~
+
+
+
+创建单元测试
+
+~~~php
+php artisan make:test AuthTest --unit  //--unit表示单元测试
+~~~
+
+
+
+单元测试代码
+
+~~~php
+<?php
+
+namespace Tests\Unit;
+
+use App\Services\UserService;
+use Illuminate\Support\Facades\Cache;
+use Tests\TestCase;
+
+class AuthTest extends TestCase
+{
+    public function testCheckMobileSendCaptchaCount()
+    {
+        $code = 1234;
+        $mobile = '13678911100';
+        foreach (range(0,9) as $i) {
+            $isPass = (new UserService())->checkMobileSendCaptchaCount($mobile, $code);
+            $this->assertTrue($isPass);
+        }
+
+        //第十一次，需要返回false
+        $isPass = (new UserService())->checkMobileSendCaptchaCount($mobile, $code);
+        $this->assertFalse($isPass);
+
+        Cache::forget('register_captcha_lock_count_'.$mobile);
+        $isPass = (new UserService())->checkMobileSendCaptchaCount($mobile, $code);
+        $this->assertTrue($isPass);
+    }
+}
+~~~
+
+
+
+注意单元测试的配置
+
+<img src="Laravel.assets/image-20210309002302817.png" alt="image-20210309002302817" style="zoom:50%;float:left;" />
 
 
 
