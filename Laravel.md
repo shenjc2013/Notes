@@ -1,5 +1,9 @@
 
 
+
+
+
+
 ==Laravel入门到放弃==
 
 
@@ -2832,6 +2836,192 @@ class AuthTest extends TestCase
 注意单元测试的配置
 
 <img src="Laravel.assets/image-20210309002302817.png" alt="image-20210309002302817" style="zoom:50%;float:left;" />
+
+
+
+
+
+![image-20210311223516610](Laravel.assets/image-20210311223516610.png)
+
+
+
+~~~php
+php artisan make:job OrderUnpaidTimeEndJob
+~~~
+
+
+
+~~~php
+<?php
+
+namespace App\Jobs;
+
+use Illuminate\Bus\Queueable;
+use Illuminate\Queue\SerializesModels;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Bus\Dispatchable;
+
+class OrderUnpaidTimeEndJob implements ShouldQueue
+{
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+
+    /**
+     * Create a new job instance.
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        //可以接收参数
+    }
+
+    /**
+     * Execute the job.
+     *
+     * @return void
+     */
+    public function handle()
+    {
+        //业务逻辑
+    }
+}
+~~~
+
+
+
+编写业务
+
+~~~php
+<?php
+namespace App\Jobs;
+
+use App\Services\OrderService;
+use Illuminate\Bus\Queueable;
+use Illuminate\Queue\SerializesModels;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Bus\Dispatchable;
+
+class OrderUnpaidTimeEndJob implements ShouldQueue
+{
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+
+    private $user_id;
+
+    private $order_id;
+
+    /**
+     * Create a new job instance.
+     *
+     * @return void
+     */
+    public function __construct($order_id, $user_id)
+    {
+        $this->user_id = $user_id;
+        $this->order_id = $order_id;
+        $this->delay(now()->addMinutes(1));//一分钟后取出来执行，这个可以是常量或变量
+    }
+
+    /**
+     * Execute the job.
+     *
+     * @return void
+     */
+    public function handle()
+    {
+        return app(OrderService::class)->cancelOrder($this->order_id, $this->user_id);
+    }
+}
+~~~
+
+
+
+service层实现业务逻辑
+
+~~~php
+<?php
+namespace App\Services;
+
+class OrderService
+{
+    public function cancelOrder($order_id, $user_id)
+    {
+        var_dump($order_id,'--', $user_id);
+        return;//具体业务操作,如果当前订单还是没有支付，则关闭订单操作，还原库存
+    }
+}
+~~~
+
+
+
+控制器分发任务
+
+~~~php
+public function createOrder()
+{
+    //任务分发
+    $user_id = 12000;
+    $order_id = '20210301231312';
+    dispatch(new OrderUnpaidTimeEndJob($order_id, $user_id));
+}
+~~~
+
+
+
+==测试环境中==
+
+<img src="Laravel.assets/image-20210311232032172.png" alt="image-20210311232032172" style="zoom:80%;" />
+
+
+
+命令行控制台：
+
+~~~php
+php artisan queue:work redis   //指定redis
+~~~
+
+
+
+还需要修改 .env文件中的 
+
+~~~php
+QUEUE_CONNECTION=sync //修改成 redis
+~~~
+
+
+
+此时可以使用 单元测试分发任务到Job和记录到 redis
+
+
+
+任务在执行开始与结束都打印到信息
+
+![image-20210311233823750](Laravel.assets/image-20210311233823750.png)
+
+
+
+查看队列参数：
+
+~~~php
+php artisan queue:work redis --help
+~~~
+
+
+
+部署上线：
+
+<img src="Laravel.assets/image-20210311234233955.png" alt="image-20210311234233955" style="zoom:50%;float:left;" />
+
+
+
+队列失败会写入到数据库
+
+<img src="Laravel.assets/image-20210311234605192.png" alt="image-20210311234605192" style="zoom:50%;float:left;" />
+
+~~~php
+
+~~~
 
 
 
