@@ -111,7 +111,7 @@ public function getCoupon($id, $columns = ['*'] )
 
 
 ~~~php
-php artisan ide-helper: generate - PHPDoc generation for L .aravel Facades //解决门面模式下的方法代码提示
+php artisan ide-helper:generate // - PHPDoc generation for Laravel Facades //解决门面模式下的方法代码提示
 php artisan ide-helper:models - PHPDocs for models
 php artisan ide-helper:meta - PhpStorm Meta file      //ide重启才能生效，解决通过工厂模式找对应的方法和属性
 ~~~
@@ -3037,9 +3037,21 @@ php artisan queue:work redis --help
 
 
 
+<img src="Laravel.assets/image-20210314231319611.png" alt="image-20210314231319611" style="zoom:50%;" />
 
 
 
+生成图片：
+
+![image-20210315234025135](Laravel.assets/image-20210315234025135.png)
+
+
+
+![image-20210315234156657](Laravel.assets/image-20210315234156657.png)
+
+
+
+![image-20210316000948567](Laravel.assets/image-20210316000948567.png)
 
 ~~~
  //https://www.bilibili.com/video/BV1cZ4y1u7xM?p=14
