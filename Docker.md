@@ -694,9 +694,68 @@ $ docker inspect 容器ID
 
 
 
+~~~php
+docker network ls
+
+//bridge 桥接方式
+
+docker exec -it mynginx /bin/bash
+
+//ifconfig 命令没有
+cat /etc/hosts
+~~~
 
 
 
+compose的安装
+
+~~~php
+https://docs.docker.com/compose/install/
+~~~
+
+
+
+mac直接就有compose
+
+~~~php
+/usr/local/bin/docker-compose
+
+docker-compose -version
+
+cd /User/chenglh/docker/compose
+    
+vim docker-compose.yml
+
+docker-compose up --help
+
+docker-compose up -d
+
+docker-compose rm
+
+nginx:
+ container_name:nginx
+ image:
+ ports: - 90:80
+ privileged: true
+ volumes:
+ - /xxx/nginx/conf/nginx.conf:/etc/nginx/nginx.conf
+
+
+docker network ls
+
+docker network inspect compose_default
+~~~
+
+
+
+
+
+~~~php
+http://www.bejson.com/validators/yaml_editor/
+
+版本设置
+https://docs.docker.com/compose/compose-file/compose-file-v3/
+~~~
 
 
 
@@ -732,4 +791,388 @@ $ sudo systemctl restart network   //重启
 
 
 
+~~~php
+version: '3.8'
+services:
+    nginx:
+        # 容器名称
+        container_name: "nginx"
+        image: f6d0b4767a6c
+        #restart: always
+        # 端口映射
+        ports:
+            - "9080:80"
+        privileged: true
+        environment:
+            - TZ=Asia/Shanghai
+        # 依赖关系 先跑php
+        depends_on:
+            - "php"
+        # 数据卷
+        volumes:
+            # 映射主机./conf.d目录到容器/etc/nginx/conf.d目录
+            - "/Users/chenglihui/docker/nginx/conf.d:/etc/nginx/conf.d"
+            - "/Users/chenglihui/docker/nginx/html:/usr/share/nginx/html"
+        networks:
+            - "app-net"
+            #    ipv4_address: 192.168.1.2
+    mysql:
+        image: a70d36bc331a
+        ports:
+            - "3306:3306"
+        volumes:
+            - /Users/chenglihui/docker/mysql/data:/var/lib/mysql:rw
+            - /Users/chenglihui/docker/mysql/conf:/etc/mysql/conf.d
+            - /Users/chenglihui/docker/mysql/logs:/data/mysql/logs
+        #restart: always
+        # 环境变量
+        environment:
+            - TZ=Asia/Shanghai # 设置时区
+            # mysql密码
+            - MYSQL_ROOT_PASSWORD=12345678
+        container_name: "mysql"
+        networks:
+           - "app-net"
+           #     ipv4_address: 192.168.1.4     
+    redis:
+        # 指定镜像
+        image: 621ceef7494a
+        # restart: always
+        ports:
+        # 端口映射
+            - 6379:6379
+        volumes:
+        # 目录映射
+            - /Users/chenglihui/docker/redis.conf:/usr/local/etc/redis/redis.conf:ro
+            - /Users/chenglihui/docker/redis/data:/data
+        #command:
+         # 执行的命令
+        entrypoint: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+        environment:
+            - TZ=Asia/Shanghai # 设置时区
+        container_name: "redis"
+        networks:
+            - "app-net"
+            #    ipv4_address: 192.168.1.5
+    php:
+        image: 404422fc039e
+        #restart: always
+        ports:
+            - "9000:9000"
+        volumes:
+            - /Users/chenglihui/docker/nginx/html:/var/www/html
+            - /Users/chenglihui/docker/php:/usr/local/etc/
+        # stdin_open: true
+        # tty: true   #这两条是防止启动php失败
+        # links:
+        #    - "mysql"
+        environment:
+            - TZ=Asia/Shanghai # 设置时区
+        container_name: "php"
+        networks:
+            - "app-net"
+            #    ipv4_address: 192.168.1.3
+networks:
+    # 配置docker network
+    app-net:
+        external:
+            name: "dscmall"
+        #driver: bridge
+        #ipam:
+        #    config:
+        #        # 子网络
+        #        - subnet: 192.168.1.0/16 
+~~~
 
+
+
+
+
+第一步：各个容器启动拿回来配置文件
+
+修改配置：
+
+~~~php
+server {
+    listen       80;
+    listen  [::]:80;
+    server_name  d-dscmall.xxx.cn;
+
+    #charset koi8-r;
+    #access_log  /var/log/nginx/host.access.log  main;
+
+    location / {
+        root   /usr/share/nginx/html;
+        index  index.php index.html index.htm;
+    }
+
+    #error_page  404              /404.html;
+
+    # redirect server error pages to the static page /50x.html
+    #
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root   /usr/share/nginx/html;
+    }
+
+    # proxy the PHP scripts to Apache listening on 127.0.0.1:80
+    #
+    #location ~ \.php$ {
+    #    proxy_pass   http://127.0.0.1;
+    #}
+
+    # pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000
+    #
+    #location ~ \.php$ {
+    #    root           html;
+    #    fastcgi_pass   127.0.0.1:9000;
+    #    fastcgi_index  index.php;
+    #    fastcgi_param  SCRIPT_FILENAME  /scripts$fastcgi_script_name;
+    #    include        fastcgi_params;
+    #}
+
+    location ~ \.php$ {
+        #root           /usr/share/nginx/html;
+        fastcgi_pass   php:9000;
+        fastcgi_index  index.php;
+        fastcgi_param  SCRIPT_FILENAME  /var/www/html/$fastcgi_script_name;
+        include        fastcgi_params;
+    }
+
+    # deny access to .htaccess files, if Apache's document root
+    # concurs with nginx's one
+    #
+    #location ~ /\.ht {
+    #    deny  all;
+    #}
+}
+~~~
+
+
+
+www.conf
+
+~~~php
+vi /Users/chenglihui/docker/php/php-fpm.d/www.conf  监听的端口
+listen=0.0.0.0:9000
+~~~
+
+
+
+第二步：
+
+~~~php
+version: '3.8'
+services:
+    nginx:
+        # 容器名称
+        container_name: "nginx"
+        image: f6d0b4767a6c
+        #restart: always
+        # 端口映射
+        ports:
+            - "9080:80"
+        privileged: true
+        environment:
+            - TZ=Asia/Shanghai
+        # 依赖关系 先跑php
+        depends_on:
+            - "php"
+        # 数据卷
+        volumes:
+            # 映射主机./conf.d目录到容器/etc/nginx/conf.d目录
+            - "/Users/chenglihui/docker/nginx/conf.d:/etc/nginx/conf.d"
+            - "/Users/chenglihui/docker/nginx/html:/usr/share/nginx/html"
+        networks:
+            - "app-net"
+            #    ipv4_address: 192.168.1.2
+    mysql:
+        image: a70d36bc331a
+        ports:
+            - "3306:3306"
+        volumes:
+            - /Users/chenglihui/docker/mysql/data:/var/lib/mysql:rw
+            - /Users/chenglihui/docker/mysql/conf:/etc/mysql/conf.d
+            - /Users/chenglihui/docker/mysql/logs:/data/mysql/logs
+        #restart: always
+        # 环境变量
+        environment:
+            - TZ=Asia/Shanghai # 设置时区
+            # mysql密码
+            - MYSQL_ROOT_PASSWORD=12345678
+        container_name: "mysql"
+        networks:
+           - "app-net"
+           #     ipv4_address: 192.168.1.4 
+    redis:
+        # 指定镜像
+        image: 621ceef7494a
+        # restart: always
+        ports:
+        # 端口映射
+            - 6379:6379
+        volumes:
+        # 目录映射
+            - /Users/chenglihui/docker/redis.conf:/usr/local/etc/redis/redis.conf:ro
+            - /Users/chenglihui/docker/redis/data:/data
+        #command:
+         # 执行的命令
+        entrypoint: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+        environment:
+            - TZ=Asia/Shanghai # 设置时区
+        container_name: "redis"
+        networks:
+            - "app-net"
+            #    ipv4_address: 192.168.1.5
+    php:
+        image: 404422fc039e 
+        #restart: always
+        ports:
+            - "9000:9000"
+        volumes:
+            - /Users/chenglihui/docker/nginx/html:/var/www/html
+            - /Users/chenglihui/docker/php:/usr/local/etc
+        # stdin_open: true
+        # tty: true   #这两条是防止启动php失败
+        # links:
+        #    - "mysql"
+        environment:
+            - TZ=Asia/Shanghai # 设置时区
+        container_name: "php"
+        networks:
+            - "app-net"
+            #    ipv4_address: 192.168.1.3
+networks:
+    # 配置docker network
+    app-net:
+        external:
+            name: "dscmall"
+        #driver: bridge
+        #ipam:
+        #    config:
+        #        # 子网络
+        #        - subnet: 192.168.1.0/16 
+~~~
+
+
+
+需要将扩展目录也拿回本地的
+
+~~~php
+/usr/local/lib/php/extensions/no-debug-non-zts-20160303/
+
+/usr/local/bin/phpize
+~~~
+
+
+
+~~~php
+最后一个包  博客上没有写出来，在以下链接下载得到
+https://blog.csdn.net/kina100/article/details/106949987
+
+http://www.ijg.org/
+
+http://www.ijg.org/files/jpegsrc.v9d.tar.gz
+
+
+错误信息：
+configure: error: ZLib not installed
+
+https://blog.csdn.net/john_f_lau/article/details/24838171
+
+configure和安装完 libjpeg后
+
+下载对应的php源码包解压：
+
+cd /var/www/test/php-7.1.33/ext/gd
+
+第一步：
+# /usr/local/bin/phpize
+
+第二步：
+# ./configure \
+--with-php-config=/usr/local/bin/php-config \
+--with-jpeg-dir=/usr/local/libjpeg \
+--with-png-dir=/usr/local/libpng \
+--with-freetype-dir=/usr/local/freetype \
+--with-zlib-dir=/usr/local/zlib
+
+这里如果报如下图错误信息：
+//http://www.111com.net/sys/linux/87746.htm
+# ln -s /usr/include/freetype2/freetype/ /usr/include/freetype
+
+# apt-get install python-dev libfreetype6-dev
+
+
+docker-php-ext-install mysqli pdo pdo_mysql
+~~~
+
+
+
+![image-20210320232859572](Docker.assets/image-20210320232859572.png)
+
+
+
+这里是安装完 apt-get install python-dev libfreetype6-dev就可以编译通过。
+
+
+
+![image-20210320234539600](Docker.assets/image-20210320234539600.png)
+
+
+
+
+
+
+
+~~~php
+// 可以看到这个压缩包也是打包后再压缩，外面是xz压缩方式，里层是tar打包方式。
+$ xz -d ***.tar.xz
+$ tar -xvf ***.tar
+或者直接使用如下命令来解压
+$ tar xvJf ***.tar.xz
+~~~
+
+
+
+
+
+~~~php
+wget http://www.zlib.net/zlib-1.2.11.tar.gz
+tar -zxvf zlib-1.2.11.tar.gz
+cd zlib-1.2.11
+./configure
+make && make install
+
+wget https://nchc.dl.sourceforge.net/project/libpng/libpng16/1.6.37/libpng-1.6.37.tar.xz
+tar -zxvf libpng-1.6.37.tar.xz
+cd libpng-1.6.37
+./configure --prefix=/usr/local/libpng
+make && make install
+
+
+wget https://nchc.dl.sourceforge.net/project/libpng/libpng16/1.6.37/libpng-1.6.37.tar.xz
+tar xvJf libpng-1.6.37.tar.xz
+cd libpng-1.6.37
+./configure --prefix=/usr/local/libpng
+make && make install
+
+
+wget http://www.ijg.org/files/jpegsrc.v9d.tar.gz
+tar -zxvf jpegsrc.v9d.tar.gz
+cd jpeg-9d
+./configure --prefix=/usr/local/libjpeg --enable-shared
+make && make install
+
+
+cd php-7.1.33/ext/gd/
+/usr/local/bin/phpize
+./configure --with-php-config=/usr/local/bin/php-config --with-jpeg-dir=/usr/local/libjpeg --with-png-dir=/usr/local/libpng --with-freetype-dir=/usr/local/freetype --with-zlib-dir=/usr/local/zlib
+make && make install
+~~~
+
+
+
+连接docker 数据库
+
+![image-20210321085958903](Docker.assets/image-20210321085958903.png)
